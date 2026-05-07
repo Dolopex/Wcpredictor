@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Predecir Grupo {{ group.name }} — Mundial 2026{% endblock %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="{% url 'tournament:groups' %}"
+       class="inline-flex items-center gap-1.5 text-xs text-[#6A8AA6] hover:text-[#C9A84C] mb-4 transition">
+      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+      </svg>
+      Volver a Grupos
+    </a>
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Fase de Grupos</p>
+    <h1 class="font-display font-bold text-3xl text-white tracking-wide">
+      PREDECIR GRUPO {{ group.name }}
+    </h1>
+  </div>
+
+  <!-- Créditos disponibles -->
+  <div class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#C9A84C]/30 mb-6"
+       style="background: rgba(201,168,76,0.05)">
+    <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+    </svg>
+    <div>
+      <p class="text-xs text-[#6A8AA6]">Créditos disponibles</p>
+      <p class="font-display font-bold text-xl text-gold" id="credits-display">{{ user_credits }}</p>
+    </div>
+    <div class="ml-auto text-right">
+      <p class="text-xs text-[#6A8AA6]">En juego</p>
+      <p class="font-display font-bold text-xl text-white" id="bet-display">0</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Selección 1° lugar -->
+    <div class="card rounded-xl p-5 mb-4">
+      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-4">
+        1° Lugar — Clasificado directo
+      </h3>
+      <div class="space-y-2">
+        {% for td in teams_data %}
+        <label class="flex items-center gap-3 p-3 rounded-lg border border-[#1A2E48] cursor-pointer
+                       hover:border-[#C9A84C]/40 hover:bg-[#112035] transition has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
+          <input type="radio" name="first_place" value="{{ td.team.id }}" class="accent-gold"
+                 {% if existing and existing.predicted_first.id == td.team.id %}checked{% endif %}>
+          <img src="https://flagcdn.com/w40/{{ td.team.iso2_code }}.png"
+               alt="{{ td.team.name }}"
+               class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm text-white">{{ td.team.name }}</p>
+            <p class="text-xs text-[#4A6278]">FIFA #{{ td.team.fifa_ranking }}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-xs font-bold text-gold">{{ td.net_mult|floatformat:2 }}x</span>
+            <p class="text-[10px] text-[#4A6278]">mult.</p>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Selección 2° lugar -->
+    <div class="card rounded-xl p-5 mb-4">
+      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-4">
+        2° Lugar — Clasificado como segundo
+      </h3>
+      <div class="space-y-2">
+        {% for td in teams_data %}
+        <label class="flex items-center gap-3 p-3 rounded-lg border border-[#1A2E48] cursor-pointer
+                       hover:border-[#C9A84C]/40 hover:bg-[#112035] transition has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
+          <input type="radio" name="second_place" value="{{ td.team.id }}" class="accent-gold"
+                 {% if existing and existing.predicted_second.id == td.team.id %}checked{% endif %}>
+          <img src="https://flagcdn.com/w40/{{ td.team.iso2_code }}.png"
+               alt="{{ td.team.name }}"
+               class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm text-white">{{ td.team.name }}</p>
+            <p class="text-xs text-[#4A6278]">FIFA #{{ td.team.fifa_ranking }}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-xs font-bold text-gold">{{ td.net_mult|floatformat:2 }}x</span>
+            <p class="text-[10px] text-[#4A6278]">mult.</p>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Apuesta de créditos -->
+    <div class="card rounded-xl p-5 mb-6">
+      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-3">
+        Apostar créditos (opcional)
+      </h3>
+      <p class="text-xs text-[#6A8AA6] mb-4">
+        Si aciertas ambas posiciones, ganas <span class="text-gold">créditos × multiplicador</span> del equipo.
+        Si fallas, pierdes lo apostado.
+      </p>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[#8AA6C0]">Cantidad a apostar</span>
+          <span class="font-display font-bold text-gold text-lg" id="bet-amount-label">
+            {% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}
+          </span>
+        </div>
+        <input type="range" id="bet-range"
+               min="0" max="{{ user_credits }}" step="50"
+               value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}"
+               class="w-full h-2 rounded-lg cursor-pointer">
+        <input type="hidden" name="bet_credits" id="bet-credits-input"
+               value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}">
+        <div class="flex justify-between text-xs text-[#4A6278]">
+          <span>0</span>
+          <span>{{ user_credits }}</span>
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.10 / 50) * 50)"
+                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
+            10%
+          </button>
+          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.25 / 50) * 50)"
+                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
+            25%
+          </button>
+          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.50 / 50) * 50)"
+                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
+            50%
+          </button>
+          <button type="button" onclick="setBet({{ user_credits }})"
+                  class="py-1.5 rounded-lg text-xs font-bold border border-[#C9A84C]/40 text-gold hover:bg-gold/10 transition">
+            MAX
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {% if existing %}
+    <div class="flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-800/40 text-blue-300 text-xs mb-4"
+         style="background: rgba(59,130,246,0.05)">
+      <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+      </svg>
+      Ya tienes una predicción para este grupo. Se actualizará al guardar.
+    </div>
+    {% endif %}
+
+    <button type="submit"
+            class="w-full py-3.5 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
+            style="background:#C9A84C; color:#070F1C;">
+      {% if existing %}ACTUALIZAR PREDICCIÓN{% else %}GUARDAR PREDICCIÓN{% endif %}
+    </button>
+  </form>
+</div>
+
+<script>
+const betRange = document.getElementById('bet-range');
+const betLabel = document.getElementById('bet-amount-label');
+const betInput = document.getElementById('bet-credits-input');
+const betDisplay = document.getElementById('bet-display');
+
+function setBet(val) {
+  const capped = Math.min(Math.max(0, Math.round(val)), {{ user_credits }});
+  betRange.value = capped;
+  betLabel.textContent = capped;
+  betInput.value = capped;
+  if (betDisplay) betDisplay.textContent = capped;
+}
+
+betRange.addEventListener('input', function() {
+  betLabel.textContent = this.value;
+  betInput.value = this.value;
+  if (betDisplay) betDisplay.textContent = this.value;
+});
+</script>
+{% endblock %}

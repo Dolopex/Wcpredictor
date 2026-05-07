@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Eliminatorias — Mundial 2026{% endblock %}
+{% block content %}
+
+<div class="mb-8">
+  <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">FIFA World Cup 2026</p>
+  <h1 class="font-display font-bold text-3xl text-white tracking-wide">FASE ELIMINATORIA</h1>
+  <p class="text-[#6A8AA6] text-sm mt-1">R32 &rarr; R16 &rarr; Cuartos &rarr; Semis &rarr; Final</p>
+</div>
+
+{% for rd in rounds_data %}
+<div class="mb-10">
+  <!-- Round header -->
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="w-1 h-6 rounded-full bg-gold"></span>
+      <h2 class="font-display font-bold text-xl text-white tracking-wide">{{ rd.round.name|upper }}</h2>
+      {% if rd.round.is_locked %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-red-800/50 text-red-400"
+              style="background: rgba(239,68,68,0.08)">CERRADO</span>
+      {% elif rd.round.is_active %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-green-800/50 text-green-400"
+              style="background: rgba(34,197,94,0.08)">ACTIVO</span>
+      {% endif %}
+    </div>
+    {% if user.is_authenticated and not rd.round.is_locked %}
+    <a href="{% url 'tournament:round_predict' rd.round.slug %}"
+       class="px-4 py-2 rounded-xl text-xs font-display font-bold tracking-wider hover:opacity-90 transition"
+       style="background:#C9A84C; color:#070F1C;">
+      PREDECIR
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Matches grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+    {% for match in rd.matches %}
+    <div class="card rounded-xl p-4 {% if match.id in user_preds %}border-l-2 border-gold{% endif %}">
+      <div class="text-[10px] text-[#4A6278] font-bold uppercase tracking-wider mb-3 flex justify-between">
+        <span>Partido {{ match.match_number }}</span>
+        {% if match.id in user_preds %}
+          <span class="text-gold">Predicho</span>
+        {% endif %}
+      </div>
+
+      <!-- Team 1 -->
+      <div class="flex items-center gap-2.5 py-2 border-b border-[#1A2E48]
+        {% if match.winner == match.team1 %}text-white{% else %}text-[#8AA6C0]{% endif %}">
+        {% if match.team1 and match.team1.iso2_code %}
+        <img src="https://flagcdn.com/w40/{{ match.team1.iso2_code }}.png"
+             alt="{{ match.team1.name }}"
+             class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+        {% else %}
+        <div class="w-8 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+        {% endif %}
+        <span class="text-sm font-medium flex-1 truncate">
+          {% if match.team1 %}{{ match.team1.name }}{% else %}<span class="text-[#4A6278]">Por definir</span>{% endif %}
+        </span>
+        {% if match.winner == match.team1 %}
+        <span class="text-green-400 flex-shrink-0">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+        {% endif %}
+      </div>
+
+      <!-- VS -->
+      <div class="text-center text-[10px] text-[#4A6278] font-bold py-1">vs</div>
+
+      <!-- Team 2 -->
+      <div class="flex items-center gap-2.5 py-2
+        {% if match.winner == match.team2 %}text-white{% else %}text-[#8AA6C0]{% endif %}">
+        {% if match.team2 and match.team2.iso2_code %}
+        <img src="https://flagcdn.com/w40/{{ match.team2.iso2_code }}.png"
+             alt="{{ match.team2.name }}"
+             class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+        {% else %}
+        <div class="w-8 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+        {% endif %}
+        <span class="text-sm font-medium flex-1 truncate">
+          {% if match.team2 %}{{ match.team2.name }}{% else %}<span class="text-[#4A6278]">Por definir</span>{% endif %}
+        </span>
+        {% if match.winner == match.team2 %}
+        <span class="text-green-400 flex-shrink-0">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+        {% endif %}
+      </div>
+
+      {% if match.match_date %}
+      <p class="text-[10px] text-[#4A6278] mt-2 text-right">
+        {{ match.match_date|date:"d M Y" }}
+      </p>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-[#6A8AA6] text-sm col-span-4">Sin partidos programados todavía.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

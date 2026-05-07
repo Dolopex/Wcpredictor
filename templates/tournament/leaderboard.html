@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Clasificación — Mundial 2026{% endblock %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto">
+
+  <div class="mb-8">
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Ranking global</p>
+    <h1 class="font-display font-bold text-3xl text-white tracking-wide">CLASIFICACIÓN</h1>
+    {% if user.is_authenticated and user_rank %}
+    <p class="text-[#6A8AA6] text-sm mt-1">Tu posición: <span class="text-gold font-bold">#{{ user_rank }}</span></p>
+    {% endif %}
+  </div>
+
+  <div class="card rounded-xl overflow-hidden">
+    <table class="w-full">
+      <thead style="background: rgba(201,168,76,0.06);">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider w-12">#</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Jugador</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Puntos</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider hidden sm:table-cell">Créditos</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#1A2E48]">
+        {% for u in page_obj %}
+        <tr class="hover:bg-[#112035] transition {% if user.is_authenticated and u == user %}bg-[#0F1E30]{% endif %}">
+          <td class="px-4 py-3 font-display font-bold">
+            {% with rank=forloop.counter0|add:page_obj.start_index %}
+            <span class="{% if rank == 1 %}text-gold text-lg{% elif rank == 2 %}text-[#9BA8B5] text-lg{% elif rank == 3 %}text-[#8B6A3E] text-lg{% else %}text-[#4A6278] text-sm{% endif %}">{{ rank }}</span>
+            {% endwith %}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full border border-[#1A2E48] bg-[#112035] flex items-center justify-center text-xs font-bold text-gold flex-shrink-0">
+                {{ u.username|first|upper }}
+              </div>
+              <span class="font-medium text-sm text-white">{{ u.username }}</span>
+              {% if user.is_authenticated and u == user %}
+                <span class="text-xs font-bold text-gold border border-[#C9A84C]/30 px-1.5 py-0.5 rounded">TÚ</span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-4 py-3 text-right">
+            <span class="font-display font-bold text-base text-gold">{{ u.profile.total_points }}</span>
+            <span class="text-[#6A8AA6] text-xs ml-1">pts</span>
+          </td>
+          <td class="px-4 py-3 text-right hidden sm:table-cell">
+            <span class="font-bold text-sm text-[#8AA6C0]">{{ u.profile.credits }}</span>
+            <span class="text-[#4A6278] text-xs ml-1">crd</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="px-4 py-8 text-center text-[#6A8AA6] text-sm">No hay usuarios con puntos todavía.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex justify-center gap-2 mt-6">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-4 py-2 rounded-lg text-sm border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
+      &larr; Anterior
+    </a>
+    {% endif %}
+    <span class="px-4 py-2 text-sm text-[#6A8AA6]">
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+       class="px-4 py-2 rounded-lg text-sm border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
+      Siguiente &rarr;
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

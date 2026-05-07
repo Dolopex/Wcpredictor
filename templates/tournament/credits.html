@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% block title %}Mis Créditos — Mundial 2026{% endblock %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Sistema de apuestas</p>
+    <h1 class="font-display font-bold text-3xl text-white tracking-wide">MIS CRÉDITOS</h1>
+  </div>
+
+  <!-- Balance cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+    <div class="card rounded-xl p-5 text-center border-t-2 border-gold">
+      <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Saldo total</p>
+      <p class="font-display font-bold text-4xl text-gold">{{ profile.credits }}</p>
+      <p class="text-xs text-[#4A6278] mt-1">créditos disponibles</p>
+    </div>
+    <div class="card rounded-xl p-5 text-center border-t-2 border-[#1A2E48]">
+      <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">En juego</p>
+      <p class="font-display font-bold text-4xl text-[#C8D8E8]">{{ total_in_play }}</p>
+      <p class="text-xs text-[#4A6278] mt-1">créditos apostados activos</p>
+    </div>
+    <div class="card rounded-xl p-5 text-center border-t-2 border-[#1A2E48]">
+      <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Puntos totales</p>
+      <p class="font-display font-bold text-4xl text-[#C8D8E8]">{{ profile.total_points }}</p>
+      <p class="text-xs text-[#4A6278] mt-1">puntos acumulados</p>
+    </div>
+  </div>
+
+  <!-- Cómo funciona -->
+  <div class="card rounded-xl p-5 mb-10 border-l-4 border-gold/50">
+    <h2 class="font-display font-bold text-base text-white tracking-wide mb-3">CÓMO FUNCIONA</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-[#8AA6C0]">
+      <div>
+        <p class="font-bold text-white mb-1">Multiplicadores por equipos:</p>
+        <p>España (FIFA #1) = <span class="text-gold">0.10x</span> &mdash; poca sorpresa</p>
+        <p>NZ (FIFA #97) = <span class="text-gold">1.95x</span> &mdash; gran sorpresa</p>
+        <p class="text-xs text-[#4A6278] mt-1">Fórmula: max(0.10, 0.10 + (rank-1) × 0.022)</p>
+      </div>
+      <div>
+        <p class="font-bold text-white mb-1">Multiplicadores por ronda:</p>
+        <p>R32 = <span class="text-gold">0.40x</span> &bull; R16 = <span class="text-gold">0.60x</span></p>
+        <p>Cuartos = <span class="text-gold">0.90x</span> &bull; Semis = <span class="text-gold">1.30x</span></p>
+        <p>Final = <span class="text-gold">2.00x</span></p>
+      </div>
+    </div>
+    <p class="text-xs text-[#4A6278] mt-3">Si aciertas: ganas <em>bet × multiplicador</em> extra. Si fallas: pierdes lo apostado.</p>
+  </div>
+
+  <!-- Apuestas activas - Grupos -->
+  <section class="mb-8">
+    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">APUESTAS ACTIVAS — GRUPOS</h2>
+    {% if active_group_bets %}
+    <div class="card rounded-xl overflow-hidden">
+      <table class="w-full">
+        <thead style="background: rgba(201,168,76,0.06);">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Grupo</th>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Predicción</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Apostado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#1A2E48]">
+          {% for pred in active_group_bets %}
+          <tr class="hover:bg-[#112035] transition">
+            <td class="px-4 py-3">
+              <span class="font-display font-bold text-gold">GRP {{ pred.group.name }}</span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-[#4A6278]">1°</span>
+                  {% if pred.predicted_first.iso2_code %}
+                  <img src="https://flagcdn.com/w40/{{ pred.predicted_first.iso2_code }}.png"
+                       alt="{{ pred.predicted_first.name }}" class="w-5 h-3.5 object-cover rounded">
+                  {% endif %}
+                  <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_first.name }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-[#4A6278]">2°</span>
+                  {% if pred.predicted_second.iso2_code %}
+                  <img src="https://flagcdn.com/w40/{{ pred.predicted_second.iso2_code }}.png"
+                       alt="{{ pred.predicted_second.name }}" class="w-5 h-3.5 object-cover rounded">
+                  {% endif %}
+                  <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_second.name }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits }}</span>
+              <span class="text-xs text-[#6A8AA6] ml-1">crd</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card rounded-xl p-6 text-center text-[#6A8AA6] text-sm">
+      No tienes apuestas activas en grupos.
+      <a href="{% url 'tournament:groups' %}" class="text-gold hover:underline ml-1">Predecir ahora</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- Apuestas activas - Eliminatorias -->
+  <section class="mb-8">
+    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">APUESTAS ACTIVAS — ELIMINATORIAS</h2>
+    {% if active_knockout_bets %}
+    <div class="card rounded-xl overflow-hidden">
+      <table class="w-full">
+        <thead style="background: rgba(201,168,76,0.06);">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Ronda</th>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Predicción</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Apostado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#1A2E48]">
+          {% for pred in active_knockout_bets %}
+          <tr class="hover:bg-[#112035] transition">
+            <td class="px-4 py-3 text-xs text-[#6A8AA6] whitespace-nowrap">{{ pred.match.round.name }}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                {% if pred.predicted_winner.iso2_code %}
+                <img src="https://flagcdn.com/w40/{{ pred.predicted_winner.iso2_code }}.png"
+                     alt="{{ pred.predicted_winner.name }}" class="w-6 h-4 object-cover rounded">
+                {% endif %}
+                <span class="text-sm text-white">{{ pred.predicted_winner.name }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits }}</span>
+              <span class="text-xs text-[#6A8AA6] ml-1">crd</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card rounded-xl p-6 text-center text-[#6A8AA6] text-sm">
+      No tienes apuestas activas en eliminatorias.
+      <a href="{% url 'tournament:bracket' %}" class="text-gold hover:underline ml-1">Ver bracket</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- Historial -->
+  {% if history_group or history_knockout %}
+  <section>
+    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">HISTORIAL DE APUESTAS</h2>
+    <div class="card rounded-xl overflow-hidden">
+      <table class="w-full">
+        <thead style="background: rgba(201,168,76,0.06);">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Tipo</th>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Predicción</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Apostado</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Resultado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#1A2E48]">
+          {% for pred in history_group %}
+          <tr class="hover:bg-[#112035] transition">
+            <td class="px-4 py-2.5 text-xs text-[#6A8AA6]">Grupo {{ pred.group.name }}</td>
+            <td class="px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                {% if pred.predicted_first.iso2_code %}
+                <img src="https://flagcdn.com/w40/{{ pred.predicted_first.iso2_code }}.png"
+                     alt="{{ pred.predicted_first.name }}" class="w-5 h-3.5 object-cover rounded">
+                {% endif %}
+                <span class="text-xs text-[#C8D8E8]">{{ pred.predicted_first.name }}</span>
+                <span class="text-[#4A6278] text-[10px]">&amp;</span>
+                <span class="text-xs text-[#C8D8E8]">{{ pred.predicted_second.name }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits }}</td>
+            <td class="px-4 py-2.5 text-right font-bold text-sm {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won }}
+            </td>
+          </tr>
+          {% endfor %}
+          {% for pred in history_knockout %}
+          <tr class="hover:bg-[#112035] transition">
+            <td class="px-4 py-2.5 text-xs text-[#6A8AA6]">{{ pred.match.round.name }}</td>
+            <td class="px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                {% if pred.predicted_winner.iso2_code %}
+                <img src="https://flagcdn.com/w40/{{ pred.predicted_winner.iso2_code }}.png"
+                     alt="{{ pred.predicted_winner.name }}" class="w-5 h-3.5 object-cover rounded">
+                {% endif %}
+                <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_winner.name }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits }}</td>
+            <td class="px-4 py-2.5 text-right font-bold text-sm {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

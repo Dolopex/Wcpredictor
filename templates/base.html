@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Mundial 2026 Predictor{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Barlow Condensed', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            fifa: {
+              950: '#040C1A', 900: '#070F1C', 800: '#0C1827',
+              700: '#112035', 600: '#172A45', 500: '#1E3558',
+            },
+            gold: { DEFAULT: '#C9A84C', light: '#E2C47A', dark: '#8A6F28' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #070F1C;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201,168,76,0.08) 0%, transparent 60%);
+    }
+    .card { background: #0C1827; border: 1px solid #1A2E48; }
+    .card-hover:hover { background: #112035; border-color: #C9A84C40; }
+    .gold-border { border-color: #C9A84C; }
+    .text-gold { color: #C9A84C; }
+    .bg-gold { background-color: #C9A84C; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0C1827; }
+    ::-webkit-scrollbar-thumb { background: #1A2E48; border-radius: 3px; }
+    /* Input style */
+    input[type=range] { accent-color: #C9A84C; }
+    /* Form inputs */
+    input[type=text], input[type=email], input[type=password], select, textarea {
+      width: 100%;
+      background: #0C1827;
+      border: 1px solid #1A2E48;
+      border-radius: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      color: #C8D8E8;
+      font-size: 0.875rem;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    input[type=text]:focus, input[type=email]:focus, input[type=password]:focus,
+    select:focus, textarea:focus {
+      border-color: #C9A84C;
+    }
+    input::placeholder { color: #4A6278; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full text-[#C8D8E8] font-sans">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 border-b border-[#1A2E48]" style="background:#070F1C;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+
+        <!-- Logo -->
+        <a href="{% url 'tournament:home' %}" class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-gold flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[#070F1C]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+          </div>
+          <span class="font-display font-bold text-lg tracking-wide">
+            <span class="text-gold">MUNDIAL</span><span class="text-white"> 2026</span>
+          </span>
+        </a>
+
+        <!-- Desktop nav -->
+        <div class="hidden md:flex items-center gap-1">
+          <a href="{% url 'tournament:groups' %}"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
+            Grupos
+          </a>
+          <a href="{% url 'tournament:bracket' %}"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
+            Eliminatorias
+          </a>
+          <a href="{% url 'tournament:leaderboard' %}"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
+            Clasificación
+          </a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'tournament:credits' %}"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
+            Créditos
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Auth area -->
+        <div class="flex items-center gap-2">
+          {% if user.is_authenticated %}
+            <!-- Credits badge -->
+            <a href="{% url 'tournament:credits' %}"
+               class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#C9A84C]/40 hover:border-[#C9A84C] transition"
+               style="background: rgba(201,168,76,0.08);">
+              <svg class="w-3.5 h-3.5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+              </svg>
+              <span class="text-gold font-bold text-sm">{{ user.profile.credits }}</span>
+              <span class="text-[#8AA6C0] text-xs">crd</span>
+            </a>
+            <!-- User menu -->
+            <a href="{% url 'accounts:profile' %}"
+               class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#112035] transition">
+              <div class="w-7 h-7 rounded-full bg-[#172A45] border border-[#1A2E48] flex items-center justify-center text-xs font-bold text-gold">
+                {{ user.username|first|upper }}
+              </div>
+              <span class="text-sm font-medium text-white hidden sm:block">{{ user.username }}</span>
+            </a>
+            <a href="{% url 'accounts:logout' %}"
+               class="px-3 py-1.5 text-xs text-[#8AA6C0] hover:text-white transition rounded-lg hover:bg-[#112035]">
+              Salir
+            </a>
+          {% else %}
+            <a href="{% url 'accounts:login' %}"
+               class="px-4 py-2 text-sm rounded-lg text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition border border-[#1A2E48]">
+              Iniciar sesión
+            </a>
+            <a href="{% url 'accounts:register' %}"
+               class="px-4 py-2 text-sm rounded-lg font-semibold transition"
+               style="background:#C9A84C; color:#070F1C;">
+              Registrarse
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mensajes -->
+  {% if messages %}
+  <div class="max-w-7xl mx-auto px-4 mt-4 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm
+      {% if message.tags == 'success' %}border border-green-800/50 text-green-300
+      {% elif message.tags == 'error' %}border border-red-800/50 text-red-300
+      {% else %}border border-blue-800/50 text-blue-300{% endif %}"
+      style="background: rgba(0,0,0,0.3);">
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Contenido principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#1A2E48] mt-16 py-8 text-center text-[#4A6278] text-sm">
+    <p class="font-display font-bold text-base text-[#8AA6C0] tracking-wider mb-1">MUNDIAL 2026 PREDICTOR</p>
+    <p class="text-xs">48 selecciones &middot; 12 grupos &middot; 6 rondas &middot; Sistema de créditos</p>
+  </footer>
+
+</body>
+</html>
+

@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+{% block title %}Mundial 2026 — Predictor{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     STADIUM SLIDESHOW  —  FIFA World Cup 2026
+     8 venues · 20 s each · 160 s total cycle
+     Ken-Burns crossfade + dark gradient overlay
+  ═══════════════════════════════════════════════════════════ */
+
+  #stadium-slideshow {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .stadium-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    will-change: opacity, transform;
+    animation: stadiumFade 160s infinite;
+  }
+
+  /* Staggered delays — one slide every 20 s */
+  .stadium-slide:nth-child(1) { animation-delay:   0s; }
+  .stadium-slide:nth-child(2) { animation-delay:  20s; }
+  .stadium-slide:nth-child(3) { animation-delay:  40s; }
+  .stadium-slide:nth-child(4) { animation-delay:  60s; }
+  .stadium-slide:nth-child(5) { animation-delay:  80s; }
+  .stadium-slide:nth-child(6) { animation-delay: 100s; }
+  .stadium-slide:nth-child(7) { animation-delay: 120s; }
+  .stadium-slide:nth-child(8) { animation-delay: 140s; }
+
+  /* Keyframe: fade-in 2 s · hold 16 s · fade-out 2 s · off 140 s */
+  @keyframes stadiumFade {
+    0%      { opacity: 0;   transform: scale(1.07); }
+    1.875%  { opacity: 1;   transform: scale(1.04); }
+    11.25%  { opacity: 1;   transform: scale(1.00); }
+    12.5%   { opacity: 0;   transform: scale(1.00); }
+    100%    { opacity: 0;   transform: scale(1.07); }
+  }
+
+  /* Darkening gradient — readability above images */
+  #stadium-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: linear-gradient(
+      to bottom,
+      rgba(7,15,28,.72)  0%,
+      rgba(7,15,28,.42) 35%,
+      rgba(7,15,28,.58) 68%,
+      rgba(7,15,28,.93) 100%
+    );
+  }
+
+  /* ─── Venue captions — bottom-right watermark ────────────── */
+  .venue-caption {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.75rem;
+    text-align: right;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    animation: captionPop 160s infinite;
+  }
+
+  @keyframes captionPop {
+    0%      { opacity: 0;   transform: translateY(5px);  }
+    2.5%    { opacity: 1;   transform: translateY(0);    }
+    11%     { opacity: 1;   transform: translateY(0);    }
+    12.5%   { opacity: 0;   transform: translateY(-4px); }
+    100%    { opacity: 0;   transform: translateY(5px);  }
+  }
+
+  /* Respect reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .stadium-slide  { animation: none !important; opacity: 0 !important; }
+    .stadium-slide:nth-child(1) { opacity: 1 !important; transform: none; }
+    .venue-caption  { animation: none !important; opacity: 0 !important; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     WC 2026 INTRO SPLASH  —  once per session (JS-controlled)
+  ═══════════════════════════════════════════════════════════ */
+  #wc-intro {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #030912;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden;
+    transition: opacity .75s ease, transform .75s ease;
+  }
+  #wc-intro.intro-exit {
+    opacity: 0; transform: scale(1.06);
+    pointer-events: none;
+  }
+  #wc-intro.intro-hidden { display: none !important; }
+
+  .intro-rays {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 72% 62% at 50% 50%,
+      rgba(201,168,76,.17) 0%, transparent 68%);
+    animation: raysGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes raysGlow {
+    from { opacity: .55; }
+    to   { opacity: 1; transform: scale(1.08); }
+  }
+  .intro-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0; transform: translateY(0);
+    animation: introFadeIn .9s ease .1s forwards;
+  }
+  .intro-content {
+    position: relative; z-index: 2;
+    text-align: center; padding: 0 1.5rem;
+  }
+  .intro-ball {
+    font-size: clamp(3.2rem, 9vw, 5rem);
+    display: block; line-height: 1; margin-bottom: 1.4rem;
+    opacity: 0; transform: translateY(12px);
+    animation: introFadeIn .5s ease .05s forwards,
+               ballFloat 2.8s ease-in-out 1.2s infinite alternate;
+    filter: drop-shadow(0 0 28px rgba(201,168,76,.65));
+  }
+  @keyframes ballFloat {
+    from { transform: translateY(0) rotate(-4deg); }
+    to   { transform: translateY(-14px) rotate(4deg); }
+  }
+  @keyframes introFadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .intro-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: .68rem; font-weight: 700; letter-spacing: .55em;
+    color: #C9A84C; text-transform: uppercase;
+    opacity: 0; transform: translateY(10px);
+    animation: introFadeIn .45s ease .38s forwards;
+    margin-bottom: .35rem;
+  }
+  .intro-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(2.8rem, 11vw, 6rem); font-weight: 900;
+    color: #fff; letter-spacing: .07em; line-height: 1;
+    text-shadow: 0 2px 40px rgba(255,255,255,.1);
+    margin: 0;
+    opacity: 0; transform: translateY(10px);
+    animation: introFadeIn .55s ease .62s forwards;
+  }
+  .intro-line {
+    display: block; height: 1px; margin: .65rem auto;
+    background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+    opacity: 0; transform: translateY(0);
+    animation: introFadeIn .5s ease .8s forwards;
+  }
+  .intro-line-wide { width: min(260px, 55vw); }
+  .intro-year {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(5rem, 20vw, 9.5rem); font-weight: 900;
+    color: #C9A84C; letter-spacing: .03em; line-height: .9;
+    text-shadow: 0 0 80px rgba(201,168,76,.38);
+    opacity: 0; transform: scale(1.28);
+    animation: introYearReveal .65s cubic-bezier(.175,.885,.32,1.275) .9s forwards;
+  }
+  @keyframes introYearReveal {
+    to { opacity: 1; transform: scale(1); }
+  }
+  .intro-hosts {
+    font-size: clamp(.62rem, 2.4vw, .8rem); letter-spacing: .2em;
+    color: rgba(255,255,255,.55); text-transform: uppercase;
+    opacity: 0; transform: translateY(10px);
+    animation: introFadeIn .45s ease 1.22s forwards;
+    margin-top: .85rem;
+  }
+  .intro-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: .58rem; font-weight: 700; letter-spacing: .55em;
+    color: rgba(201,168,76,.42); text-transform: uppercase;
+    opacity: 0; transform: translateY(10px);
+    animation: introFadeIn .45s ease 1.5s forwards;
+    margin-top: .5rem;
+  }
+  .intro-progress-wrap {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: rgba(255,255,255,.06);
+  }
+  .intro-progress-bar {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, #7A5E28, #C9A84C, #F0D07A);
+    animation: progressFill 3.8s linear .6s forwards;
+  }
+  @keyframes progressFill { from { width: 0; } to { width: 100%; } }
+  .intro-skip {
+    position: absolute; bottom: 1.2rem; right: 1.5rem;
+    font-size: .62rem; letter-spacing: .16em; color: rgba(255,255,255,.32);
+    text-transform: uppercase; background: none; border: none;
+    cursor: pointer; transition: color .2s; padding: .4rem .6rem;
+    opacity: 0; transform: translateY(0);
+    animation: introFadeIn .4s ease 2.1s forwards;
+  }
+  .intro-skip:hover { color: rgba(255,255,255,.75); }
+
+  /* Official WC 2026 Logo */
+  .intro-logo {
+    width: clamp(100px, 22vw, 148px); height: auto;
+    display: block; margin: 0 auto 1.4rem;
+    opacity: 0; transform: scale(.62);
+    animation: logoReveal .85s cubic-bezier(.175,.885,.32,1.275) .06s forwards,
+               logoGlow 3.2s ease-in-out 1.3s infinite alternate;
+  }
+  @keyframes logoReveal { to { opacity: 1; transform: scale(1); } }
+  @keyframes logoGlow {
+    from { filter: drop-shadow(0 0 10px rgba(201,168,76,.4)); }
+    to   { filter: drop-shadow(0 0 32px rgba(201,168,76,.85)) brightness(1.06); }
+  }
+
+  /* Sound toggle button */
+  .intro-sound {
+    position: absolute; bottom: 1.2rem; left: 1.5rem;
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    border: 1px solid rgba(201,168,76,.35); background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color .2s, background .2s;
+    opacity: 0; animation: introFadeIn .4s ease 1.8s forwards;
+    backdrop-filter: blur(4px);
+  }
+  .intro-sound:hover { border-color: #C9A84C; background: rgba(201,168,76,.12); }
+  .intro-sound svg { width: 1rem; height: 1rem; fill: rgba(255,255,255,.65); transition: fill .2s; }
+  .intro-sound:hover svg { fill: #C9A84C; }
+  /* pulsing ring when sound is ON */
+  .intro-sound.sound-on {
+    border-color: rgba(201,168,76,.7);
+    animation: introFadeIn .4s ease 1.8s forwards, soundPulse 2s ease-in-out 2.2s infinite;
+  }
+  @keyframes soundPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,.35); }
+    50%      { box-shadow: 0 0 0 6px rgba(201,168,76,0); }
+  }
+  /* hidden YouTube container */
+  #yt-audio-wrap {
+    position: absolute; width:1px; height:1px;
+    overflow:hidden; opacity:0; pointer-events:none;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     CARD ENTRANCE ANIMATIONS  —  triggered after intro exits
+  ═══════════════════════════════════════════════════════════ */
+  .anim-card {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  body.page-ready .anim-card {
+    animation: cardReveal .55s ease forwards;
+  }
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #wc-intro { display: none !important; }
+    .anim-card { opacity: 1 !important; transform: none !important; animation: none !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ─── WC 2026 intro splash — once per session ─── #}
+<div id="wc-intro" aria-hidden="true">
+  <div class="intro-rays"></div>
+  <div class="intro-grid"></div>
+  <div class="intro-content">
+    <img class="intro-logo"
+         src="https://en.wikipedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup.svg"
+         alt="FIFA World Cup 26"
+         onerror="this.style.display='none';var fb=document.getElementById('intro-ball-fb');if(fb)fb.style.display='block'">
+    <span id="intro-ball-fb" class="intro-ball" style="display:none">⚽</span>
+    <p class="intro-label">FIFA</p>
+    <h2 class="intro-title">WORLD CUP</h2>
+    <span class="intro-line intro-line-wide"></span>
+    <div class="intro-year">2026</div>
+    <p class="intro-hosts">🇺🇸&thinsp;USA &nbsp;·&nbsp; 🇨🇦&thinsp;CANADA &nbsp;·&nbsp; 🇲🇽&thinsp;MÉXICO</p>
+    <p class="intro-sub">Predictor Oficial</p>
+  </div>
+  <div class="intro-progress-wrap">
+    <div class="intro-progress-bar"></div>
+  </div>
+  <button class="intro-skip" onclick="skipIntro()" aria-label="Saltar introducción">Saltar &rarr;</button>
+  <!-- Sound toggle -->
+  <button class="intro-sound" id="intro-sound-btn" onclick="toggleIntroSound()" aria-label="Activar música" title="Tema oficial FIFA World Cup 2026">
+    <svg id="icon-muted" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+    </svg>
+    <svg id="icon-sound" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+    </svg>
+  </button>
+  <div id="yt-audio-wrap" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none"><div id="yt-player"></div></div>
+</div>
+
+{# ─── Full-screen stadium slideshow (behind all page content) ─── #}
+<div id="stadium-slideshow" aria-hidden="true">
+  {# 1 · Estadio Azteca — Ciudad de México (apertura WC2026) #}
+  <div class="stadium-slide"
+       style="background-image:url('https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_Azteca_07b.jpg')"></div>
+  {# 2 · MetLife Stadium — New York/NJ (FINAL WC2026) #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/0/04/Metlife_stadium_%28Aerial_view%29.jpg')"></div>
+  {# 3 · SoFi Stadium — Los Angeles #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/SoFi_Stadium_2023.jpg/1280px-SoFi_Stadium_2023.jpg')"></div>
+  {# 4 · AT&T Stadium — Arlington TX (mayor estadio) #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Arlington_June_2020_4_%28AT%26T_Stadium%29.jpg/1280px-Arlington_June_2020_4_%28AT%26T_Stadium%29.jpg')"></div>
+  {# 5 · BC Place — Vancouver #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BC_Place_2015_Women%27s_FIFA_World_Cup.jpg/1280px-BC_Place_2015_Women%27s_FIFA_World_Cup.jpg')"></div>
+  {# 6 · Hard Rock Stadium — Miami #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg/1280px-Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg')"></div>
+  {# 7 · Mercedes-Benz Stadium — Atlanta #}
+  <div class="stadium-slide"
+       style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/1/10/Mercedes_Benz_Stadium_time_lapse_capture_2017-08-13.jpg')"></div>
+  {# 8 · Azteca panorama — Ciudad de México #}
+  <div class="stadium-slide"
+       style="background-image:url('https://commons.wikimedia.org/wiki/Special:FilePath/Panorama_Estadio_Azteca_football_game_Club_America.jpg')"></div>
+  {# Dark gradient overlay — always on top of slides #}
+  <div id="stadium-overlay"></div>
+</div>
+
+{# ─── Venue captions (synced with slides, bottom-right) ─────── #}
+<div class="venue-caption" style="animation-delay:0s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">Estadio Azteca</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Ciudad de México &nbsp;·&nbsp; 🇲🇽 &nbsp;·&nbsp; 87 523 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:20s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">MetLife Stadium</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">East Rutherford, NJ &nbsp;·&nbsp; 🇺🇸 &nbsp;·&nbsp; 🏆 Final WC2026</p>
+</div>
+<div class="venue-caption" style="animation-delay:40s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">SoFi Stadium</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Los Angeles, CA &nbsp;·&nbsp; 🇺🇸 &nbsp;·&nbsp; 70 240 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:60s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">AT&amp;T Stadium</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Arlington, TX &nbsp;·&nbsp; 🇺🇸 &nbsp;·&nbsp; 94 000 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:80s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">BC Place</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Vancouver, BC &nbsp;·&nbsp; 🇨🇦 &nbsp;·&nbsp; 54 500 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:100s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">Hard Rock Stadium</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Miami, FL &nbsp;·&nbsp; 🇺🇸 &nbsp;·&nbsp; 65 000 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:120s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">Mercedes-Benz Stadium</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Atlanta, GA &nbsp;·&nbsp; 🇺🇸 &nbsp;·&nbsp; 75 000 cap.</p>
+</div>
+<div class="venue-caption" style="animation-delay:140s" aria-hidden="true">
+  <p class="text-[#C9A84C] text-[11px] font-display font-bold tracking-[0.22em] uppercase leading-tight">Estadio Azteca</p>
+  <p class="text-white/45 text-[9px] tracking-wide mt-0.5">Ciudad de México &nbsp;·&nbsp; 🇲🇽 &nbsp;·&nbsp; Apertura WC2026</p>
+</div>
+
+
+<!-- Hero -->
+<section class="text-center py-12 mb-4 anim-card" style="animation-delay:0ms">
+  <p class="text-gold text-xs font-display font-bold tracking-[0.3em] uppercase mb-3">FIFA World Cup 2026</p>
+  <h1 class="font-display font-bold text-5xl md:text-6xl text-white tracking-wide mb-4">
+    PREDICTOR<br><span class="text-gold">OFICIAL</span>
+  </h1>
+  <p class="text-[#8AA6C0] text-base max-w-xl mx-auto mb-8">
+    Predice qué selecciones pasan de ronda, apuesta tus créditos y sube al ranking.
+    Más créditos si predices las sorpresas.
+  </p>
+
+  {% if not user.is_authenticated %}
+  <div class="flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="{% url 'accounts:register' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
+       style="background:#C9A84C; color:#070F1C;">
+      EMPEZAR &mdash; 1,000 créditos gratis
+    </a>
+    <a href="{% url 'accounts:login' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white hover:border-[#C9A84C]/40 transition">
+      INICIAR SESIÓN
+    </a>
+  </div>
+  {% else %}
+  <div class="flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="{% url 'tournament:groups' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
+       style="background:#C9A84C; color:#070F1C;">
+      PREDECIR GRUPOS
+    </a>
+    <a href="{% url 'tournament:credits' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider border border-[#C9A84C]/40 text-gold hover:bg-gold/10 transition">
+      MIS CRÉDITOS &mdash; {{ user.profile.credits }}
+    </a>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Stats bar -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
+  {% for val, label in stats_list %}
+  <div class="card rounded-xl p-4 text-center anim-card" style="animation-delay: calc({{ forloop.counter0 }} * 80ms)">
+    <p class="font-display font-bold text-2xl text-gold">{{ val }}</p>
+    <p class="text-xs text-[#6A8AA6] mt-0.5">{{ label }}</p>
+  </div>
+  {% empty %}
+  <div class="card rounded-xl p-4 text-center anim-card" style="animation-delay:0ms">
+    <p class="font-display font-bold text-2xl text-gold">48</p>
+    <p class="text-xs text-[#6A8AA6] mt-0.5">Selecciones</p>
+  </div>
+  <div class="card rounded-xl p-4 text-center anim-card" style="animation-delay:80ms">
+    <p class="font-display font-bold text-2xl text-gold">12</p>
+    <p class="text-xs text-[#6A8AA6] mt-0.5">Grupos</p>
+  </div>
+  <div class="card rounded-xl p-4 text-center anim-card" style="animation-delay:160ms">
+    <p class="font-display font-bold text-2xl text-gold">6</p>
+    <p class="text-xs text-[#6A8AA6] mt-0.5">Rondas</p>
+  </div>
+  <div class="card rounded-xl p-4 text-center anim-card" style="animation-delay:240ms">
+    <p class="font-display font-bold text-2xl text-gold">2.0x</p>
+    <p class="text-xs text-[#6A8AA6] mt-0.5">Hasta x2 en Final</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Ronda activa -->
+{% if active_round %}
+<div class="card rounded-xl p-5 mb-10 border-l-4 border-gold anim-card" style="animation-delay:80ms">
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Ronda activa</p>
+      <h3 class="font-display font-bold text-xl text-white">{{ active_round.name }}</h3>
+      <p class="text-[#6A8AA6] text-sm mt-0.5">
+        {% if active_round.is_locked %}Predicciones cerradas{% else %}Predicciones abiertas{% endif %}
+      </p>
+    </div>
+    {% if not active_round.is_locked and user.is_authenticated %}
+      {% if active_round.slug == 'groups' %}
+      <a href="{% url 'tournament:groups' %}"
+         class="px-5 py-2.5 rounded-xl font-display font-bold text-sm tracking-wider hover:opacity-90 transition flex-shrink-0"
+         style="background:#C9A84C; color:#070F1C;">
+        IR A GRUPOS
+      </a>
+      {% else %}
+      <a href="{% url 'tournament:round_predict' active_round.slug %}"
+         class="px-5 py-2.5 rounded-xl font-display font-bold text-sm tracking-wider hover:opacity-90 transition flex-shrink-0"
+         style="background:#C9A84C; color:#070F1C;">
+        PREDECIR AHORA
+      </a>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Grupos -->
+<section class="mb-12">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display font-bold text-xl text-white tracking-wide">FASE DE GRUPOS</h2>
+    <a href="{% url 'tournament:groups' %}" class="text-xs text-gold hover:text-gold-light font-medium">
+      Ver todos &rarr;
+    </a>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    {% for group in groups %}
+    <div class="card rounded-xl p-4 card-hover transition cursor-default anim-card" style="animation-delay: calc({{ forloop.counter0 }} * 55ms)">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-display font-bold text-lg text-gold">GRP {{ group.name }}</span>
+        {% if user.is_authenticated and group.id in user_group_preds %}
+          <span class="w-5 h-5 rounded-full bg-green-900/50 border border-green-600/50 flex items-center justify-center">
+            <svg class="w-3 h-3 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+      <ul class="space-y-1.5">
+        {% for team in group.teams.all %}
+        <li class="flex items-center gap-2">
+          {% if team.iso2_code %}
+          <img src="https://flagcdn.com/w40/{{ team.iso2_code }}.png"
+               alt="{{ team.name }}"
+               class="w-6 h-4 object-cover rounded-sm flex-shrink-0"
+               loading="lazy">
+          {% endif %}
+          <span class="text-xs text-[#A0BDD0] truncate">{{ team.name }}</span>
+          <span class="ml-auto text-[10px] text-[#4A6278]">#{{ team.fifa_ranking }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% empty %}
+    <p class="text-[#6A8AA6] col-span-4 text-sm">
+      Ejecuta: <code class="text-gold">python manage.py load_world_cup_data</code>
+    </p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Leaderboard top 5 -->
+{% if top_users %}
+<section>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display font-bold text-xl text-white tracking-wide">CLASIFICACIÓN</h2>
+    <a href="{% url 'tournament:leaderboard' %}" class="text-xs text-gold hover:text-gold-light font-medium">
+      Ver todos &rarr;
+    </a>
+  </div>
+  <div class="card rounded-xl overflow-hidden anim-card" style="animation-delay:120ms">
+    <table class="w-full">
+      <thead style="background: rgba(201,168,76,0.06);">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">#</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Jugador</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Puntos</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#1A2E48]">
+        {% for u in top_users %}
+        <tr class="hover:bg-[#112035] transition">
+          <td class="px-4 py-3 font-bold text-[#8AA6C0]">
+            {% if forloop.counter == 1 %}<span class="text-gold text-base">01</span>
+            {% elif forloop.counter == 2 %}<span class="text-[#9BA8B5] text-base">02</span>
+            {% elif forloop.counter == 3 %}<span class="text-[#8B6A3E] text-base">03</span>
+            {% else %}<span class="text-[#4A6278]">0{{ forloop.counter }}</span>{% endif %}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full border border-[#1A2E48] bg-[#112035] flex items-center justify-center text-xs font-bold text-gold flex-shrink-0">
+                {{ u.username|first|upper }}
+              </div>
+              <span class="font-medium text-white text-sm">{{ u.username }}</span>
+              {% if user.is_authenticated and u == user %}
+                <span class="text-xs text-gold">(tú)</span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-4 py-3 text-right">
+            <span class="font-display font-bold text-base text-gold">{{ u.profile.total_points }}</span>
+            <span class="text-[#6A8AA6] text-xs ml-1">pts</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<script>
+(function () {
+  var KEY = 'wc2026_intro_v1';
+  var intro = document.getElementById('wc-intro');
+  function readyPage() { document.body.classList.add('page-ready'); }
+  if (!intro) { readyPage(); return; }
+  var seen = false;
+  try { seen = !!sessionStorage.getItem(KEY); } catch (e) {}
+  if (seen) { intro.classList.add('intro-hidden'); readyPage(); return; }
+  try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+
+  // ── YouTube audio player ──────────────────────────────────
+  var ytPlayer = null;
+  var soundOn  = false;
+
+  function loadYTApi() {
+    if (document.getElementById('yt-api-script')) return;
+    var s = document.createElement('script');
+    s.id  = 'yt-api-script';
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
+  // ── helpers de UI ──────────────────────────────────────
+  function setSoundUI(on) {
+    document.getElementById('icon-muted').style.display = on ? 'none' : '';
+    document.getElementById('icon-sound').style.display = on ? ''    : 'none';
+    var btn = document.getElementById('intro-sound-btn');
+    if (btn) { on ? btn.classList.add('sound-on') : btn.classList.remove('sound-on'); }
+  }
+
+  var pendingUnmute = false;  // usuario hizo click antes de que el player estuviera listo
+
+  window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('yt-player', {
+      videoId: 'HmpzUm5j4OE',
+      // mute:1 = autoplay mudo (navegadores lo permiten); el usuario desenmudea
+      playerVars: { autoplay: 1, mute: 1, start: 0, controls: 0, disablekb: 1 },
+      events: {
+        onReady: function(e) {
+          e.target.setVolume(80);
+          e.target.playVideo();
+          if (pendingUnmute) {
+            e.target.unMute();
+            soundOn = true;
+            setSoundUI(true);
+          }
+        }
+      }
+    });
+  };
+  window.toggleIntroSound = function() {
+    if (!ytPlayer || typeof ytPlayer.unMute !== 'function') {
+      pendingUnmute = true;  // marcar para desmutar cuando esté listo
+      loadYTApi();
+      return;
+    }
+    if (soundOn) {
+      ytPlayer.mute();
+      soundOn = false;
+      setSoundUI(false);
+    } else {
+      ytPlayer.unMute();
+      ytPlayer.setVolume(80);
+      soundOn = true;
+      setSoundUI(true);
+    }
+  };
+  // Try silent autoplay first; if API is not yet loaded, attempt lazy load
+  loadYTApi();
+  // ─────────────────────────────────────────────────────────
+  function exit() {
+    clearTimeout(t);
+    // stop YouTube audio on intro dismiss
+    try { if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo(); } catch(e) {}
+    intro.classList.add('intro-exit');
+    setTimeout(function () { intro.classList.add('intro-hidden'); readyPage(); }, 720);
+  }
+  var t = setTimeout(exit, 4350);
+  window.skipIntro = exit;
+})();
+</script>
+
+{% endblock %}
+
+
