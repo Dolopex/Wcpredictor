@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tournament.models import CreditPackage
+from tournament.models import CreditPackage, Round
 
 
 # ── Cálculo de referencia ─────────────────────────────────────────────────────
@@ -61,10 +61,14 @@ class Command(BaseCommand):
             ))
 
         created = updated = 0
+        # Buscar la ronda de eliminatorias para bloquear el pase
+        r32 = Round.objects.filter(name__icontains='32').first() or Round.objects.filter(name__icontains='dieciseis').first()
+
         for data in PACKAGES:
+            requires_round = r32 if data['name'] == 'Pase Eliminatorias' else None
             obj, was_created = CreditPackage.objects.update_or_create(
                 name=data['name'],
-                defaults={**data, 'is_active': True},
+                defaults={**data, 'is_active': True, 'requires_round': requires_round},
             )
             if was_created:
                 created += 1
