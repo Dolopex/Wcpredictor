@@ -1,5 +1,3 @@
 #!/bin/bash
-# Script de build ejecutado por Vercel al hacer deploy
-
-pip install -r requirements.txt
+# Vercel ejecuta este script como Build Command
 python manage.py collectstatic --noinput
