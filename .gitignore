@@ -36,7 +36,8 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
-staticfiles/
+# staticfiles se commitean para Vercel (no tiene sistema de archivos persistente)
+# staticfiles/
 
 # ── Vercel ────────────────────────────────────────────────────────────────────
 .vercel/
