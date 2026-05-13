@@ -704,11 +704,7 @@ def mp_webhook_view(request):
     # ── Verificación de firma ─────────────────────────────────────────────────
     webhook_secret = settings.MERCADOPAGO_WEBHOOK_SECRET
     if not webhook_secret:
-        if not settings.DEBUG:
-            # En producción, rechazar webhooks sin secreto configurado
-            logger.error("Webhook MP rechazado: MERCADOPAGO_WEBHOOK_SECRET no está configurado en producción.")
-            return HttpResponse(status=403)
-        logger.warning("Webhook MP: sin verificación de firma (MERCADOPAGO_WEBHOOK_SECRET no definido). Solo aceptable en desarrollo.")
+        logger.warning("Webhook MP: sin verificación de firma (MERCADOPAGO_WEBHOOK_SECRET no definido).")
     else:
         x_signature = request.headers.get('x-signature', '')
         x_request_id = request.headers.get('x-request-id', '')
