@@ -19,7 +19,9 @@ if not DEBUG and 'insecure' in SECRET_KEY:
         'SECRET_KEY no está configurada de forma segura. '
         'Agrega SECRET_KEY=<clave-larga-aleatoria> en el archivo .env antes de publicar.'
     )
-ALLOWED_HOSTS = (os.environ.get('ALLOWED_HOSTS') or config('ALLOWED_HOSTS', default='127.0.0.1,localhost')).split(',')
+_allowed_raw = (os.environ.get('ALLOWED_HOSTS') or config('ALLOWED_HOSTS', default='127.0.0.1,localhost')).split(',')
+# Agregar .vercel.app para cubrir todas las URLs de preview de Vercel
+ALLOWED_HOSTS = [h.strip() for h in _allowed_raw] + ['.vercel.app']
 
 # Application definition
 
@@ -66,19 +68,11 @@ WSGI_APPLICATION = 'worldcup_predictor.wsgi.application'
 
 
 # Database
-# En producción usa DATABASE_URL (Neon/PostgreSQL). En local puede seguir siendo SQLite.
-# os.environ.get() lee directamente las variables del sistema (Vercel, Railway, etc.)
-# python-decouple se usa solo para las vars del .env local
-DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
+# dj_database_url.config() lee DATABASE_URL directo de os.environ — funciona en Vercel/Railway/etc.
+_db_from_env = dj_database_url.config(default='', conn_max_age=600, conn_health_checks=True)
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
+if _db_from_env:
+    DATABASES = {'default': _db_from_env}
 else:
     DATABASES = {
         'default': {
