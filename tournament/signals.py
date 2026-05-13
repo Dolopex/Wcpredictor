@@ -11,7 +11,9 @@ from .utils import (
     calculate_knockout_bet_credits,
     update_user_total_points,
     update_user_credits,
+    assign_underdog_multipliers,
 )
+# Nota: update_user_credits ya no modifica el saldo (los créditos se gestionan en views).
 
 
 def score_group_predictions(group):
@@ -28,6 +30,8 @@ def score_group_predictions(group):
         update_user_total_points(user)
         update_user_credits(user)
 
+    assign_underdog_multipliers()
+
 
 def score_knockout_predictions(match):
     predictions = KnockoutPrediction.objects.filter(match=match).select_related(
@@ -42,4 +46,6 @@ def score_knockout_predictions(match):
     for user in affected_users:
         update_user_total_points(user)
         update_user_credits(user)
+
+    assign_underdog_multipliers()
 

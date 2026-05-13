@@ -1,0 +1,178 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Simulador{% endblock %}
+{% block heading %}Simulador de Eventos{% endblock %}
+{% block content %}
+
+<p class="text-sm text-[#6A8AA6] mb-6">
+  Genera resultados aleatorios para probar el comportamiento del sistema sin modificar datos reales manualmente.
+</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  <!-- Grupos -->
+  <div class="card rounded-xl p-5">
+    <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-1">Grupos</h2>
+    <p class="text-xs text-[#4A6278] mb-4">Asigna posiciones aleatorias a los grupos seleccionados.</p>
+
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Simular grupo individual</label>
+        <div class="flex gap-2">
+          <select name="group_id" class="flex-1">
+            {% for g in groups %}
+            <option value="{{ g.id }}">Grupo {{ g.name }}</option>
+            {% endfor %}
+          </select>
+          <button name="action" value="sim_group" type="submit"
+                  class="btn-gold px-4 py-1.5 rounded-lg text-xs font-bold flex-shrink-0">
+            Simular
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-[#1A2E48] pt-3">
+        <button name="action" value="sim_all_groups" type="submit"
+                class="w-full py-2 rounded-lg text-sm font-bold border border-yellow-800/50 text-yellow-300 hover:bg-yellow-900/20 transition"
+                onclick="return confirm('¿Simular TODOS los grupos con resultados aleatorios?')">
+          ⚡ Simular todos los grupos
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Partidos knockout -->
+  <div class="card rounded-xl p-5">
+    <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-1">Partidos Eliminatorias</h2>
+    <p class="text-xs text-[#4A6278] mb-4">Asigna ganadores aleatorios a partidos sin resultado.</p>
+
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Simular partido individual</label>
+        <div class="flex gap-2">
+          <select name="match_id" class="flex-1">
+            {% for m in matches %}
+            <option value="{{ m.id }}">
+              {{ m.round.name }}: {{ m.team1.name|default:"TBD" }} vs {{ m.team2.name|default:"TBD" }}
+            </option>
+            {% empty %}
+            <option disabled>Sin partidos pendientes</option>
+            {% endfor %}
+          </select>
+          <button name="action" value="sim_match" type="submit"
+                  class="btn-gold px-4 py-1.5 rounded-lg text-xs font-bold flex-shrink-0"
+                  {% if not matches %}disabled{% endif %}>
+            Simular
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-[#1A2E48] pt-3">
+        <button name="action" value="sim_all_matches" type="submit"
+                class="w-full py-2 rounded-lg text-sm font-bold border border-yellow-800/50 text-yellow-300 hover:bg-yellow-900/20 transition"
+                {% if not matches %}disabled{% endif %}
+                onclick="return confirm('¿Simular todos los partidos pendientes?')">
+          ⚡ Simular todos los partidos pendientes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Reset -->
+  <div class="card rounded-xl p-5 md:col-span-2 border border-red-900/40">
+    <h2 class="font-bold text-red-400 text-sm uppercase tracking-wide mb-1">Zona de riesgo</h2>
+    <p class="text-xs text-[#6A8AA6] mb-4">
+      Elimina todos los resultados de grupos y partidos, y revierte puntos y créditos ganados.
+      Esta operación no se puede deshacer.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <button name="action" value="reset_all_scores" type="submit"
+              onclick="return confirm('⚠️ ¿Resetear TODOS los resultados y puntuaciones? Esta acción es irreversible.')"
+              class="px-5 py-2 rounded-lg text-sm font-bold border border-red-700 text-red-400 hover:bg-red-900/30 transition">
+        🔴 Reset completo de resultados
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<!-- ── Área de Pruebas (Sandbox) ──────────────────────────────────────────── -->
+<div class="mt-8 rounded-xl overflow-hidden border border-emerald-900/50">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-[#0d2018] to-[#0a1810] px-5 py-4 flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Herramientas de prueba</p>
+      <h2 class="text-base font-extrabold text-emerald-300 mt-0.5">⚡ Área de Pruebas — Sandbox</h2>
+      <p class="text-xs text-[#4A7060] mt-1">Crea usuarios bot con predicciones aleatorias para ver cómo se comporta la tabla de posiciones.</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="bg-[#080f0c] px-5 py-4 grid grid-cols-2 sm:grid-cols-5 gap-3 border-t border-emerald-900/30 border-b border-emerald-900/30">
+    <div class="text-center bg-white/[0.02] rounded-lg py-3">
+      <p class="text-2xl font-black {% if sandbox.n_users %}text-emerald-400{% else %}text-[#2a4a3a]{% endif %}">{{ sandbox.n_users }}</p>
+      <p class="text-[9px] text-emerald-800 mt-1 uppercase tracking-wide font-bold">Bots</p>
+    </div>
+    <div class="text-center bg-white/[0.02] rounded-lg py-3">
+      <p class="text-2xl font-black {% if sandbox.n_group_preds %}text-emerald-400{% else %}text-[#2a4a3a]{% endif %}">{{ sandbox.n_group_preds }}</p>
+      <p class="text-[9px] text-emerald-800 mt-1 uppercase tracking-wide font-bold">Pred. grupos</p>
+    </div>
+    <div class="text-center bg-white/[0.02] rounded-lg py-3">
+      <p class="text-2xl font-black {% if sandbox.n_group_results %}text-emerald-400{% else %}text-[#2a4a3a]{% endif %}">{{ sandbox.n_group_results }}</p>
+      <p class="text-[9px] text-emerald-800 mt-1 uppercase tracking-wide font-bold">Resultados</p>
+    </div>
+    <div class="text-center bg-white/[0.02] rounded-lg py-3">
+      <p class="text-2xl font-black {% if sandbox.n_knockout_preds %}text-emerald-400{% else %}text-[#2a4a3a]{% endif %}">{{ sandbox.n_knockout_preds }}</p>
+      <p class="text-[9px] text-emerald-800 mt-1 uppercase tracking-wide font-bold">Pred. eliminatorias</p>
+    </div>
+    <div class="text-center bg-white/[0.02] rounded-lg py-3">
+      <p class="text-2xl font-black {% if sandbox.n_sandbox_matches %}text-emerald-400{% else %}text-[#2a4a3a]{% endif %}">{{ sandbox.n_sandbox_matches }}</p>
+      <p class="text-[9px] text-emerald-800 mt-1 uppercase tracking-wide font-bold">Matches sandbox</p>
+    </div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="bg-[#060d0a] px-5 py-4 flex flex-wrap gap-4 items-center">
+
+    <!-- Generar -->
+    <form method="post" class="flex items-center gap-2 flex-wrap">
+      {% csrf_token %}
+      <span class="text-xs font-bold text-emerald-400">⚡ Generar datos:</span>
+      <select name="n_users" class="bg-[#0d2018] text-emerald-200 border border-emerald-900 rounded-lg px-3 py-1.5 text-xs">
+        <option value="5">5 bots</option>
+        <option value="10" selected>10 bots</option>
+        <option value="20">20 bots</option>
+        <option value="50">50 bots</option>
+      </select>
+      <button name="action" value="sandbox_generate" type="submit"
+              class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 px-4 py-1.5 rounded-lg text-xs font-bold transition">
+        Generar
+      </button>
+    </form>
+
+    <!-- Resetear -->
+    <form method="post"
+          onsubmit="return confirm('Esto elimina todos los bots, sus predicciones, matches sandbox y GroupResults sandbox. ¿Continuar?')">
+      {% csrf_token %}
+      <button name="action" value="sandbox_reset" type="submit"
+              class="px-4 py-1.5 rounded-lg text-xs font-bold border border-red-800/60 text-red-400 hover:bg-red-900/20 transition">
+        🗑️ Resetear sandbox
+      </button>
+    </form>
+
+    <!-- Recalcular underdogs -->
+    <form method="post">
+      {% csrf_token %}
+      <button name="action" value="recalc_underdogs" type="submit"
+              class="px-4 py-1.5 rounded-lg text-xs font-bold border border-yellow-800/60 text-yellow-400 hover:bg-yellow-900/20 transition">
+        🔥 Recalcular underdogs
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'admin_panel/base.html' %}
+{% load tournament_extras %}
+{% block title %}{{ target_user.username }}{% endblock %}
+{% block heading %}Usuario: {{ target_user.username }}{% endblock %}
+{% block content %}
+
+<a href="{% url 'tournament:panel_users' %}" class="text-xs text-[#6A8AA6] hover:text-gold mb-4 inline-block">← Volver</a>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+  <!-- Info + acciones -->
+  <div class="lg:col-span-1 space-y-4">
+    <div class="card rounded-xl p-5">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-3">Perfil</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Usuario</span><span class="text-white font-bold">{{ target_user.username }}</span></div>
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Nombre</span><span class="text-[#C8D8E8]">{{ profile.full_name|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Email</span><span class="text-[#8AA6C0]">{{ target_user.email|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Teléfono</span><span class="text-[#8AA6C0]">{{ profile.phone_number|default:"—" }}</span></div>
+        <div class="flex justify-between border-t border-[#1A2E48] pt-2"><span class="text-[#6A8AA6]">Créditos</span><span class="font-bold text-gold text-lg">{{ profile.credits|crd }}</span></div>
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Puntos</span><span class="font-bold text-white">{{ profile.total_points }}</span></div>
+        <div class="flex justify-between border-t border-[#1A2E48] pt-2 items-center">
+          <span class="text-[#6A8AA6]">Underdog</span>
+          {% if profile.underdog_multiplier > 1.0 %}
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-full"
+                  style="background:rgba(255,80,80,0.12);color:#FF6B6B;border:1px solid rgba(255,80,80,0.25);">
+              &#128293; ×{{ profile.underdog_multiplier }} &middot; {{ profile.underdog_boost_uses }} usos
+            </span>
+          {% else %}
+            <span class="text-[#4A6278] text-xs">— Sin potenciador</span>
+          {% endif %}
+        </div>
+        <div class="flex justify-between"><span class="text-[#6A8AA6]">Staff</span>
+          <span class="{% if target_user.is_staff %}text-gold{% else %}text-[#4A6278]{% endif %}">
+            {% if target_user.is_staff %}Sí{% else %}No{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ajustar créditos -->
+    <div class="card rounded-xl p-5">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-3">Ajustar Créditos</h2>
+
+      <form method="post" class="space-y-3">
+        {% csrf_token %}
+        <div>
+          <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Establecer saldo exacto</label>
+          <div class="flex gap-2">
+            <input type="number" name="credits" value="{{ profile.credits }}" min="0" step="100">
+            <button name="action" value="set_credits" type="submit"
+                    class="btn-gold px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0">Fijar</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Añadir créditos</label>
+          <div class="flex gap-2">
+            <input type="number" name="amount" value="1000" min="0" step="100">
+            <button name="action" value="add_credits" type="submit"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900/20 transition">+ Añadir</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Permisos -->
+    <div class="card rounded-xl p-5">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-3">Permisos</h2>
+      <form method="post" class="flex items-center justify-between">
+        {% csrf_token %}
+        <span class="text-sm text-[#C8D8E8]">Es staff (acceso al panel)</span>
+        <input type="hidden" name="is_staff" value="{% if target_user.is_staff %}0{% else %}1{% endif %}">
+        <button name="action" value="set_staff" type="submit"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold border transition
+                {% if target_user.is_staff %}border-red-800/50 text-red-400 hover:bg-red-900/20{% else %}border-emerald-800/50 text-emerald-400 hover:bg-emerald-900/20{% endif %}">
+          {% if target_user.is_staff %}Quitar staff{% else %}Dar staff{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Predicciones -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#1A2E48] flex items-center justify-between">
+        <h2 class="font-bold text-white text-sm uppercase tracking-wide">Predicciones de Grupos ({{ group_preds.count }})</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Grupo</th><th>1°</th><th>2°</th><th>3°</th><th>3°Mejor</th>
+            <th class="text-right">Apostado</th><th class="text-right">Ganado</th><th class="text-right">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in group_preds %}
+          <tr>
+            <td class="font-bold text-gold">{{ p.group.name }}</td>
+            <td>{{ p.predicted_first.name }}</td>
+            <td>{{ p.predicted_second.name }}</td>
+            <td>{{ p.predicted_third.name|default:"—" }}</td>
+            <td>{% if p.predicted_third_advances %}<span class="text-emerald-400 text-xs font-bold">Sí</span>{% else %}—{% endif %}</td>
+            <td class="text-right text-gold">{{ p.bet_credits|crd }}</td>
+            <td class="text-right {% if p.credits_won > 0 %}text-emerald-400{% elif p.credits_won < 0 %}text-red-400{% else %}text-[#4A6278]{% endif %}">
+              {% if p.credits_won != 0 %}{{ p.credits_won|crd }}{% else %}—{% endif %}
+            </td>
+            <td class="text-right {% if p.is_scored %}text-white{% else %}text-[#4A6278]{% endif %}">
+              {{ p.points_earned }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-[#4A6278] py-4">Sin predicciones.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#1A2E48]">
+        <h2 class="font-bold text-white text-sm uppercase tracking-wide">Predicciones Eliminatorias ({{ knockout_preds.count }})</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ronda</th><th>Partido</th><th>Predijo ganador</th>
+            <th class="text-right">Apostado</th><th class="text-right">Resultado</th><th class="text-right">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in knockout_preds %}
+          <tr>
+            <td class="text-[#8AA6C0]">{{ p.match.round.name }}</td>
+            <td>{{ p.match.team1.name|default:"?" }} vs {{ p.match.team2.name|default:"?" }}</td>
+            <td class="font-bold text-white">{{ p.predicted_winner.name }}</td>
+            <td class="text-right text-gold">{{ p.bet_credits|crd }}</td>
+            <td class="text-right">
+              {% if p.is_correct is None %}<span class="text-[#4A6278]">Pendiente</span>
+              {% elif p.is_correct %}<span class="text-emerald-400 font-bold">✓ +{{ p.credits_won|crd }}</span>
+              {% else %}<span class="text-red-400 font-bold">✗ {{ p.credits_won|crd }}</span>
+              {% endif %}
+            </td>
+            <td class="text-right text-white">{{ p.points_earned }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-[#4A6278] py-4">Sin predicciones.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if purchases %}
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#1A2E48]">
+        <h2 class="font-bold text-white text-sm uppercase tracking-wide">Compras de Créditos</h2>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Paquete</th><th>COP</th><th class="text-right">Créditos</th><th>Estado</th><th>Fecha</th></tr>
+        </thead>
+        <tbody>
+          {% for c in purchases %}
+          <tr>
+            <td>{{ c.package.name }}</td>
+            <td>${{ c.cop_paid|floatformat:0 }}</td>
+            <td class="text-right text-gold">{{ c.credits_applied|crd }}</td>
+            <td>
+              {% if c.status == 'completed' %}<span class="text-emerald-400 text-xs font-bold">Completada</span>
+              {% elif c.status == 'pending' %}<span class="text-yellow-400 text-xs">Pendiente</span>
+              {% else %}<span class="text-[#4A6278] text-xs">Cancelada</span>{% endif %}
+            </td>
+            <td class="text-[#6A8AA6]">{{ c.created_at|date:"d/m/y H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

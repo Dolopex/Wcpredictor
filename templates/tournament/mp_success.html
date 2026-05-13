@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Pago exitoso — CopaBet 26{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto py-16 text-center">
+
+  <!-- Ícono check animado -->
+  <div class="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-6"
+       style="background: rgba(74,222,128,0.12); border: 2px solid rgba(74,222,128,0.4);">
+    <svg class="w-10 h-10 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+    </svg>
+  </div>
+
+  <h1 class="font-display font-bold text-3xl text-white tracking-wide mb-2">¡Pago exitoso!</h1>
+
+  {% if purchase and purchase.status == 'completed' %}
+  <p class="text-emerald-400 text-lg font-semibold mb-1">
+    +{{ purchase.credits_applied }} créditos acreditados
+  </p>
+  <p class="text-[#8AA6C0] text-sm mb-8">
+    Paquete <strong class="text-white">{{ purchase.package.name }}</strong> —
+    ${{ purchase.cop_paid|floatformat:0 }} COP
+  </p>
+  {% elif purchase and purchase.status == 'pending' %}
+  <p class="text-yellow-400 text-base mb-2">Tu pago está siendo procesado.</p>
+  <p class="text-[#6A8AA6] text-sm mb-8">
+    Los créditos se acreditarán automáticamente en cuanto se confirme el pago. Puedes cerrar esta página.
+  </p>
+  {% else %}
+  <p class="text-[#8AA6C0] text-sm mb-8">
+    Tu pago fue recibido. Los créditos se acreditarán en breve.
+  </p>
+  {% endif %}
+
+  <div class="flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="{% url 'tournament:credits' %}"
+       class="px-6 py-3 rounded-xl font-bold text-sm text-[#070F1C] tracking-wide transition hover:brightness-110"
+       style="background:#C9A84C;">
+      Ver mis créditos
+    </a>
+    <a href="{% url 'tournament:home' %}"
+       class="px-6 py-3 rounded-xl font-bold text-sm text-white tracking-wide transition hover:bg-[#1E3558]"
+       style="background:#172A45; border:1px solid #1A2E48;">
+      Ir al inicio
+    </a>
+  </div>
+</div>
+{% endblock %}

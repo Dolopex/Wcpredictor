@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load tournament_extras %}
+{% block title %}Comprar Créditos — CopaBet 26{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-8 flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Tienda</p>
+      <h1 class="font-display font-bold text-3xl text-white tracking-wide">COMPRAR CRÉDITOS</h1>
+      <p class="text-[#8AA6C0] text-sm mt-1">
+        1 crédito = $1 COP · Apuesta <strong class="text-white">$500</strong> en Grupos/R32
+        · <strong class="text-white">$1.000</strong> en Octavos/Cuartos
+        · <strong class="text-orange-400">$2.000</strong> en Semis y Final
+      </p>
+    </div>
+    <a href="{% url 'tournament:credits' %}"
+       class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition border border-[#1A2E48]">
+      ← Mis créditos
+    </a>
+  </div>
+
+  <!-- Saldo actual -->
+  <div class="card rounded-xl p-5 mb-8 flex items-center justify-between border-l-4 border-gold">
+    <div>
+      <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-1">Tu saldo actual</p>
+      <p class="font-display font-bold text-3xl text-gold">
+        {{ profile.credits|crd }}
+        <span class="text-base font-sans text-[#8AA6C0]">créditos</span>
+      </p>
+    </div>
+    <div class="w-12 h-12 rounded-full flex items-center justify-center"
+         style="background: rgba(201,168,76,0.12);">
+      <svg class="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+      </svg>
+    </div>
+  </div>
+
+  {# ── Tabla de cuánto cuesta cada fase (referencia visual) ─────────────── #}
+  <div class="card rounded-xl p-5 mb-8 overflow-x-auto">
+    <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-4">¿Cuánto vale cada fase?</p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-[#1A2E48]">
+          <th class="pb-2 text-left font-bold text-[#8AA6C0]">Fase</th>
+          <th class="pb-2 text-center font-bold text-[#8AA6C0]">Apuestas</th>
+          <th class="pb-2 text-center font-bold text-[#8AA6C0]">Costo/apuesta</th>
+          <th class="pb-2 text-right font-bold text-[#8AA6C0]">Total</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#1A2E48]">
+        <tr>
+          <td class="py-2 text-[#C8D8E8]">Fase de Grupos <span class="text-xs text-[#4A6278]">(2 equipos × 12 grupos)</span></td>
+          <td class="py-2 text-center text-[#8AA6C0]">24</td>
+          <td class="py-2 text-center text-[#8AA6C0]">$500</td>
+          <td class="py-2 text-right font-bold text-white">12.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-emerald-400">🎁 8 Mejores Terceros <span class="text-xs text-emerald-600">(regalo incluido)</span></td>
+          <td class="py-2 text-center text-emerald-400">8</td>
+          <td class="py-2 text-center text-emerald-400">$500</td>
+          <td class="py-2 text-right font-bold text-emerald-400">+4.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-[#C8D8E8]">Dieciseisavos (R32) <span class="text-xs text-[#4A6278]">(16 partidos)</span></td>
+          <td class="py-2 text-center text-[#8AA6C0]">16</td>
+          <td class="py-2 text-center text-[#8AA6C0]">$500</td>
+          <td class="py-2 text-right font-bold text-white">8.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-[#C8D8E8]">Octavos de Final (R16) <span class="text-xs text-[#4A6278]">(8 partidos)</span></td>
+          <td class="py-2 text-center text-[#8AA6C0]">8</td>
+          <td class="py-2 text-center text-gold">$1.000</td>
+          <td class="py-2 text-right font-bold text-white">8.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-[#C8D8E8]">Cuartos de Final</td>
+          <td class="py-2 text-center text-[#8AA6C0]">4</td>
+          <td class="py-2 text-center text-gold">$1.000</td>
+          <td class="py-2 text-right font-bold text-white">4.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-[#C8D8E8] font-semibold">Semifinales</td>
+          <td class="py-2 text-center text-[#8AA6C0]">2</td>
+          <td class="py-2 text-center text-orange-400 font-bold">$2.000</td>
+          <td class="py-2 text-right font-bold text-white">4.000</td>
+        </tr>
+        <tr>
+          <td class="py-2 text-[#C8D8E8] font-semibold">Gran Final 🏆</td>
+          <td class="py-2 text-center text-[#8AA6C0]">1</td>
+          <td class="py-2 text-center text-orange-400 font-bold">$2.000</td>
+          <td class="py-2 text-right font-bold text-white">2.000</td>
+        </tr>
+        <tr class="border-t-2 border-[#1A2E48]">
+          <td colspan="3" class="pt-3 text-[#6A8AA6] text-xs">Comprando fases por separado</td>
+          <td class="pt-3 text-right font-bold text-[#8AA6C0] line-through">$34.000</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="pb-1 text-gold text-xs font-bold">Pase Completo (ahorra $4.000)</td>
+          <td class="pb-1 text-right font-display font-bold text-gold text-lg">$30.000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {# ── Paquetes ───────────────────────────────────────────────────────────── #}
+  {% if packages %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+    {% for pkg in packages %}
+
+    {# Decidir si es el pase completo para darle tratamiento especial #}
+    {% if pkg.is_featured %}
+    {# ──── PASE COMPLETO (featured, ocupa posición central) ────────────── #}
+    <div class="card rounded-2xl overflow-hidden relative border-2 border-gold md:order-2 flex flex-col"
+         style="background: linear-gradient(160deg,#0F2137 0%,#0B1926 100%);">
+
+      <!-- Cinta superior "MÁS POPULAR" -->
+      <div class="bg-gold text-[#070F1C] text-center text-[11px] font-black uppercase tracking-widest py-1.5">
+        ⭐ Mejor opción — ahorras $4.000 COP
+      </div>
+
+      <div class="p-6 flex flex-col flex-1">
+        <h3 class="font-display font-black text-2xl text-white tracking-wide mb-1">{{ pkg.name }}</h3>
+        <p class="text-[#8AA6C0] text-xs mb-5">Todo el torneo: Grupos + Eliminatorias + Final</p>
+
+        <!-- Precio -->
+        <div class="mb-4">
+          <span class="font-display font-black text-5xl text-gold">{{ pkg.cop_price|cop }}</span>
+          <span class="text-[#8AA6C0] text-sm ml-1">COP</span>
+          <span class="ml-3 text-xs text-[#4A6278] line-through">$34.000 COP</span>
+        </div>
+
+        <!-- Desglose de créditos -->
+        <div class="space-y-2 mb-5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">Grupos (24×$500) + R32 (16×$500)</span>
+            <span class="text-[#C8D8E8] font-bold">20.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">Octavos/Cuartos (12×$1.000)</span>
+            <span class="text-[#C8D8E8] font-bold">12.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">Semis + Final (3×$2.000)</span>
+            <span class="text-orange-300 font-bold">6.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs border-t border-[#1A2E48] pt-2">
+            <span class="text-emerald-400">🎁 Regalo mejores terceros</span>
+            <span class="text-emerald-400 font-bold">+{{ pkg.bonus_credits|crd }} crd</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-gold/30 pt-2">
+            <span class="text-gold font-bold text-sm">Total créditos</span>
+            <span class="font-display font-black text-gold text-xl">{{ pkg.total_credits|crd }}</span>
+          </div>
+        </div>
+
+        <!-- Botón -->
+        {% if pkg.is_available %}
+        <form method="post" class="mt-auto">
+          {% csrf_token %}
+          <input type="hidden" name="package_id" value="{{ pkg.id }}">
+          <button type="submit"
+                  class="w-full py-3.5 rounded-xl font-black text-sm tracking-widest uppercase transition hover:brightness-110 text-[#070F1C]"
+                  style="background:#C9A84C;">
+            Comprar — {{ pkg.cop_price|cop }} COP
+          </button>
+        </form>
+        {% else %}
+        <div class="mt-auto w-full py-3.5 rounded-xl text-center text-sm font-bold tracking-wide cursor-not-allowed"
+             style="background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.25); color:#7A6030;">
+          🔒 Disponible en {{ pkg.requires_round.name }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% elif pkg.order == 1 %}
+    {# ──── FASE DE GRUPOS ───────────────────────────────────────────────── #}
+    <div class="card rounded-xl overflow-hidden relative md:order-1 flex flex-col">
+      <div class="p-6 flex flex-col flex-1">
+        <h3 class="font-display font-black text-xl text-white tracking-wide mb-1">{{ pkg.name }}</h3>
+        <p class="text-[#8AA6C0] text-xs mb-5">Apuesta en los 12 grupos del torneo</p>
+
+        <!-- Precio -->
+        <div class="mb-4">
+          <span class="font-display font-black text-4xl text-white">{{ pkg.cop_price|cop }}</span>
+          <span class="text-[#8AA6C0] text-sm ml-1">COP</span>
+        </div>
+
+        <!-- Desglose -->
+        <div class="rounded-xl p-4 mb-5 space-y-2" style="background:rgba(0,0,0,0.2);">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">24 apuestas × $500</span>
+            <span class="text-[#C8D8E8] font-bold">{{ pkg.credits_amount|crd }} crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs border-t border-[#1A2E48] pt-2">
+            <span class="text-emerald-400">🎁 Regalo mejores terceros</span>
+            <span class="text-emerald-400 font-bold">+{{ pkg.bonus_credits|crd }} crd</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-[#1A2E48] pt-2">
+            <span class="text-[#8AA6C0] font-bold text-sm">Total créditos</span>
+            <span class="font-display font-black text-white text-xl">{{ pkg.total_credits|crd }}</span>
+          </div>
+        </div>
+
+        <!-- Fases cubiertas -->
+        <ul class="text-xs text-[#6A8AA6] space-y-1 mb-6">
+          <li class="flex items-center gap-2">
+            <span class="text-emerald-400">✓</span> Fase de Grupos (12 grupos)
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-emerald-400">✓</span> 8 Mejores Terceros (regalo)
+          </li>
+          <li class="flex items-center gap-2 opacity-40">
+            <span>✗</span> Rondas eliminatorias
+          </li>
+        </ul>
+
+        {% if pkg.is_available %}
+        <form method="post" class="mt-auto">
+          {% csrf_token %}
+          <input type="hidden" name="package_id" value="{{ pkg.id }}">
+          <button type="submit"
+                  class="w-full py-3 rounded-xl font-bold text-sm tracking-wide transition text-white hover:bg-[#1E3558]"
+                  style="background:#172A45; border:1px solid #1A2E48;">
+            Comprar — {{ pkg.cop_price|cop }} COP
+          </button>
+        </form>
+        {% else %}
+        <div class="mt-auto w-full py-3 rounded-xl text-center text-sm font-bold tracking-wide cursor-not-allowed"
+             style="background:rgba(26,46,72,0.4); border:1px solid #1A2E48; color:#4A6278;">
+          🔒 Disponible en {{ pkg.requires_round.name }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% else %}
+    {# ──── PASE ELIMINATORIAS ───────────────────────────────────────────── #}
+    <div class="card rounded-xl overflow-hidden relative md:order-3 flex flex-col">
+      <div class="p-6 flex flex-col flex-1">
+        <h3 class="font-display font-black text-xl text-white tracking-wide mb-1">{{ pkg.name }}</h3>
+        <p class="text-[#8AA6C0] text-xs mb-5">Desde Dieciseisavos hasta la Gran Final</p>
+
+        <!-- Precio -->
+        <div class="mb-4">
+          <span class="font-display font-black text-4xl text-white">{{ pkg.cop_price|cop }}</span>
+          <span class="text-[#8AA6C0] text-sm ml-1">COP</span>
+        </div>
+
+        <!-- Desglose -->
+        <div class="rounded-xl p-4 mb-5 space-y-2" style="background:rgba(0,0,0,0.2);">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">R32 — 16 × $500</span>
+            <span class="text-[#C8D8E8] font-bold">8.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0]">Octavos/Cuartos — 12 × $1.000</span>
+            <span class="text-[#C8D8E8] font-bold">12.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#8AA6C0] font-semibold">Semis + Final — 3 × $2.000</span>
+            <span class="text-orange-300 font-bold">6.000 crd</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-[#1A2E48] pt-2">
+            <span class="text-[#8AA6C0] font-bold text-sm">Total créditos</span>
+            <span class="font-display font-black text-white text-xl">{{ pkg.total_credits|crd }}</span>
+          </div>
+        </div>
+
+        <!-- Fases cubiertas -->
+        <ul class="text-xs text-[#6A8AA6] space-y-1.5 mb-6">
+          <li class="flex items-center gap-2 opacity-40"><span>✗</span> Fase de Grupos</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Dieciseisavos (R32) — $500</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Octavos → Cuartos — $1.000</li>
+          <li class="flex items-center gap-2"><span class="text-orange-400">✓</span> Semis + Final — $2.000 🏆</li>
+        </ul>
+
+        {% if pkg.is_available %}
+        <form method="post" class="mt-auto">
+          {% csrf_token %}
+          <input type="hidden" name="package_id" value="{{ pkg.id }}">
+          <button type="submit"
+                  class="w-full py-3 rounded-xl font-bold text-sm tracking-wide transition text-white hover:bg-[#1E3558]"
+                  style="background:#172A45; border:1px solid #1A2E48;">
+            Comprar — {{ pkg.cop_price|cop }} COP
+          </button>
+        </form>
+        {% else %}
+        <div class="mt-auto w-full py-3 rounded-xl text-center text-sm font-bold tracking-wide cursor-not-allowed"
+             style="background:rgba(26,46,72,0.4); border:1px solid #1A2E48; color:#4A6278;">
+          🔒 Disponible en {{ pkg.requires_round.name }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card rounded-xl p-10 text-center text-[#6A8AA6] mb-10">
+    <p class="text-lg font-display font-bold text-white mb-2">Sin paquetes disponibles</p>
+    <p class="text-sm">El administrador aún no ha configurado paquetes de créditos.</p>
+  </div>
+  {% endif %}
+
+  <!-- Aviso pago real -->
+  <div class="card rounded-xl p-4 mb-8 border border-emerald-900/50 flex items-start gap-3"
+       style="background: rgba(5,46,22,0.25);">
+    <svg class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+    </svg>
+    <div>
+      <p class="text-emerald-300 text-sm font-semibold mb-0.5">Pagos seguros con Mercado Pago</p>
+      <p class="text-emerald-400/80 text-xs">
+        Serás redirigido al checkout de Mercado Pago. Los créditos se acreditan automáticamente
+        al confirmar tu pago.
+      </p>
+    </div>
+  </div>
+
+  <!-- Historial de compras -->
+  {% if purchase_history %}
+  <section class="mb-10">
+    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">HISTORIAL DE COMPRAS</h2>
+    <div class="card rounded-xl overflow-hidden">
+      <table class="w-full">
+        <thead style="background: rgba(201,168,76,0.06);">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Paquete</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider hidden sm:table-cell">Pagado (COP)</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Créditos</th>
+            <th class="px-4 py-2.5 text-center text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Estado</th>
+            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider hidden md:table-cell">Fecha</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#1A2E48]">
+          {% for purchase in purchase_history %}
+          <tr class="hover:bg-[#112035] transition">
+            <td class="px-4 py-3 text-sm text-[#C8D8E8]">{{ purchase.package.name }}</td>
+            <td class="px-4 py-3 text-right text-sm text-[#8AA6C0] hidden sm:table-cell">
+              {{ purchase.cop_paid|cop }} COP
+            </td>
+            <td class="px-4 py-3 text-right">
+              {% if purchase.status == 'completed' %}
+              <span class="font-display font-bold text-gold">+{{ purchase.credits_applied|crd }}</span>
+              {% else %}
+              <span class="font-display font-bold text-[#4A6278]">{{ purchase.credits_applied|crd }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-center">
+              {% if purchase.status == 'completed' %}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide text-emerald-300"
+                    style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3)">Pagado</span>
+              {% elif purchase.status == 'pending' %}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide text-yellow-300"
+                    style="background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.3)">Pendiente</span>
+              {% else %}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide text-red-400"
+                    style="background:rgba(248,113,113,0.10);border:1px solid rgba(248,113,113,0.3)">Cancelado</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-right text-xs text-[#4A6278] hidden md:table-cell">
+              {{ purchase.created_at|date:"d/m/Y H:i" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

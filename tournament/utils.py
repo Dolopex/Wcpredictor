@@ -56,15 +56,30 @@ def calculate_group_prediction_points(prediction):
     group = prediction.group
     results = GroupResult.objects.filter(group=group, is_advancing=True).select_related('team')
     advancing_teams = {r.team_id for r in results}
-    first_place = GroupResult.objects.filter(group=group, position=1).first()
+    first_place  = GroupResult.objects.filter(group=group, position=1).first()
+    second_place = GroupResult.objects.filter(group=group, position=2).first()
 
     points = 0
+    # Puntos por cada equipo que acierta avanzando
     if prediction.predicted_first.id in advancing_teams:
         points += points_for_team_advancing(prediction.predicted_first)
     if prediction.predicted_second.id in advancing_teams:
         points += points_for_team_advancing(prediction.predicted_second)
+
+    # +3 bonus por acertar posición exacta del 1°
     if first_place and prediction.predicted_first.id == first_place.team_id:
         points += 3
+    # +3 bonus por acertar posición exacta del 2°
+    if second_place and prediction.predicted_second.id == second_place.team_id:
+        points += 3
+
+    # +5 bonus por acertar mejor tercero (si predijo que avanza y efectivamente avanzó como 3°)
+    if prediction.predicted_third and prediction.predicted_third_advances:
+        third_advancing = GroupResult.objects.filter(
+            group=group, team=prediction.predicted_third, position=3, is_advancing=True
+        ).exists()
+        if third_advancing:
+            points += 5
 
     prediction.points_earned = points
     prediction.is_scored = True
@@ -90,10 +105,19 @@ def calculate_knockout_prediction_points(prediction):
     if loser:
         upset_bonus = max(0, (winner.fifa_ranking - loser.fifa_ranking) * 0.5)
 
-    total = match.round.base_points + int(upset_bonus)
+    base_points = match.round.base_points + int(upset_bonus)
+
+    # Aplicar multiplicador underdog SOLO si el usuario activó el boost en este partido
+    mult = 1.0
+    if prediction.boost_applied:
+        profile = getattr(prediction.user, 'profile', None)
+        if profile:
+            mult = profile.underdog_multiplier
+    total = int(base_points * mult)
+
     prediction.points_earned = total
     prediction.is_correct = True
-    prediction.save(update_fields=['points_earned', 'is_correct'])
+    prediction.save(update_fields=['points_earned', 'is_correct', 'boost_applied'])
     return total
 
 
@@ -101,70 +125,24 @@ def calculate_knockout_prediction_points(prediction):
 
 def calculate_group_bet_credits(prediction):
     """
-    Resuelve la apuesta de créditos de una predicción de grupo.
-    Se llama después de calculate_group_prediction_points (cuando is_scored=True).
+    Las predicciones de grupo NO dan créditos al acertar.
+    El costo (bet_credits) ya fue descontado al hacer la predicción.
+    credits_won siempre queda en 0.
     """
-    if prediction.bet_credits <= 0:
-        return 0
-
-    group = prediction.group
-    advancing_ids = set(
-        GroupResult.objects.filter(group=group, is_advancing=True).values_list('team_id', flat=True)
-    )
-    if not advancing_ids:
-        return 0
-
-    first_place = GroupResult.objects.filter(group=group, position=1).first()
-    first_correct = prediction.predicted_first.id in advancing_ids
-    second_correct = prediction.predicted_second.id in advancing_ids
-
-    bet = prediction.bet_credits
-    credits_won = 0
-
-    if first_correct:
-        m = get_group_team_multiplier(prediction.predicted_first)
-        if first_place and prediction.predicted_first.id == first_place.team_id:
-            m += 0.30  # bonus por acertar posición exacta
-        credits_won += int(bet * m)
-    else:
-        credits_won -= bet // 2
-
-    if second_correct:
-        m = get_group_team_multiplier(prediction.predicted_second)
-        credits_won += int(bet * m)
-    else:
-        credits_won -= bet - (bet // 2)
-
-    prediction.credits_won = credits_won
+    prediction.credits_won = 0
     prediction.save(update_fields=['credits_won'])
-    return credits_won
+    return 0
 
 
 def calculate_knockout_bet_credits(prediction):
     """
-    Resuelve la apuesta de créditos de una predicción knockout.
-    Se llama después de calculate_knockout_prediction_points (cuando is_correct != None).
+    Las predicciones knockout NO dan créditos al acertar.
+    El costo (bet_credits) ya fue descontado al hacer la predicción.
+    credits_won siempre queda en 0.
     """
-    if prediction.bet_credits <= 0:
-        return 0
-
-    match = prediction.match
-    if not match.winner:
-        return 0
-
-    is_correct = prediction.predicted_winner_id == match.winner_id
-    if not is_correct:
-        prediction.credits_won = -prediction.bet_credits
-        prediction.save(update_fields=['credits_won'])
-        return -prediction.bet_credits
-
-    loser = match.team2 if match.team1_id == match.winner_id else match.team1
-    loser_rank = loser.fifa_ranking if loser else None
-    mult = get_knockout_net_multiplier(match.round.slug, match.winner.fifa_ranking, loser_rank)
-    credits_won = int(prediction.bet_credits * mult)
-    prediction.credits_won = credits_won
+    prediction.credits_won = 0
     prediction.save(update_fields=['credits_won'])
-    return credits_won
+    return 0
 
 
 # ── Actualizar totales del usuario ────────────────────────────────────────────
@@ -180,13 +158,77 @@ def update_user_total_points(user):
 
 
 def update_user_credits(user):
-    from django.db.models import Sum
-    group_delta = GroupPrediction.objects.filter(
-        user=user, is_scored=True, bet_credits__gt=0
-    ).aggregate(total=Sum('credits_won'))['total'] or 0
-    knockout_delta = KnockoutPrediction.objects.filter(
-        user=user, is_correct__isnull=False, bet_credits__gt=0
-    ).aggregate(total=Sum('credits_won'))['total'] or 0
-    user.profile.credits = 1000 + group_delta + knockout_delta
-    user.profile.save(update_fields=['credits'])
+    # Los créditos se descuentan al predecir (en la view, atómicamente).
+    # Las predicciones acertadas no devuelven créditos.
+    # Esta función no hace nada; se mantiene por compatibilidad con signals.py.
+    pass
+
+
+# ── Sistema underdog ──────────────────────────────────────────────────────────
+
+def assign_underdog_multipliers():
+    """
+    Calcula el promedio de total_points de todos los usuarios activos y asigna
+    un multiplicador escalonado a quienes estén por debajo del promedio.
+
+    Tiers basados en el % del promedio que alcanza el usuario:
+      ≥ 100% del promedio  →  ×1.0  (sin bonus)
+      75%–99%              →  ×1.5
+      50%–74%              →  ×2.0
+      25%–49%              →  ×2.5
+       0%–24%              →  ×3.0
+
+    Devuelve un dict con estadísticas de la operación.
+    """
+    from django.contrib.auth.models import User
+    from django.db.models import Avg
+
+    profiles = list(
+        User.objects.filter(is_active=True)
+        .select_related('profile')
+        .only('id', 'profile__total_points', 'profile__underdog_multiplier')
+    )
+
+    if not profiles:
+        return {'updated': 0, 'avg_points': 0, 'underdogs': 0}
+
+    avg_points = sum(u.profile.total_points for u in profiles) / len(profiles)
+
+    def _tier(pts):
+        if avg_points <= 0 or pts >= avg_points:
+            return 1.0, 0
+        ratio = pts / avg_points
+        if ratio >= 0.75:
+            return 1.5, 1
+        elif ratio >= 0.50:
+            return 1.5, 2
+        elif ratio >= 0.25:
+            return 2.5, 2
+        else:
+            return 2.5, 3
+
+    updated = 0
+    underdogs = 0
+    for user in profiles:
+        mult, uses = _tier(user.profile.total_points)
+        user.profile.underdog_multiplier = mult
+        user.profile.underdog_boost_uses = uses
+        user.profile.save(update_fields=['underdog_multiplier', 'underdog_boost_uses'])
+        updated += 1
+        if mult > 1.0:
+            underdogs += 1
+        else:
+            # Salió de la zona underdog: revocar boosts en partidos pendientes de puntuación
+            from .models import KnockoutPrediction
+            KnockoutPrediction.objects.filter(
+                user=user,
+                boost_applied=True,
+                is_correct__isnull=True,  # aún no puntuado
+            ).update(boost_applied=False)
+
+    return {
+        'updated': updated,
+        'avg_points': round(avg_points, 1),
+        'underdogs': underdogs,
+    }
 

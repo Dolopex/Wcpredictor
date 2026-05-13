@@ -1,0 +1,65 @@
+{% extends 'admin_panel/base.html' %}
+{% load tournament_extras %}
+{% block title %}Usuarios{% endblock %}
+{% block heading %}Usuarios{% endblock %}
+{% block content %}
+
+<form method="get" class="flex gap-2 mb-6 max-w-sm">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar por usuario, email o nombre…">
+  <button type="submit" class="btn-gold px-4 py-1.5 rounded-lg text-sm font-bold flex-shrink-0">Buscar</button>
+  {% if q %}<a href="{% url 'tournament:panel_users' %}" class="px-3 py-1.5 rounded-lg border border-[#1A2E48] text-sm text-[#6A8AA6] hover:text-white flex-shrink-0">✕</a>{% endif %}
+</form>
+
+<div class="card rounded-xl overflow-hidden">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Usuario</th>
+        <th>Nombre completo</th>
+        <th>Email</th>
+        <th class="text-right">Créditos</th>
+        <th class="text-right">Puntos</th>
+        <th>Underdog</th>
+        <th>Staff</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td class="text-[#4A6278]">{{ forloop.counter }}</td>
+        <td class="font-bold text-white">{{ u.username }}</td>
+        <td class="text-[#8AA6C0]">{{ u.profile.full_name|default:"—" }}</td>
+        <td class="text-[#6A8AA6]">{{ u.email|default:"—" }}</td>
+        <td class="text-right font-bold text-gold">{{ u.profile.credits|crd }}</td>
+        <td class="text-right text-[#C8D8E8]">{{ u.profile.total_points }}</td>
+        <td>
+          {% if u.profile.underdog_multiplier > 1.0 %}
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-full"
+                  style="background:rgba(255,80,80,0.12);color:#FF6B6B;border:1px solid rgba(255,80,80,0.25);">
+              &#128293; ×{{ u.profile.underdog_multiplier }} ({{ u.profile.underdog_boost_uses }} usos)
+            </span>
+          {% else %}
+            <span class="text-[#2A4060] text-xs">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u.is_staff %}
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/30 font-bold">STAFF</span>
+          {% else %}
+            <span class="text-[#2A4060] text-xs">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'tournament:panel_user_detail' u.id %}"
+             class="text-[11px] text-gold hover:underline">Ver →</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-center text-[#4A6278] py-6">Sin usuarios encontrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

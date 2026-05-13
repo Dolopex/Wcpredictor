@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Grupos — Mundial 2026{% endblock %}
+{% load tournament_extras %}
+{% block title %}Grupos — CopaBet 26{% endblock %}
 {% block content %}
 
 <div class="flex items-center justify-between mb-8">
@@ -15,34 +16,99 @@
     <svg class="w-4 h-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
     </svg>
-    <span class="text-gold font-bold text-sm">{{ user.profile.credits }}</span>
+    <span class="text-gold font-bold text-sm">{{ user.profile.credits|crd }}</span>
     <span class="text-[#6A8AA6] text-xs">créditos</span>
   </a>
   {% endif %}
 </div>
 
+{% if is_locked %}
+<!-- Locked banner -->
+<div class="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-red-800/40"
+     style="background:rgba(239,68,68,0.06)">
+  <span class="text-red-400 text-lg">🔒</span>
+  <div>
+    <p class="text-red-300 text-sm font-bold">Predicciones cerradas</p>
+    <p class="text-red-400/70 text-xs">El Mundial ya comenzó. No se pueden crear ni editar predicciones de grupos.</p>
+  </div>
+</div>
+{% else %}
+<!-- Deadline countdown -->
+<div id="groups-deadline-wrap" class="mb-6 hidden">
+  <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-xl border border-[#1A2E48]"
+       style="background:rgba(201,168,76,0.04)">
+    <div class="flex items-center gap-2">
+      <span class="text-gold text-sm">⏳</span>
+      <p class="text-[#8AA6C0] text-xs">Predicciones abiertas &mdash; cierran al arrancar el Mundial</p>
+    </div>
+    <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-gold" id="groups-cd">
+      <span id="gcd-days" class="tabular-nums">--</span><span class="text-gold/50">d</span>
+      <span id="gcd-hrs"  class="tabular-nums">--</span><span class="text-gold/50">h</span>
+      <span id="gcd-min"  class="tabular-nums">--</span><span class="text-gold/50">m</span>
+      <span id="gcd-seg"  class="tabular-nums">--</span><span class="text-gold/50">s</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {% for group in groups %}
+  {% for item in groups_data %}
+  {% with group=item.group pred=item.prediction %}
   <div class="card rounded-xl overflow-hidden">
     <!-- Group header -->
     <div class="flex items-center justify-between px-4 py-3 border-b border-[#1A2E48]"
          style="background: rgba(201,168,76,0.05);">
       <span class="font-display font-bold text-lg text-gold tracking-wide">GRUPO {{ group.name }}</span>
-      {% if user.is_authenticated %}
-      <a href="{% url 'tournament:group_predict' group.name %}"
-         class="px-3 py-1 rounded-lg text-xs font-bold tracking-wide transition hover:opacity-80"
-         style="background:#C9A84C; color:#070F1C;">
-        PREDECIR
-      </a>
-      {% endif %}
+
+      <div class="flex items-center gap-2">
+        {% if pred %}
+        <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide"
+              style="background:rgba(74,222,128,0.10);color:#4ade80;border:1px solid rgba(74,222,128,0.25)">
+          ✓ Predijiste
+        </span>
+        {% endif %}
+
+        {% if user.is_authenticated and not is_locked %}
+          {% if pred %}
+          <a href="{% url 'tournament:group_predict' group.name %}"
+             class="predict-btn px-3 py-1 rounded-lg text-xs font-bold tracking-wide transition hover:opacity-80"
+             style="background:rgba(201,168,76,0.15);color:#C9A84C;border:1px solid rgba(201,168,76,0.4)">
+            EDITAR
+          </a>
+          {% else %}
+          <a href="{% url 'tournament:group_predict' group.name %}"
+             class="predict-btn px-3 py-1 rounded-lg text-xs font-bold tracking-wide transition hover:opacity-80"
+             style="background:#C9A84C;color:#070F1C;">
+            PREDECIR
+          </a>
+          {% endif %}
+        {% elif is_locked %}
+        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold"
+              style="background:rgba(100,116,139,0.12);color:#64748b;border:1px solid rgba(100,116,139,0.25)">
+          🔒 Cerrado
+        </span>
+        {% endif %}
+      </div>
     </div>
 
     <!-- Teams list -->
     <div class="divide-y divide-[#1A2E48]">
-      {% for team in group.teams.all %}
-      {% with result=group.results.all %}
+      {% for team in item.teams_ordered %}
+      {% with pos=forloop.counter result=group.results.all %}
       <div class="flex items-center gap-3 px-4 py-2.5
         {% for r in result %}{% if r.team == team and r.is_advancing %} bg-[#112035]{% endif %}{% endfor %}">
+
+        {% if pred %}
+        <!-- Position badge from user's prediction -->
+        <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black
+          {% if pos == 1 %}bg-yellow-500/20 text-yellow-400
+          {% elif pos == 2 %}bg-slate-400/20 text-slate-300
+          {% elif pos == 3 %}bg-blue-500/20 text-blue-400
+          {% else %}bg-gray-700/30 text-gray-500{% endif %}">
+          {{ pos }}
+        </span>
+        {% endif %}
+
         <img src="https://flagcdn.com/w40/{{ team.iso2_code }}.png"
              alt="{{ team.name }}"
              class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0"
@@ -51,6 +117,13 @@
           <p class="text-sm font-medium text-[#C8D8E8] truncate">{{ team.name }}</p>
           <p class="text-[10px] text-[#4A6278]">{{ team.confederation }} &middot; FIFA #{{ team.fifa_ranking }}</p>
         </div>
+
+        <!-- "Mejor tercero" badge -->
+        {% if pred and pos == 3 and pred.predicted_third_advances %}
+        <span class="text-[9px] font-bold text-blue-300 border border-blue-400/30 rounded px-1 flex-shrink-0 whitespace-nowrap">3°M</span>
+        {% endif %}
+
+        <!-- Official result -->
         {% for r in result %}
           {% if r.team == team %}
           <span class="text-xs font-bold {% if r.is_advancing %}text-green-400{% else %}text-[#6A8AA6]{% endif %} flex-shrink-0">
@@ -63,7 +136,53 @@
       {% endfor %}
     </div>
   </div>
+  {% endwith %}
   {% endfor %}
 </div>
 
+<script>
+(function () {
+  var WC_START = new Date('2026-06-12T00:00:00Z').getTime();
+  var wrap  = document.getElementById('groups-deadline-wrap');
+  var elD   = document.getElementById('gcd-days');
+  var elH   = document.getElementById('gcd-hrs');
+  var elM   = document.getElementById('gcd-min');
+  var elS   = document.getElementById('gcd-seg');
+  var btns  = document.querySelectorAll('.predict-btn');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function lockButtons() {
+    btns.forEach(function (b) {
+      b.style.pointerEvents = 'none';
+      b.style.opacity = '.35';
+      b.title = 'Las predicciones están cerradas — el Mundial ya comenzó';
+    });
+    if (wrap) wrap.classList.add('hidden');
+  }
+
+  function tick() {
+    var diff = WC_START - Date.now();
+    if (diff <= 0) { lockButtons(); return; }
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    if (elD) elD.textContent = d;
+    if (elH) elH.textContent = pad(h);
+    if (elM) elM.textContent = pad(m);
+    if (elS) elS.textContent = pad(s);
+    setTimeout(tick, 1000);
+  }
+
+  if (Date.now() >= WC_START) {
+    lockButtons();
+  } else {
+    if (wrap) wrap.classList.remove('hidden');
+    tick();
+  }
+})();
+</script>
+
 {% endblock %}
+

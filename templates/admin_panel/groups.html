@@ -1,0 +1,68 @@
+{% extends 'admin_panel/base.html' %}
+{% load tournament_extras %}
+{% block title %}Grupos{% endblock %}
+{% block heading %}Resultados de Grupos{% endblock %}
+{% block content %}
+
+<p class="text-sm text-[#6A8AA6] mb-6">
+  Establece las posiciones finales de cada grupo. Al guardar se calculan automáticamente las predicciones.
+</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+  {% for gd in groups_data %}
+  {% with g=gd.group results=gd.results %}
+  <div class="card rounded-xl overflow-hidden" id="grp-{{ g.name }}">
+    <div class="px-4 py-3 border-b border-[#1A2E48] flex items-center justify-between">
+      <h2 class="font-display font-bold text-gold">Grupo {{ g.name }}</h2>
+      <span class="text-[10px] text-[#4A6278]">{{ gd.pred_count }} predicción(es)</span>
+    </div>
+
+    <form method="post" class="p-4 space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="group_id" value="{{ g.id }}">
+
+      {% for pos in "1234" %}
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">
+          {{ pos }}° lugar
+          {% if pos == "3" %}<span class="text-[#4A6278]">(puede avanzar)</span>{% endif %}
+        </label>
+        {% with cur=results|get_item:pos %}
+        <select name="pos_{{ pos }}">
+          <option value="">— sin asignar —</option>
+          {% for t in g.teams.all %}
+          <option value="{{ t.id }}" {% if cur and cur.team_id == t.id %}selected{% endif %}>
+            {{ t.name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% endwith %}
+      </div>
+      {% endfor %}
+
+      <!-- Tercer lugar avanza -->
+      <div class="flex items-center gap-3 pt-1">
+        <label class="text-xs text-[#6A8AA6]">3° avanza a Octavos</label>
+        <input type="checkbox" name="third_advances" value="1" class="accent-gold w-4 h-4"
+               {% if results.third_advances %}checked{% endif %}>
+      </div>
+
+      <div class="flex gap-2 pt-1">
+        <button name="action" value="set_results" type="submit"
+                class="btn-gold flex-1 py-2 rounded-lg text-xs font-bold">
+          Guardar resultado
+        </button>
+        {% if results|get_item:"1" %}
+        <button name="action" value="clear_results" type="submit"
+                class="px-3 py-2 rounded-lg text-xs font-bold border border-red-800/50 text-red-400 hover:bg-red-900/20 transition"
+                onclick="return confirm('¿Limpiar resultados de Grupo {{ g.name }}?')">
+          Limpiar
+        </button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% endblock %}

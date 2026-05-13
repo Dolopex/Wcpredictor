@@ -1,0 +1,119 @@
+{% extends 'admin_panel/base.html' %}
+{% load tournament_extras %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+
+<!-- Stats grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="card rounded-xl p-4 border-t-2 border-gold">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Usuarios</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_users }}</p>
+  </div>
+  <div class="card rounded-xl p-4 border-t-2 border-[#1A2E48]">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Créditos en circulación</p>
+    <p class="font-display font-bold text-2xl text-gold">{{ total_credits|crd }}</p>
+  </div>
+  <div class="card rounded-xl p-4 border-t-2 border-[#1A2E48]">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Predicciones grupos</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_group_preds }}</p>
+  </div>
+  <div class="card rounded-xl p-4 border-t-2 border-[#1A2E48]">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Predicciones knockout</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_knockout_preds }}</p>
+  </div>
+  <div class="card rounded-xl p-4">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Recaudado (COP)</p>
+    <p class="font-display font-bold text-2xl text-emerald-400">${{ total_cop|floatformat:0 }}</p>
+  </div>
+  <div class="card rounded-xl p-4">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Créditos vendidos</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_crd_sold|crd }}</p>
+  </div>
+  <div class="card rounded-xl p-4">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Puntos totales</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_points }}</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- Estado de rondas -->
+  <div class="card rounded-xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide">Estado de Rondas</h2>
+      <a href="{% url 'tournament:panel_rounds' %}"
+         class="text-[11px] text-gold hover:underline">Gestionar →</a>
+    </div>
+    <div class="space-y-2">
+      {% for r in rounds %}
+      <div class="flex items-center justify-between py-2 border-b border-[#1A2E48] last:border-0">
+        <span class="text-sm text-[#C8D8E8]">{{ r.name }}</span>
+        <div class="flex gap-2">
+          {% if r.is_active %}
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-900/40 text-emerald-400 border border-emerald-800/40">ACTIVA</span>
+          {% else %}
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#1A2E48] text-[#4A6278]">INACTIVA</span>
+          {% endif %}
+          {% if r.is_locked %}
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-900/40 text-red-400 border border-red-800/40">CERRADA</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Top usuarios -->
+  <div class="card rounded-xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide">Top Usuarios</h2>
+      <a href="{% url 'tournament:panel_users' %}"
+         class="text-[11px] text-gold hover:underline">Ver todos →</a>
+    </div>
+    <div class="space-y-2">
+      {% for u in top_users %}
+      <div class="flex items-center justify-between py-2 border-b border-[#1A2E48] last:border-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold text-[#4A6278] w-5">{{ forloop.counter }}°</span>
+          <a href="{% url 'tournament:panel_user_detail' u.id %}"
+             class="text-sm text-[#C8D8E8] hover:text-gold transition">{{ u.username }}</a>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs text-gold font-bold">{{ u.profile.credits|crd }} crd</span>
+          <span class="text-xs text-[#8AA6C0]">{{ u.profile.total_points }} pts</span>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-[#4A6278] text-sm">Sin usuarios.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Estado grupos -->
+  <div class="card rounded-xl p-5 lg:col-span-2">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide">Estado Grupos (resultados)</h2>
+      <a href="{% url 'tournament:panel_groups' %}"
+         class="text-[11px] text-gold hover:underline">Gestionar →</a>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      {% for g in groups %}
+      <a href="{% url 'tournament:panel_groups' %}#grp-{{ g.name }}"
+         class="rounded-lg p-2 text-center border transition hover:border-gold/40
+         {% if g.results.exists %}border-emerald-800/50 bg-emerald-900/10{% else %}border-[#1A2E48]{% endif %}">
+        <p class="font-display font-bold text-sm
+          {% if g.results.exists %}text-emerald-400{% else %}text-[#4A6278]{% endif %}">
+          {{ g.name }}
+        </p>
+        <p class="text-[9px] mt-0.5
+          {% if g.results.exists %}text-emerald-600{% else %}text-[#2A4060]{% endif %}">
+          {% if g.results.exists %}✓ con resultado{% else %}sin resultado{% endif %}
+        </p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

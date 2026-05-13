@@ -119,13 +119,17 @@ class GroupResult(models.Model):
 
 
 class GroupPrediction(models.Model):
-    """El usuario predice qué 2 equipos avanzan de un grupo (y cuál queda 1°)."""
+    """El usuario predice el orden de clasificación de un grupo (1°, 2°, 3° mejor tercero)."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_predictions')
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='predictions')
     predicted_first = models.ForeignKey(Team, on_delete=models.CASCADE,
                                          related_name='predicted_first', verbose_name='Predicción 1° lugar')
     predicted_second = models.ForeignKey(Team, on_delete=models.CASCADE,
                                           related_name='predicted_second', verbose_name='Predicción 2° lugar')
+    predicted_third = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True,
+                                         related_name='predicted_third', verbose_name='Predicción 3° lugar')
+    predicted_third_advances = models.BooleanField(default=False,
+                                                    verbose_name='¿Predice que el 3° clasifica como mejor tercero?')
     points_earned = models.IntegerField(default=0, verbose_name='Puntos ganados')
     is_scored = models.BooleanField(default=False, verbose_name='Ya se calcularon puntos')
     bet_credits = models.IntegerField(default=0, verbose_name='Créditos apostados')
@@ -148,6 +152,7 @@ class KnockoutPrediction(models.Model):
                                           related_name='predicted_wins', verbose_name='Ganador predicho')
     points_earned = models.IntegerField(default=0, verbose_name='Puntos ganados')
     is_correct = models.BooleanField(null=True, blank=True, verbose_name='¿Acertó?')
+    boost_applied = models.BooleanField(default=False, verbose_name='Potenciador aplicado')
     bet_credits = models.IntegerField(default=0, verbose_name='Créditos apostados')
     credits_won = models.IntegerField(default=0, verbose_name='Créditos ganados/perdidos')
 
@@ -158,3 +163,91 @@ class KnockoutPrediction(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.match}: predice {self.predicted_winner.name}'
+
+
+class CreditPackage(models.Model):
+    """Paquete de créditos que el usuario puede comprar con COP."""
+    name = models.CharField(max_length=50, verbose_name='Nombre del paquete')
+    cop_price = models.PositiveIntegerField(verbose_name='Precio en COP')
+    credits_amount = models.PositiveIntegerField(verbose_name='Créditos base')
+    bonus_credits = models.PositiveIntegerField(default=0, verbose_name='Créditos extra (bonus)')
+    is_active = models.BooleanField(default=True, verbose_name='Disponible')
+    is_featured = models.BooleanField(default=False, verbose_name='Destacado')
+    order = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
+    requires_round = models.ForeignKey(
+        'Round', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='required_by_packages',
+        verbose_name='Disponible desde (ronda)',
+        help_text='Si se configura, este paquete solo se compra cuando esa ronda esté activa.',
+    )
+
+    @property
+    def total_credits(self):
+        return self.credits_amount + self.bonus_credits
+
+    @property
+    def is_available(self):
+        """True si no requiere ronda específica, o si esa ronda ya está activa."""
+        if self.requires_round_id is None:
+            return True
+        return self.requires_round.is_active
+
+    @property
+    def cop_price_formatted(self):
+        return f'${self.cop_price:,}'.replace(',', '.')
+
+    class Meta:
+        ordering = ['order', 'cop_price']
+        verbose_name = 'Paquete de créditos'
+        verbose_name_plural = 'Paquetes de créditos'
+
+    def __str__(self):
+        return f'{self.name} — {self.cop_price_formatted} COP → {self.total_credits} créditos'
+
+
+class CreditPurchase(models.Model):
+    """Registro de cada compra de créditos realizada por un usuario."""
+    STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('completed', 'Completada'),
+        ('cancelled', 'Cancelada'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_purchases',
+                              verbose_name='Usuario')
+    package = models.ForeignKey(CreditPackage, on_delete=models.PROTECT, related_name='purchases',
+                                 verbose_name='Paquete')
+    credits_applied = models.PositiveIntegerField(verbose_name='Créditos aplicados')
+    cop_paid = models.PositiveIntegerField(verbose_name='Valor pagado en COP')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending',
+                               verbose_name='Estado')
+    mp_preference_id = models.CharField(max_length=120, blank=True, verbose_name='Preferencia MP')
+    mp_payment_id = models.CharField(max_length=60, blank=True, verbose_name='ID Pago MP')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de compra')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Compra de créditos'
+        verbose_name_plural = 'Compras de créditos'
+
+    def __str__(self):
+        return f'{self.user.username} — {self.package.name} — {self.credits_applied} crd'
+
+
+class SandboxLog(models.Model):
+    """Registro de operaciones del área de pruebas en el panel de administración."""
+    ACTION_CHOICES = [
+        ('generate', 'Generar datos'),
+        ('reset', 'Resetear datos'),
+    ]
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES, verbose_name='Acción')
+    n_users = models.IntegerField(default=0, verbose_name='Usuarios generados')
+    notes = models.TextField(blank=True, verbose_name='Notas / estadísticas')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Log Sandbox'
+        verbose_name_plural = 'Área de Pruebas'
+
+    def __str__(self):
+        return f'[{self.get_action_display()}] {self.created_at:%d/%m/%Y %H:%M}'

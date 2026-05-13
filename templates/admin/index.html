@@ -1,0 +1,156 @@
+{% extends "admin/index.html" %}
+{% load i18n tournament_extras %}
+
+{% block content %}
+
+{% sandbox_stats as s %}
+
+<div style="margin-bottom:28px; border:2px solid #2d6040; border-radius:12px; overflow:hidden;">
+
+  {# Header #}
+  <div style="background:linear-gradient(135deg,#1a3022,#0f1e16); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+    <div>
+      <div style="font-size:10px; font-weight:700; color:#5a9a72; letter-spacing:1px; text-transform:uppercase;">Herramientas de desarrollo</div>
+      <div style="font-size:17px; font-weight:800; color:#a0e0b8; margin-top:2px;">&#9889; Sandbox — Area de Pruebas</div>
+    </div>
+    <a href="{% url 'admin:tournament_sandboxlog_changelist' %}" style="font-size:11px; color:#5a9a72; text-decoration:none;">Ver logs &rarr;</a>
+  </div>
+
+  {# Stats #}
+  <div style="background:#0f1820; padding:14px 20px; display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; border-top:1px solid #1a3022; border-bottom:1px solid #1a3022;">
+    {% for label, val in s.items %}
+    <div style="text-align:center; background:rgba(255,255,255,0.03); border-radius:8px; padding:10px 8px;">
+      <div style="font-size:22px; font-weight:800; color:{% if val %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ val }}</div>
+      <div style="font-size:9px; color:#5a8a7a; margin-top:3px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Acciones #}
+  <div style="background:#0a1218; padding:16px 20px; display:flex; gap:12px; flex-wrap:wrap;">
+
+    <form method="post" action="{% url 'admin:tournament_sandbox_run' %}" style="flex:1; min-width:200px;">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="generate">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:12px; font-weight:700; color:#7ec8a0; white-space:nowrap;">&#9889; Generar datos:</span>
+        <select name="n_users" style="background:#0f2018; color:#e0f0e8; border:1px solid #2d6040; border-radius:6px; padding:5px 10px; font-size:12px;">
+          <option value="5">5 bots</option>
+          <option value="10" selected>10 bots</option>
+          <option value="20">20 bots</option>
+          <option value="50">50 bots</option>
+        </select>
+        <button type="submit" style="background:#2d7a50; color:#d0f0de; border:none; border-radius:6px; padding:6px 16px; font-size:12px; font-weight:700; cursor:pointer;">
+          Generar
+        </button>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'admin:tournament_sandbox_run' %}"
+          onsubmit="return confirm('Esto elimina todos los bots, matches sandbox y GroupResults. Continuar?');">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="reset">
+      <button type="submit" style="background:#7a2d2d; color:#f0d0d0; border:1px solid #6a2a2a; border-radius:6px; padding:6px 16px; font-size:12px; font-weight:700; cursor:pointer; height:100%;">
+        &#128465; Resetear sandbox
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{{ block.super }}
+
+{% endblock %}
+
+
+  {# Header #}
+  <div style="margin-bottom:14px;">
+    <span style="font-size:11px; font-weight:700; color:#5a9a72; letter-spacing:1px; text-transform:uppercase;">
+      Herramientas de desarrollo
+    </span>
+    <h2 style="margin:4px 0 0 0; font-size:18px; font-weight:800; color:#a0e0b8;">
+      ⚡ Área de Pruebas (Sandbox)
+    </h2>
+  </div>
+
+  {# Stats #}
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:16px;">
+
+    <div style="background:#0f1e30; border:1px solid #1a3448; border-radius:8px; padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; color:{% if s.n_users > 0 %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ s.n_users }}</div>
+      <div style="font-size:10px; color:#6a8a9a; margin-top:3px; font-weight:600; text-transform:uppercase;">Usuarios bot</div>
+    </div>
+
+    <div style="background:#0f1e30; border:1px solid #1a3448; border-radius:8px; padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; color:{% if s.n_group_results > 0 %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ s.n_group_results }}</div>
+      <div style="font-size:10px; color:#6a8a9a; margin-top:3px; font-weight:600; text-transform:uppercase;">Resultados grupo</div>
+    </div>
+
+    <div style="background:#0f1e30; border:1px solid #1a3448; border-radius:8px; padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; color:{% if s.n_group_preds > 0 %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ s.n_group_preds }}</div>
+      <div style="font-size:10px; color:#6a8a9a; margin-top:3px; font-weight:600; text-transform:uppercase;">Pred. grupos</div>
+    </div>
+
+    <div style="background:#0f1e30; border:1px solid #1a3448; border-radius:8px; padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; color:{% if s.n_sandbox_matches > 0 %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ s.n_sandbox_matches }}</div>
+      <div style="font-size:10px; color:#6a8a9a; margin-top:3px; font-weight:600; text-transform:uppercase;">Matches sandbox</div>
+    </div>
+
+    <div style="background:#0f1e30; border:1px solid #1a3448; border-radius:8px; padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; color:{% if s.n_knockout_preds > 0 %}#7ec8a0{% else %}#3a5a6a{% endif %};">{{ s.n_knockout_preds }}</div>
+      <div style="font-size:10px; color:#6a8a9a; margin-top:3px; font-weight:600; text-transform:uppercase;">Pred. eliminatorias</div>
+    </div>
+
+  </div>
+
+  {# Acciones #}
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+
+    <form method="post" action="tournament/sandboxlog/run/" style="flex:1; min-width:220px;">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="generate">
+      <div style="background:#1a3022; border:1px solid #2d6040; border-radius:10px; padding:16px;">
+        <h3 style="margin:0 0 10px 0; color:#7ec8a0; font-size:13px; font-weight:700;">⚡ Generar datos</h3>
+        <p style="margin:0 0 12px 0; font-size:11px; color:#6a9a80; line-height:1.5;">
+          Usuarios bot con predicciones aleatorias en todos los grupos y rondas hasta la final.
+        </p>
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <label style="font-size:11px; font-weight:600; color:#8ab0a0; white-space:nowrap;">Usuarios:</label>
+          <select name="n_users" style="background:#0f2018; color:#e0f0e8; border:1px solid #2d6040; border-radius:6px; padding:5px 10px; font-size:12px; flex:1;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+        <button type="submit" style="background:linear-gradient(135deg,#2d7a50,#1a5a38); color:#d0f0de; border:none; border-radius:7px; padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer; width:100%;">
+          ⚡ Generar
+        </button>
+      </div>
+    </form>
+
+    <form method="post" action="tournament/sandboxlog/run/"
+          style="flex:1; min-width:220px;"
+          onsubmit="return confirm('¿Seguro? Elimina usuarios bot, matches sandbox y resultados de grupo.');">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="reset">
+      <div style="background:#2a1a1a; border:1px solid #6a2a2a; border-radius:10px; padding:16px;">
+        <h3 style="margin:0 0 10px 0; color:#f08080; font-size:13px; font-weight:700;">🗑️ Resetear datos</h3>
+        <p style="margin:0 0 12px 0; font-size:11px; color:#b08080; line-height:1.5;">
+          Borra todos los <code style="color:#f08080;">bot_*</code>, sus predicciones, matches sandbox y GroupResults.
+          Usuarios reales no se ven afectados.
+        </p>
+        <button type="submit" style="background:linear-gradient(135deg,#7a2d2d,#5a1a1a); color:#f0d0d0; border:none; border-radius:7px; padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer; width:100%; margin-top:34px;">
+          🗑️ Resetear sandbox
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{# ── Panel original del admin ──────────────────────────────────────────────── #}
+{{ block.super }}
+
+{% endblock %}
+

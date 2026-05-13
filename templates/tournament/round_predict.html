@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load tournament_extras %}
-{% block title %}Predecir {{ round.name }} — Mundial 2026{% endblock %}
+{% block title %}Predecir {{ round.name }} — CopaBet 26{% endblock %}
 {% block content %}
 
 <div class="max-w-3xl mx-auto">
@@ -14,100 +14,133 @@
       </svg>
       Volver a Eliminatorias
     </a>
-    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Fase Eliminatoria</p>
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Fase Eliminatoria · {{ min_bet|crd }} crd por predicción</p>
     <h1 class="font-display font-bold text-3xl text-white tracking-wide">{{ round.name|upper }}</h1>
+    <p class="text-[#6A8AA6] text-sm mt-1">Puntos por acierto mostrados en cada selección</p>
   </div>
 
   <!-- Créditos disponibles -->
-  <div class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#C9A84C]/30 mb-6"
+  <div class="flex items-center gap-4 px-4 py-3 rounded-xl border border-[#C9A84C]/30 mb-4"
        style="background: rgba(201,168,76,0.05)">
     <svg class="w-5 h-5 text-gold flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
     </svg>
     <div>
-      <p class="text-xs text-[#6A8AA6]">Créditos disponibles</p>
-      <p class="font-display font-bold text-xl text-gold">{{ user_credits }}</p>
+      <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider">Saldo disponible</p>
+      <p class="font-display font-bold text-xl text-gold">{{ user_credits|crd }} <span class="text-xs font-sans text-[#6A8AA6]">crd</span></p>
     </div>
-    <div class="ml-auto text-right">
-      <p class="text-xs text-[#6A8AA6]">Selecciona el ganador y apuesta por partido</p>
+    <div class="ml-auto text-right text-xs text-[#4A6278]">
+      Selecciona ganador y apuesta por partido
     </div>
   </div>
 
+  {% if boost_uses > 0 %}
+  <div class="flex items-center gap-3 px-4 py-3 rounded-xl mb-6"
+       style="background:rgba(255,80,80,0.07); border:1px solid rgba(255,80,80,0.20);">
+    <span class="text-xl">&#128293;</span>
+    <div class="flex-1">
+      <p class="text-xs font-black" style="color:#FF6B6B;">POTENCIADOR UNDERDOG &nbsp;·&nbsp; ×{{ boost_mult }}</p>
+      <p class="text-[11px] text-[#A06060] mt-0.5">
+        Pods activarlo en
+        <strong style="color:#FF8080;">{{ boost_remaining }} partido{{ boost_remaining|pluralize:'s' }}</strong>
+        más de esta ronda o las siguientes.
+      </p>
+    </div>
+    {% if boost_remaining == 0 %}
+    <span class="text-[10px] font-bold px-2 py-1 rounded" style="background:rgba(255,80,80,0.15);color:#FF6B6B;">USOS AGOTADOS</span>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
-    <div class="space-y-4">
+    <div class="space-y-5">
       {% for md in matches_data %}
       {% with match=md.match existing=md.existing %}
       <div class="card rounded-xl overflow-hidden">
-        <!-- Match header -->
+        <!-- Cabecera del partido -->
         <div class="flex items-center justify-between px-4 py-2.5 border-b border-[#1A2E48]"
              style="background: rgba(201,168,76,0.04)">
           <span class="text-[10px] font-bold text-[#4A6278] uppercase tracking-wider">
-            Partido {{ match.match_number }}
+            Partido {{ match.match_number }}{% if match.description %} · {{ match.description }}{% endif %}
           </span>
           {% if existing %}
-            <span class="text-[10px] font-bold text-gold uppercase tracking-wider">Predicho</span>
+            <span class="text-[10px] font-bold text-gold uppercase tracking-wider">✓ Predicho</span>
           {% endif %}
         </div>
 
         <div class="p-4">
-          <!-- Opciones de equipo -->
+          <!-- Selección de equipos -->
           <div class="grid grid-cols-2 gap-3 mb-4">
-            <!-- Equipo 1 -->
             <label class="flex flex-col items-center gap-2 p-3 rounded-xl border border-[#1A2E48] cursor-pointer
                            hover:border-[#C9A84C]/40 hover:bg-[#112035] transition
                            has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
               <input type="radio" name="winner_{{ match.id }}" value="{{ match.team1.id }}"
-                     class="sr-only"
-                     {% if existing and existing.predicted_winner == match.team1 %}checked{% endif %}>
+                     class="sr-only match-radio"
+                     {% if existing and existing.predicted_winner == match.team1 %}checked{% endif %}>>
               <img src="https://flagcdn.com/w40/{{ match.team1.iso2_code }}.png"
-                   alt="{{ match.team1.name }}"
-                   class="w-12 h-8 object-cover rounded shadow-sm">
-              <p class="text-sm font-medium text-white text-center leading-tight">{{ match.team1.name }}</p>
+                   alt="{{ match.team1.name }}" class="w-12 h-8 object-cover rounded shadow-sm">
+              <p class="text-sm font-bold text-white text-center leading-tight">{{ match.team1.name }}</p>
               <p class="text-[10px] text-[#4A6278]">FIFA #{{ match.team1.fifa_ranking }}</p>
-              <span class="text-xs font-bold text-gold">{{ md.mult1|floatformat:2 }}x</span>
+              <span class="text-xs font-bold text-emerald-400">+{{ md.pts1 }} pts</span>
             </label>
 
-            <!-- Equipo 2 -->
             <label class="flex flex-col items-center gap-2 p-3 rounded-xl border border-[#1A2E48] cursor-pointer
                            hover:border-[#C9A84C]/40 hover:bg-[#112035] transition
                            has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
               <input type="radio" name="winner_{{ match.id }}" value="{{ match.team2.id }}"
-                     class="sr-only"
-                     {% if existing and existing.predicted_winner == match.team2 %}checked{% endif %}>
+                     class="sr-only match-radio"
+                     {% if existing and existing.predicted_winner == match.team2 %}checked{% endif %}>>
               <img src="https://flagcdn.com/w40/{{ match.team2.iso2_code }}.png"
-                   alt="{{ match.team2.name }}"
-                   class="w-12 h-8 object-cover rounded shadow-sm">
-              <p class="text-sm font-medium text-white text-center leading-tight">{{ match.team2.name }}</p>
+                   alt="{{ match.team2.name }}" class="w-12 h-8 object-cover rounded shadow-sm">
+              <p class="text-sm font-bold text-white text-center leading-tight">{{ match.team2.name }}</p>
               <p class="text-[10px] text-[#4A6278]">FIFA #{{ match.team2.fifa_ranking }}</p>
-              <span class="text-xs font-bold text-gold">{{ md.mult2|floatformat:2 }}x</span>
+              <span class="text-xs font-bold text-emerald-400">+{{ md.pts2 }} pts</span>
             </label>
           </div>
 
-          <!-- Apuesta para este partido -->
-          <div class="border-t border-[#1A2E48] pt-3">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-[#6A8AA6]">Créditos a apostar</span>
-              <span class="text-sm font-bold text-gold" id="bet-label-{{ match.id }}">
-                {% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}
-              </span>
+          <!-- Costo y boost -->
+          <div class="border-t border-[#1A2E48] pt-3 space-y-2">
+            <input type="hidden" name="bet_{{ match.id }}" value="{{ min_bet }}">
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl border border-[#1A2E48]"
+                 style="background:rgba(0,0,0,0.15)">
+              <span class="text-xs text-[#6A8AA6]">Costo fijo</span>
+              <span class="text-sm font-bold text-gold">{{ min_bet|crd }} crd</span>
             </div>
-            <input type="range"
-                   id="bet-range-{{ match.id }}"
-                   min="0" max="{{ user_credits }}" step="50"
-                   value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}"
-                   oninput="updateBet({{ match.id }}, this.value)"
-                   class="w-full h-1.5 rounded-lg cursor-pointer">
-            <input type="hidden" name="bet_{{ match.id }}"
-                   id="bet-input-{{ match.id }}"
-                   value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}">
+
+            {% if boost_uses > 0 %}
+            <label class="flex items-center gap-2.5 px-3 py-2 rounded-xl border cursor-pointer transition
+                          {% if existing.boost_applied %}border-red-700 bg-red-950/30
+                          {% elif boost_remaining == 0 and not existing.boost_applied %}border-[#1A2E48] opacity-40 cursor-not-allowed
+                          {% else %}border-[#1A2E48] hover:border-red-700/50 hover:bg-red-950/20{% endif %}">
+              <input type="checkbox" name="boost_{{ match.id }}"
+                     {% if existing.boost_applied %}checked{% endif %}
+                     {% if boost_remaining == 0 and not existing.boost_applied %}disabled{% endif %}
+                     class="accent-red-500 w-4 h-4">
+              <div class="flex-1">
+                <p class="text-xs font-bold" style="color:#FF6B6B;">&#128293; Aplicar potenciador ×{{ boost_mult }}</p>
+                <p class="text-[10px] text-[#A06060]">
+                  {% if existing.boost_applied %}Activado — se aplica si acertás
+                  {% elif boost_remaining > 0 %}{{ boost_remaining }} uso{{ boost_remaining|pluralize:'s' }} disponible{{ boost_remaining|pluralize:'s' }}
+                  {% else %}Sin usos disponibles{% endif %}
+                </p>
+              </div>
+              {% if existing.boost_applied %}
+              <div class="text-right">
+                <p class="text-[10px] font-bold" style="color:#FF8080;">
+                  +{{ md.pts1_boosted }} / +{{ md.pts2_boosted }} pts
+                </p>
+              </div>
+              {% endif %}
+            </label>
+            {% endif %}
           </div>
         </div>
       </div>
       {% endwith %}
       {% empty %}
       <div class="card rounded-xl p-8 text-center text-[#6A8AA6]">
-        <p class="text-sm">No hay partidos disponibles para predecir en esta ronda todavía.</p>
+        <p class="text-sm">No hay partidos disponibles con equipos definidos todavía.</p>
       </div>
       {% endfor %}
     </div>
@@ -124,101 +157,5 @@
   </form>
 </div>
 
-<script>
-function updateBet(matchId, value) {
-  document.getElementById('bet-label-' + matchId).textContent = value;
-  document.getElementById('bet-input-' + matchId).value = value;
-}
-</script>
-{% endblock %}
-
-<div class="max-w-3xl mx-auto">
-  <div class="mb-6">
-    <a href="{% url 'tournament:bracket' %}" class="text-sm text-gray-400 hover:text-white flex items-center gap-1">
-      ← Volver a eliminatorias
-    </a>
-  </div>
-
-  <h1 class="text-2xl font-bold mb-2">⚔️ Predecir {{ round.name }}</h1>
-  <p class="text-gray-400 text-sm mb-8">
-    Selecciona el ganador de cada partido. Los puntos base son
-    <span class="text-emerald-400 font-bold">{{ round.base_points }}</span> por acierto,
-    más bonus si predices una sorpresa.
-  </p>
-
-  {% if not available_matches %}
-  <div class="glass rounded-2xl p-10 text-center text-gray-400">
-    Aún no hay partidos disponibles con equipos definidos en esta ronda.
-  </div>
-  {% else %}
-  <form method="post">
-    {% csrf_token %}
-    <div class="space-y-6">
-      {% for match in available_matches %}
-      {% with existing=existing_preds|get_item:match.id %}
-      <div class="glass rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs text-gray-500">Partido {{ match.match_number }}</span>
-          <span class="text-xs bg-emerald-900/50 text-emerald-400 px-2 py-1 rounded-full">
-            Base {{ round.base_points }} pts
-          </span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <!-- Equipo 1 -->
-          <label class="flex flex-col items-center gap-3 p-4 rounded-xl border border-gray-600
-                        hover:border-emerald-500/50 cursor-pointer transition
-                        has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/20">
-            <input type="radio" name="winner_{{ match.id }}" value="{{ match.team1.id }}"
-              class="sr-only"
-              {% if existing and existing.predicted_winner_id == match.team1.id %}checked{% endif %}>
-            <span class="text-4xl">{{ match.team1.flag_emoji }}</span>
-            <div class="text-center">
-              <p class="font-semibold text-sm">{{ match.team1.name }}</p>
-              <p class="text-xs text-gray-400">Ranking #{{ match.team1.fifa_ranking }}</p>
-            </div>
-            <div class="w-4 h-4 rounded-full border-2 border-gray-600 flex items-center justify-center check-indicator">
-              <div class="w-2 h-2 rounded-full bg-emerald-400 hidden indicator-dot"></div>
-            </div>
-          </label>
-
-          <!-- Equipo 2 -->
-          <label class="flex flex-col items-center gap-3 p-4 rounded-xl border border-gray-600
-                        hover:border-emerald-500/50 cursor-pointer transition
-                        has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/20">
-            <input type="radio" name="winner_{{ match.id }}" value="{{ match.team2.id }}"
-              class="sr-only"
-              {% if existing and existing.predicted_winner_id == match.team2.id %}checked{% endif %}>
-            <span class="text-4xl">{{ match.team2.flag_emoji }}</span>
-            <div class="text-center">
-              <p class="font-semibold text-sm">{{ match.team2.name }}</p>
-              <p class="text-xs text-gray-400">Ranking #{{ match.team2.fifa_ranking }}</p>
-            </div>
-            <div class="w-4 h-4 rounded-full border-2 border-gray-600 flex items-center justify-center check-indicator">
-              <div class="w-2 h-2 rounded-full bg-emerald-400 hidden indicator-dot"></div>
-            </div>
-          </label>
-        </div>
-
-        {% if existing %}
-        <p class="mt-3 text-xs text-blue-400 text-center">
-          📝 Tienes una predicción guardada. Se reemplazará.
-        </p>
-        {% endif %}
-      </div>
-      {% endwith %}
-      {% endfor %}
-    </div>
-
-    <div class="mt-8">
-      <button type="submit"
-        class="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500
-               rounded-xl font-bold text-white text-lg transition-all transform hover:scale-[1.01] shadow-lg">
-        Guardar todas las predicciones ✅
-      </button>
-    </div>
-  </form>
-  {% endif %}
-</div>
 
 {% endblock %}

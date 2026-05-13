@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Mundial 2026 — Predictor{% endblock %}
+{% load static %}
+{% block title %}CopaBet 26 — Apuestas FIFA World Cup{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -127,18 +128,6 @@
     position: relative; z-index: 2;
     text-align: center; padding: 0 1.5rem;
   }
-  .intro-ball {
-    font-size: clamp(3.2rem, 9vw, 5rem);
-    display: block; line-height: 1; margin-bottom: 1.4rem;
-    opacity: 0; transform: translateY(12px);
-    animation: introFadeIn .5s ease .05s forwards,
-               ballFloat 2.8s ease-in-out 1.2s infinite alternate;
-    filter: drop-shadow(0 0 28px rgba(201,168,76,.65));
-  }
-  @keyframes ballFloat {
-    from { transform: translateY(0) rotate(-4deg); }
-    to   { transform: translateY(-14px) rotate(4deg); }
-  }
   @keyframes introFadeIn {
     to { opacity: 1; transform: translateY(0); }
   }
@@ -212,46 +201,41 @@
   }
   .intro-skip:hover { color: rgba(255,255,255,.75); }
 
-  /* Official WC 2026 Logo */
-  .intro-logo {
-    width: clamp(100px, 22vw, 148px); height: auto;
-    display: block; margin: 0 auto 1.4rem;
-    opacity: 0; transform: scale(.62);
-    animation: logoReveal .85s cubic-bezier(.175,.885,.32,1.275) .06s forwards,
-               logoGlow 3.2s ease-in-out 1.3s infinite alternate;
-  }
   @keyframes logoReveal { to { opacity: 1; transform: scale(1); } }
   @keyframes logoGlow {
     from { filter: drop-shadow(0 0 10px rgba(201,168,76,.4)); }
     to   { filter: drop-shadow(0 0 32px rgba(201,168,76,.85)) brightness(1.06); }
   }
+  .intro-logo-svg {
+    width: clamp(90px, 18vw, 130px);
+    display: block; margin: 0 auto 1.4rem;
+    opacity: 0; transform: scale(.62);
+    animation: logoReveal .85s cubic-bezier(.175,.885,.32,1.275) .06s forwards,
+               logoGlow 3.2s ease-in-out 1.3s infinite alternate;
+  }
 
   /* Sound toggle button */
   .intro-sound {
     position: absolute; bottom: 1.2rem; left: 1.5rem;
-    width: 2.4rem; height: 2.4rem; border-radius: 50%;
-    border: 1px solid rgba(201,168,76,.35); background: rgba(0,0,0,.45);
-    display: flex; align-items: center; justify-content: center;
+    height: 2.4rem; padding: 0 .85rem; border-radius: 2rem;
+    border: 1px solid rgba(201,168,76,.45); background: rgba(0,0,0,.55);
+    display: flex; align-items: center; gap: .45rem;
     cursor: pointer; transition: border-color .2s, background .2s;
-    opacity: 0; animation: introFadeIn .4s ease 1.8s forwards;
-    backdrop-filter: blur(4px);
+    opacity: 0; animation: introFadeIn .4s ease .6s forwards;
+    backdrop-filter: blur(4px); white-space: nowrap;
   }
-  .intro-sound:hover { border-color: #C9A84C; background: rgba(201,168,76,.12); }
-  .intro-sound svg { width: 1rem; height: 1rem; fill: rgba(255,255,255,.65); transition: fill .2s; }
+  .intro-sound:hover { border-color: #C9A84C; background: rgba(201,168,76,.15); }
+  .intro-sound svg { width: .95rem; height: .95rem; fill: rgba(255,255,255,.65); transition: fill .2s; flex-shrink:0; }
   .intro-sound:hover svg { fill: #C9A84C; }
-  /* pulsing ring when sound is ON */
+  .intro-sound-label { font-size: .6rem; letter-spacing: .12em; color: rgba(255,255,255,.5); text-transform: uppercase; transition: color .2s; }
+  .intro-sound:hover .intro-sound-label { color: #C9A84C; }
   .intro-sound.sound-on {
     border-color: rgba(201,168,76,.7);
-    animation: introFadeIn .4s ease 1.8s forwards, soundPulse 2s ease-in-out 2.2s infinite;
+    animation: introFadeIn .4s ease .6s forwards, soundPulse 2s ease-in-out 1s infinite;
   }
   @keyframes soundPulse {
     0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,.35); }
     50%      { box-shadow: 0 0 0 6px rgba(201,168,76,0); }
-  }
-  /* hidden YouTube container */
-  #yt-audio-wrap {
-    position: absolute; width:1px; height:1px;
-    overflow:hidden; opacity:0; pointer-events:none;
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -282,32 +266,71 @@
   <div class="intro-rays"></div>
   <div class="intro-grid"></div>
   <div class="intro-content">
-    <img class="intro-logo"
-         src="https://en.wikipedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup.svg"
-         alt="FIFA World Cup 26"
-         onerror="this.style.display='none';var fb=document.getElementById('intro-ball-fb');if(fb)fb.style.display='block'">
-    <span id="intro-ball-fb" class="intro-ball" style="display:none">⚽</span>
+    {# ── Logo oficial FIFA World Cup 2026 (local, fondo removido por canvas) ── #}
+    <img
+      id="intro-logo-img"
+      class="intro-logo-svg"
+      src="{% static 'tournament/img/wc2026-logo.webp' %}"
+      alt="FIFA World Cup 2026"
+      crossorigin="anonymous"
+      onerror="this.style.display='none'; document.getElementById('intro-logo-fallback').style.display='block';"
+    >
+    {# Canvas reemplaza al img con fondo transparente #}
+    <canvas id="intro-logo-canvas" class="intro-logo-svg" style="display:none"></canvas>
+    {# SVG de respaldo — se muestra solo si falla todo lo anterior #}
+    <svg id="intro-logo-fallback" class="intro-logo-svg" style="display:none"
+         viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" aria-label="Copa del Mundo 2026">
+      <defs>
+        <linearGradient id="tgold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#F0D07A"/>
+          <stop offset="50%" stop-color="#C9A84C"/>
+          <stop offset="100%" stop-color="#8A6F28"/>
+        </linearGradient>
+        <filter id="tglow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <rect x="30" y="140" width="60" height="8" rx="4" fill="url(#tgold)"/>
+      <rect x="38" y="130" width="44" height="12" rx="3" fill="url(#tgold)"/>
+      <rect x="52" y="105" width="16" height="28" rx="5" fill="url(#tgold)"/>
+      <path d="M28 48 Q24 80 40 95 Q52 108 60 108 Q68 108 80 95 Q96 80 92 48 Z"
+            fill="url(#tgold)" filter="url(#tglow)"/>
+      <path d="M36 55 Q34 75 44 87" stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M28 55 Q10 55 12 72 Q14 88 28 85" stroke="url(#tgold)" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M92 55 Q110 55 108 72 Q106 88 92 85" stroke="url(#tgold)" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <circle cx="60" cy="72" r="20" fill="#0C1827" opacity=".55"/>
+      <path d="M43 68 Q52 58 60 72 Q68 86 77 72" stroke="rgba(201,168,76,.7)" stroke-width="1.5" fill="none"/>
+      <path d="M43 76 Q52 66 60 80 Q68 94 77 80" stroke="rgba(201,168,76,.5)" stroke-width="1.2" fill="none"/>
+      <line x1="60" y1="52" x2="60" y2="92" stroke="rgba(201,168,76,.4)" stroke-width="1"/>
+      <line x1="40" y1="72" x2="80" y2="72" stroke="rgba(201,168,76,.4)" stroke-width="1"/>
+      <text x="36" y="43" font-size="9" fill="#C9A84C" opacity=".9">★</text>
+      <text x="75" y="43" font-size="9" fill="#C9A84C" opacity=".9">★</text>
+      <text x="56" y="35" font-size="10" fill="#F0D07A">★</text>
+    </svg>
     <p class="intro-label">FIFA</p>
     <h2 class="intro-title">WORLD CUP</h2>
     <span class="intro-line intro-line-wide"></span>
     <div class="intro-year">2026</div>
     <p class="intro-hosts">🇺🇸&thinsp;USA &nbsp;·&nbsp; 🇨🇦&thinsp;CANADA &nbsp;·&nbsp; 🇲🇽&thinsp;MÉXICO</p>
-    <p class="intro-sub">Predictor Oficial</p>
+    <p class="intro-sub">CopaBet 26</p>
   </div>
   <div class="intro-progress-wrap">
     <div class="intro-progress-bar"></div>
   </div>
   <button class="intro-skip" onclick="skipIntro()" aria-label="Saltar introducción">Saltar &rarr;</button>
-  <!-- Sound toggle -->
-  <button class="intro-sound" id="intro-sound-btn" onclick="toggleIntroSound()" aria-label="Activar música" title="Tema oficial FIFA World Cup 2026">
+  <audio id="intro-audio" preload="auto" loop>
+    <source src="{% static 'tournament/audio/intro.mp3' %}" type="audio/mpeg">
+  </audio>
+  <button class="intro-sound" id="intro-sound-btn" onclick="toggleIntroSound()" aria-label="Activar música">
     <svg id="icon-muted" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
     </svg>
     <svg id="icon-sound" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
       <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
     </svg>
+    <span class="intro-sound-label" id="sound-label">Activar sonido</span>
   </button>
-  <div id="yt-audio-wrap" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none"><div id="yt-player"></div></div>
 </div>
 
 {# ─── Full-screen stadium slideshow (behind all page content) ─── #}
@@ -379,10 +402,10 @@
 <section class="text-center py-12 mb-4 anim-card" style="animation-delay:0ms">
   <p class="text-gold text-xs font-display font-bold tracking-[0.3em] uppercase mb-3">FIFA World Cup 2026</p>
   <h1 class="font-display font-bold text-5xl md:text-6xl text-white tracking-wide mb-4">
-    PREDICTOR<br><span class="text-gold">OFICIAL</span>
+    COPABET<br><span class="text-gold">26</span>
   </h1>
   <p class="text-[#8AA6C0] text-base max-w-xl mx-auto mb-8">
-    Predice qué selecciones pasan de ronda, apuesta tus créditos y sube al ranking.
+    Apuesta tus créditos, predice qué selecciones pasan de ronda y sube al ranking.
     Más créditos si predices las sorpresas.
   </p>
 
@@ -391,7 +414,7 @@
     <a href="{% url 'accounts:register' %}"
        class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
        style="background:#C9A84C; color:#070F1C;">
-      EMPEZAR &mdash; 1,000 créditos gratis
+      EMPEZAR &mdash; REGÍSTRATE GRATIS
     </a>
     <a href="{% url 'accounts:login' %}"
        class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white hover:border-[#C9A84C]/40 transition">
@@ -412,6 +435,342 @@
   </div>
   {% endif %}
 </section>
+
+{# LANDING PAGE — solo para usuarios NO autenticados #}
+{% if not user.is_authenticated %}
+
+<!-- Fotos de jugadores icónicos del Mundial -->
+<section class="mb-14 anim-card" style="animation-delay:80ms">
+  <div class="grid grid-cols-3 gap-3 sm:gap-4">
+
+    <!-- Messi WC2018 (URL verified) -->
+    <div class="relative rounded-2xl overflow-hidden group" style="aspect-ratio:3/4; background:linear-gradient(160deg,#1a3a6e 0%,#060E1A 100%)">
+      <img src="{% static 'tournament/resorces/messi.jpg' %}"
+           alt="Lionel Messi"
+           onerror="this.style.display='none'"
+           class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+      <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(6,14,26,.95) 0%, rgba(6,14,26,.05) 60%)"></div>
+      <div class="absolute top-0 left-0 right-0 flex justify-center pt-8 opacity-10 pointer-events-none">
+        <img src="https://flagcdn.com/w160/ar.png" alt="" class="w-24 h-16 object-cover">
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 p-3">
+        <p class="font-display font-bold text-white text-sm leading-tight">Lionel Messi</p>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <img src="https://flagcdn.com/w40/ar.png" alt="Argentina" class="w-4 h-3 object-cover rounded-sm">
+          <p class="text-[10px] text-[#C9A84C] font-bold uppercase tracking-wider">Argentina · #3 Ranking FIFA · 1874 pts</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mbappé WC2018 -->
+    <div class="relative rounded-2xl overflow-hidden group" style="aspect-ratio:3/4; background:linear-gradient(160deg,#002395 0%,#060E1A 100%)">
+      <img src="{% static 'tournament/resorces/mbappe.jpg' %}"
+           alt="Kylian Mbappé"
+           onerror="this.style.display='none'"
+           class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+      <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(6,14,26,.95) 0%, rgba(6,14,26,.05) 60%)"></div>
+      <div class="absolute top-0 left-0 right-0 flex justify-center pt-8 opacity-10 pointer-events-none">
+        <img src="https://flagcdn.com/w160/fr.png" alt="" class="w-24 h-16 object-cover">
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 p-3">
+        <p class="font-display font-bold text-white text-sm leading-tight">Kylian Mbappé</p>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <img src="https://flagcdn.com/w40/fr.png" alt="Francia" class="w-4 h-3 object-cover rounded-sm">
+          <p class="text-[10px] text-[#8AA6C0] font-bold uppercase tracking-wider">Francia · #1 Ranking FIFA · 1877 pts</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vinicius Jr -->
+    <div class="relative rounded-2xl overflow-hidden group" style="aspect-ratio:3/4; background:linear-gradient(160deg,#009c3b 0%,#060E1A 100%)">
+      <img src="{% static 'tournament/resorces/vinicius.jpg' %}"
+           alt="Vinicius Jr."
+           onerror="this.style.display='none'"
+           class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+      <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(6,14,26,.95) 0%, rgba(6,14,26,.05) 60%)"></div>
+      <div class="absolute top-0 left-0 right-0 flex justify-center pt-8 opacity-10 pointer-events-none">
+        <img src="https://flagcdn.com/w160/br.png" alt="" class="w-24 h-16 object-cover">
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 p-3">
+        <p class="font-display font-bold text-white text-sm leading-tight">Vinícius Jr.</p>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <img src="https://flagcdn.com/w40/br.png" alt="Brasil" class="w-4 h-3 object-cover rounded-sm">
+          <p class="text-[10px] text-[#8AA6C0] font-bold uppercase tracking-wider">Brasil · #6 Ranking FIFA · 1761 pts</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ¿Qué es CopaBet 26? -->
+<section class="mb-12 anim-card" style="animation-delay:120ms">
+  <div class="card rounded-2xl p-6 sm:p-8 border border-[#1A2E48]">
+    <p class="text-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-2">¿Qué es CopaBet 26?</p>
+    <h2 class="font-display font-bold text-2xl text-white mb-4">El juego de predicciones del<br>FIFA World Cup 2026</h2>
+    <p class="text-[#8AA6C0] text-sm leading-relaxed max-w-2xl">
+      CopaBet 26 es una plataforma de predicciones para el Mundial de Fútbol 2026.
+      Compras créditos, predices qué selecciones avanzan en cada fase, y compites
+      en el ranking global. Cuanto más te sorprendas — apostando por equipos con
+      ranking más bajo — más puntos ganas.
+    </p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.15);">
+        <p class="font-display font-bold text-2xl text-gold">48</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Selecciones</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">12</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Grupos</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">104</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Partidos</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">6</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Fases</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Cómo funciona — 3 pasos -->
+<section class="mb-12 anim-card" style="animation-delay:160ms">
+  <h2 class="font-display font-bold text-xl text-white tracking-wide mb-5 text-center">¿CÓMO FUNCIONA?</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+    <div class="card rounded-2xl p-5 relative overflow-hidden">
+      <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/06 select-none">1</div>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+           style="background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.25);">
+        <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+        </svg>
+      </div>
+      <h3 class="font-display font-bold text-white text-base mb-2">Compra créditos</h3>
+      <p class="text-[#6A8AA6] text-sm leading-relaxed">
+        Carga tu cuenta con créditos (1 crd = $1 COP). Hay paquetes para la Fase de
+        Grupos, las Eliminatorias o el torneo completo.
+      </p>
+    </div>
+
+    <div class="card rounded-2xl p-5 relative overflow-hidden border border-gold/20"
+         style="background:linear-gradient(160deg,#0F2137 0%,#0B1926 100%);">
+      <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/08 select-none">2</div>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+           style="background:rgba(201,168,76,0.18); border:1px solid rgba(201,168,76,0.4);">
+        <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+        </svg>
+      </div>
+      <h3 class="font-display font-bold text-white text-base mb-2">Predice ganadores</h3>
+      <p class="text-[#8AA6C0] text-sm leading-relaxed">
+        Antes de cada fase, elige qué equipos avanzan. Cada predicción cuesta créditos
+        fijos — apuesta inteligente y sorprende al favorito.
+      </p>
+    </div>
+
+    <div class="card rounded-2xl p-5 relative overflow-hidden">
+      <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/06 select-none">3</div>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+           style="background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.25);">
+        <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+        </svg>
+      </div>
+      <h3 class="font-display font-bold text-white text-base mb-2">Sube al ranking</h3>
+      <p class="text-[#6A8AA6] text-sm leading-relaxed">
+        Ganas puntos por cada acierto. Más puntos si predices la sorpresa — un equipo
+        de ranking bajo ganando a un favorito. Compite por el 1° lugar.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Sistema de puntuación (instrucciones) -->
+<section class="mb-12 anim-card" style="animation-delay:200ms">
+  <h2 class="font-display font-bold text-xl text-white tracking-wide mb-5 text-center">SISTEMA DE PUNTUACIÓN</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <!-- Grupos -->
+    <div class="card rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+          <span class="text-gold font-bold text-xs">GRP</span>
+        </div>
+        <h3 class="font-bold text-white">Fase de Grupos</h3>
+      </div>
+      <ul class="space-y-2 text-sm">
+        <li class="flex items-start gap-2">
+          <span class="text-gold font-bold mt-0.5 flex-shrink-0">+</span>
+          <span class="text-[#8AA6C0]">Predice qué dos equipos avanzan de cada grupo. Cada grupo cuesta <strong class="text-white">1.000 crd</strong>.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-gold font-bold mt-0.5 flex-shrink-0">★</span>
+          <span class="text-[#8AA6C0]">Puntos base + bonus si aciertas el 1° o 2° exacto del grupo.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-gold font-bold mt-0.5 flex-shrink-0">★</span>
+          <span class="text-[#8AA6C0]">
+            En el Mundial 2026 hay <strong class="text-white">12 grupos</strong>. Pasan los 2 primeros de cada grupo <strong class="text-white">(24 equipos)</strong> más los <strong class="text-white">8 mejores terceros</strong> de entre los 12 grupos — llegando a 32 clasificados para el Dieciseisavos.
+          </span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-gold font-bold mt-0.5 flex-shrink-0">★</span>
+          <span class="text-[#8AA6C0]">Equipos con peor ranking FIFA dan más puntos al avanzar.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Eliminatorias -->
+    <div class="card rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+          <span class="text-gold font-bold text-xs">KO</span>
+        </div>
+        <h3 class="font-bold text-white">Eliminatorias</h3>
+      </div>
+      <ul class="space-y-2 text-sm">
+        <li class="flex items-start gap-2">
+          <span class="text-gold font-bold mt-0.5 flex-shrink-0">+</span>
+          <span class="text-[#8AA6C0]">Elige el ganador de cada partido. Costo fijo por ronda:</span>
+        </li>
+        <li class="flex items-center justify-between text-xs bg-[#0D1F35] rounded-lg px-3 py-2">
+          <span class="text-[#6A8AA6]">R32 (dieciseisavos)</span><span class="text-white font-bold">500 crd</span>
+        </li>
+        <li class="flex items-center justify-between text-xs bg-[#0D1F35] rounded-lg px-3 py-2">
+          <span class="text-[#6A8AA6]">Octavos · Cuartos</span><span class="text-white font-bold">1.000 crd</span>
+        </li>
+        <li class="flex items-center justify-between text-xs bg-[#0D1F35] rounded-lg px-3 py-2">
+          <span class="text-[#6A8AA6]">Semis · Final</span><span class="text-orange-300 font-bold">2.000 crd</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bonus -->
+    <div class="card rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-emerald-900/30 border border-emerald-700/30 flex items-center justify-center flex-shrink-0">
+          <span class="text-emerald-400 font-bold text-xs">★</span>
+        </div>
+        <h3 class="font-bold text-white">Bonus Sorpresa</h3>
+      </div>
+      <p class="text-[#8AA6C0] text-sm leading-relaxed">
+        Si predices que un equipo con peor ranking FIFA gana a un favorito,
+        recibes puntos extra proporcionales a la diferencia de ranking.
+        ¡Las sorpresas del Mundial valen más!
+      </p>
+    </div>
+
+    <!-- Ranking -->
+    <div class="card rounded-xl p-5 border border-gold/20" style="background:linear-gradient(160deg,#0F2137 0%,#0B1926 100%)">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+          <span class="text-gold font-bold text-xs">#1</span>
+        </div>
+        <h3 class="font-bold text-white">Ranking global</h3>
+      </div>
+      <p class="text-[#8AA6C0] text-sm leading-relaxed mb-4">
+        Todos los participantes compiten en un ranking global. Acumula puntos en
+        todas las fases del torneo y busca el primer puesto antes de que termine
+        la Final del 19 de julio.
+      </p>
+      <!-- Premios -->
+      <div class="rounded-xl overflow-hidden" style="border:1px solid rgba(201,168,76,0.2)">
+        <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-gold" style="background:rgba(201,168,76,0.08)">
+          🏆 Premios en dinero
+        </div>
+        <div class="divide-y divide-[#1A2E48]">
+          <div class="flex items-center justify-between px-3 py-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-gold font-display font-black text-xl">01</span>
+              <span class="text-white text-sm font-medium">Primer lugar</span>
+            </div>
+            <span class="font-display font-bold text-gold text-base">Premio 1°</span>
+          </div>
+          <div class="flex items-center justify-between px-3 py-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[#9BA8B5] font-display font-black text-xl">02</span>
+              <span class="text-white text-sm font-medium">Segundo lugar</span>
+            </div>
+            <span class="font-display font-bold text-[#9BA8B5] text-base">Premio 2°</span>
+          </div>
+          <div class="flex items-center justify-between px-3 py-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[#8B6A3E] font-display font-black text-xl">03</span>
+              <span class="text-white text-sm font-medium">Tercer lugar</span>
+            </div>
+            <span class="font-display font-bold text-[#8B6A3E] text-base">Premio 3°</span>
+          </div>
+        </div>
+      </div>
+      <p class="text-[#4A6278] text-[10px] mt-2 text-center">Los premios exactos se anunciarán al inicio del torneo.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA final -->
+<section class="mb-12 text-center anim-card" style="animation-delay:240ms">
+  <div class="card rounded-2xl p-8 sm:p-10 border border-gold/20"
+       style="background:linear-gradient(160deg,#0F2137 0%,#080F1C 100%);">
+    <p class="text-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-3">Únete ahora</p>
+    <h2 class="font-display font-bold text-3xl text-white mb-3">
+      ¿Listo para predecir el <span class="text-gold">Mundial 2026</span>?
+    </h2>
+    <p class="text-[#8AA6C0] text-sm mb-6 max-w-md mx-auto">
+      Crea tu cuenta gratis, compra créditos y empieza a predecir antes de que arranque el torneo.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="{% url 'accounts:register' %}"
+         class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
+         style="background:#C9A84C; color:#070F1C;">
+        CREAR CUENTA GRATIS
+      </a>
+      <a href="{% url 'accounts:login' %}"
+         class="px-8 py-3 rounded-xl font-display font-bold text-base tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white hover:border-[#C9A84C]/40 transition">
+        YA TENGO CUENTA
+      </a>
+    </div>
+  </div>
+</section>
+
+{% else %}{# ── Usuario autenticado — dashboard ─────────────────────── #}
+<div id="wc-countdown-wrap" class="mb-10 anim-card" style="animation-delay:60ms">
+  <!-- Antes del inicio -->
+  <div id="countdown-pre" class="card rounded-2xl p-6 text-center border border-[#1A2E48]">
+    <p class="text-gold text-[.65rem] font-display font-bold tracking-[.35em] uppercase mb-4">
+      ⚽ Inicio del Mundial &mdash; 11 Jun 2026 · 19:00 h (Ciudad de México)
+    </p>
+    <div class="flex justify-center gap-3 sm:gap-6 mb-4">
+      <div class="flex flex-col items-center min-w-[56px]">
+        <span id="cd-dias" class="font-display font-bold text-4xl sm:text-5xl text-white tabular-nums leading-none">--</span>
+        <span class="text-[#4A6278] text-[.6rem] tracking-widest uppercase mt-1">Días</span>
+      </div>
+      <div class="flex flex-col items-center min-w-[56px]">
+        <span id="cd-hrs" class="font-display font-bold text-4xl sm:text-5xl text-white tabular-nums leading-none">--</span>
+        <span class="text-[#4A6278] text-[.6rem] tracking-widest uppercase mt-1">Hrs</span>
+      </div>
+      <div class="flex flex-col items-center min-w-[56px]">
+        <span id="cd-min" class="font-display font-bold text-4xl sm:text-5xl text-white tabular-nums leading-none">--</span>
+        <span class="text-[#4A6278] text-[.6rem] tracking-widest uppercase mt-1">Min</span>
+      </div>
+      <div class="flex flex-col items-center min-w-[56px]">
+        <span id="cd-seg" class="font-display font-bold text-4xl sm:text-5xl text-white tabular-nums leading-none">--</span>
+        <span class="text-[#4A6278] text-[.6rem] tracking-widest uppercase mt-1">Seg</span>
+      </div>
+    </div>
+    <p class="text-[#6A8AA6] text-xs">Las apuestas cierran cuando empiece el torneo</p>
+  </div>
+  <!-- Cuando ya empezó -->
+  <div id="countdown-started" class="hidden card rounded-2xl p-5 text-center border border-red-800/40"
+       style="background:rgba(127,29,29,.18)">
+    <p class="text-red-400 font-display font-bold tracking-widest uppercase text-sm mb-1">🔒 Apuestas cerradas</p>
+    <p class="text-[#8AA6C0] text-xs">El Mundial FIFA 2026 ya ha comenzado. No se aceptan nuevas apuestas.</p>
+  </div>
+</div>
 
 <!-- Stats bar -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
@@ -564,6 +923,66 @@
 </section>
 {% endif %}
 
+{% endif %}
+
+{% if not user.is_authenticated %}
+<!-- Sistema Underdog — solo visitantes -->
+<section class="mt-10 mb-4 anim-card">
+  <div class="rounded-2xl overflow-hidden" style="border:1px solid rgba(255,80,80,0.35);">
+    <div class="px-6 py-5 flex items-center gap-4" style="background:linear-gradient(135deg,#1C0808,#1A1008);">
+      <span class="text-4xl">&#128293;</span>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-red-400 mb-0.5">Sistema especial</p>
+        <h2 class="font-display font-bold text-xl text-white">Potenciador Underdog</h2>
+      </div>
+    </div>
+    <div class="px-6 py-5 space-y-4 text-sm" style="background:#0D1520;">
+      <p class="text-[#9AA6B8] leading-relaxed">
+        Al comenzar la fase eliminatoria, los jugadores que estén <strong class="text-white">por debajo del promedio de puntos</strong>
+        reciben un potenciador automático. Cuanto más atrás estés, más fuerte es el boost.
+        Se recalcula automáticamente después de cada ronda de resultados.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="rounded-xl p-4 space-y-2.5" style="background:#0C1520; border:1px solid rgba(255,80,80,0.3);">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-red-400">Tiers del potenciador</p>
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">≥ promedio</span>
+              <span class="text-[#4A6278] font-bold">Sin boost</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">75–99% del promedio</span>
+              <span class="font-bold text-red-300">&#128293; ×1.5 &nbsp;·&nbsp; 1 uso</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">50–74% del promedio</span>
+              <span class="font-bold text-red-300">&#128293; ×1.5 &nbsp;·&nbsp; 2 usos</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#120E0A;">
+              <span class="text-[#8AA6C0]">25–49% del promedio</span>
+              <span class="font-bold text-orange-300">&#128293;&#128293; ×2.5 &nbsp;·&nbsp; 2 usos</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#160C08;">
+              <span class="text-[#8AA6C0]">0–24% del promedio</span>
+              <span class="font-bold text-orange-400">&#128293;&#128293;&#128293; ×2.5 &nbsp;·&nbsp; 3 usos</span>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl p-4 space-y-3" style="background:#0C1520; border:1px solid rgba(255,80,80,0.3);">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-red-400">¿Cómo se usa?</p>
+          <ul class="space-y-2 text-xs text-[#9AA6B8]">
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 mt-0.5">→</span>Al predecir un partido eliminatorio, verás un checkbox para activar el potenciador.</li>
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 mt-0.5">→</span>Solo podés activarlo en N partidos en total (según tu tier), en cualquier ronda.</li>
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 mt-0.5">→</span>Si acertás con boost activo, tus puntos se multiplican automáticamente.</li>
+            <li class="flex gap-2"><span class="text-orange-400 flex-shrink-0 mt-0.5">!</span>Si subís en la tabla y salís de la zona underdog, los boosts pendientes se revocan.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <script>
 (function () {
   var KEY = 'wc2026_intro_v1';
@@ -575,74 +994,172 @@
   if (seen) { intro.classList.add('intro-hidden'); readyPage(); return; }
   try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
 
-  // ── YouTube audio player ──────────────────────────────────
-  var ytPlayer = null;
-  var soundOn  = false;
+  // ── Audio local (HTML5) ───────────────────────────────────
+  var audio   = document.getElementById('intro-audio');
+  var soundOn = false;
 
-  function loadYTApi() {
-    if (document.getElementById('yt-api-script')) return;
-    var s = document.createElement('script');
-    s.id  = 'yt-api-script';
-    s.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(s);
+  // Ocultar botón si no hay archivo de audio disponible
+  if (audio) {
+    audio.addEventListener('error', function() {
+      var btn = document.getElementById('intro-sound-btn');
+      if (btn) btn.style.display = 'none';
+    });
   }
-  // ── helpers de UI ──────────────────────────────────────
+
   function setSoundUI(on) {
     document.getElementById('icon-muted').style.display = on ? 'none' : '';
     document.getElementById('icon-sound').style.display = on ? ''    : 'none';
+    var lbl = document.getElementById('sound-label');
+    if (lbl) lbl.textContent = on ? 'Silenciar' : 'Activar sonido';
     var btn = document.getElementById('intro-sound-btn');
     if (btn) { on ? btn.classList.add('sound-on') : btn.classList.remove('sound-on'); }
   }
 
-  var pendingUnmute = false;  // usuario hizo click antes de que el player estuviera listo
-
-  window.onYouTubeIframeAPIReady = function() {
-    ytPlayer = new YT.Player('yt-player', {
-      videoId: 'HmpzUm5j4OE',
-      // mute:1 = autoplay mudo (navegadores lo permiten); el usuario desenmudea
-      playerVars: { autoplay: 1, mute: 1, start: 0, controls: 0, disablekb: 1 },
-      events: {
-        onReady: function(e) {
-          e.target.setVolume(80);
-          e.target.playVideo();
-          if (pendingUnmute) {
-            e.target.unMute();
-            soundOn = true;
-            setSoundUI(true);
-          }
-        }
-      }
+  // Reproducir con sonido; si el navegador lo bloquea, reproducir muteado
+  if (audio) {
+    audio.muted = false;
+    audio.volume = 0.75;
+    audio.play().then(function() {
+      soundOn = true;
+      setSoundUI(true);
+    }).catch(function() {
+      // Autoplay con sonido bloqueado — intentar muteado (siempre permitido)
+      audio.muted = true;
+      audio.play().then(function() {
+        soundOn = false;
+        setSoundUI(false);
+      }).catch(function() {});
     });
-  };
+  }
+
   window.toggleIntroSound = function() {
-    if (!ytPlayer || typeof ytPlayer.unMute !== 'function') {
-      pendingUnmute = true;  // marcar para desmutar cuando esté listo
-      loadYTApi();
-      return;
-    }
+    if (!audio) return;
     if (soundOn) {
-      ytPlayer.mute();
+      audio.muted = true;
       soundOn = false;
       setSoundUI(false);
     } else {
-      ytPlayer.unMute();
-      ytPlayer.setVolume(80);
+      audio.muted = false;
+      audio.volume = 0.75;
+      if (audio.paused) {
+        audio.play().catch(function() {});
+      }
       soundOn = true;
       setSoundUI(true);
     }
   };
-  // Try silent autoplay first; if API is not yet loaded, attempt lazy load
-  loadYTApi();
   // ─────────────────────────────────────────────────────────
   function exit() {
     clearTimeout(t);
-    // stop YouTube audio on intro dismiss
-    try { if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo(); } catch(e) {}
+    // Parar audio al cerrar intro
+    try { if (audio) { audio.pause(); audio.currentTime = 0; } } catch(e) {}
     intro.classList.add('intro-exit');
     setTimeout(function () { intro.classList.add('intro-hidden'); readyPage(); }, 720);
   }
   var t = setTimeout(exit, 4350);
   window.skipIntro = exit;
+})();
+
+/* ═══ Eliminar fondo blanco del logo via canvas ═══════════════ */
+(function() {
+  var img    = document.getElementById('intro-logo-img');
+  var canvas = document.getElementById('intro-logo-canvas');
+  if (!img || !canvas) return;
+
+  function processLogo() {
+    try {
+      canvas.width  = img.naturalWidth  || 300;
+      canvas.height = img.naturalHeight || 300;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var d = imageData.data;
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i], g = d[i+1], b = d[i+2];
+        /* Si el píxel es cerca de blanco → transparente */
+        if (r > 220 && g > 220 && b > 220) {
+          /* Suavizar bordes: alpha proporcional a cuánto se aleja del blanco */
+          var whiteness = Math.min(r, g, b);
+          var alpha = Math.round((255 - whiteness) * (255 / 35));
+          d[i+3] = Math.max(0, Math.min(255, alpha));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      img.style.display    = 'none';
+      canvas.style.display = 'block';
+    } catch(e) {
+      /* CORS u otro error: dejar la imagen original visible */
+      img.style.display = 'block';
+    }
+  }
+
+  if (img.complete && img.naturalWidth) {
+    processLogo();
+  } else {
+    img.addEventListener('load', processLogo);
+  }
+})();
+
+/* ═══ Contador regresivo al Mundial FIFA 2026 ═══════════════
+   Inicio: 11 Jun 2026 · 19:00 h UTC-6 (Ciudad de México)
+   = 2026-06-12T01:00:00Z (UTC)
+══════════════════════════════════════════════════════════ */
+(function() {
+  // 11 Jun 2026 19:00 CDT = UTC-5 en horario de verano → UTC 00:00 12 Jun
+  var WC_START = new Date('2026-06-12T00:00:00Z').getTime();
+
+  var pre       = document.getElementById('countdown-pre');
+  var started   = document.getElementById('countdown-started');
+  var elDias    = document.getElementById('cd-dias');
+  var elHrs     = document.getElementById('cd-hrs');
+  var elMin     = document.getElementById('cd-min');
+  var elSeg     = document.getElementById('cd-seg');
+
+  // Botones de apuesta que deben ocultarse cuando el torneo comience
+  var betButtons = document.querySelectorAll(
+    'a[href*="groups"], a[href*="predict"], a[href*="bracket"], a[href*="round"]'
+  );
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function lockBetting() {
+    if (pre) pre.classList.add('hidden');
+    if (started) started.classList.remove('hidden');
+    betButtons.forEach(function(btn) {
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '.35';
+      btn.title = 'Las apuestas han cerrado — el Mundial ya comenzó';
+    });
+  }
+
+  function tick() {
+    var now  = Date.now();
+    var diff = WC_START - now;
+
+    if (diff <= 0) {
+      lockBetting();
+      return; // detener intervalo
+    }
+
+    var days = Math.floor(diff / 86400000);
+    var hrs  = Math.floor((diff % 86400000) / 3600000);
+    var min  = Math.floor((diff % 3600000)  / 60000);
+    var seg  = Math.floor((diff % 60000)    / 1000);
+
+    if (elDias) elDias.textContent = String(days);
+    if (elHrs)  elHrs.textContent  = pad(hrs);
+    if (elMin)  elMin.textContent  = pad(min);
+    if (elSeg)  elSeg.textContent  = pad(seg);
+
+    setTimeout(tick, 1000);
+  }
+
+  // Iniciar inmediatamente
+  if (Date.now() >= WC_START) {
+    lockBetting();
+  } else {
+    tick();
+  }
 })();
 </script>
 

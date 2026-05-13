@@ -1,0 +1,116 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Partidos{% endblock %}
+{% block heading %}Gestión de Partidos{% endblock %}
+{% block content %}
+
+<!-- Filtro de ronda -->
+<div class="flex flex-wrap gap-2 mb-6">
+  {% for r in rounds %}
+  <a href="?round={{ r.slug }}"
+     class="px-3 py-1.5 rounded-full text-xs font-bold border transition
+     {% if r.slug == round_slug %}btn-gold border-gold{% else %}border-[#1A2E48] text-[#8AA6C0] hover:border-gold/40{% endif %}">
+    {{ r.name }}
+  </a>
+  {% endfor %}
+</div>
+
+{% if current_round %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Crear partido -->
+  <div class="card rounded-xl p-5">
+    <h2 class="font-bold text-white text-sm uppercase tracking-wide mb-4">Nuevo Partido</h2>
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">N° de partido</label>
+        <input type="number" name="match_number" value="1" min="1">
+      </div>
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Equipo 1</label>
+        <select name="team1_id">
+          <option value="">— sin asignar —</option>
+          {% for t in teams %}<option value="{{ t.id }}">{{ t.name }} ({{ t.group.name }})</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Equipo 2</label>
+        <select name="team2_id">
+          <option value="">— sin asignar —</option>
+          {% for t in teams %}<option value="{{ t.id }}">{{ t.name }} ({{ t.group.name }})</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] text-[#6A8AA6] uppercase tracking-wider block mb-1">Descripción (opcional)</label>
+        <input type="text" name="description" placeholder="Ej: 1A vs 2B">
+      </div>
+      <input type="hidden" name="round_id" value="{{ current_round.id }}">
+      <button name="action" value="create_match" type="submit"
+              class="btn-gold w-full py-2 rounded-lg text-sm font-bold">Crear partido</button>
+    </form>
+  </div>
+
+  <!-- Lista de partidos -->
+  <div class="lg:col-span-2 card rounded-xl overflow-hidden">
+    <div class="px-4 py-3 border-b border-[#1A2E48]">
+      <h2 class="font-bold text-white text-sm uppercase tracking-wide">
+        {{ current_round.name }} — {{ matches.count }} partido(s)
+      </h2>
+    </div>
+
+    <div class="divide-y divide-[#1A2E48]">
+      {% for m in matches %}
+      <div class="px-4 py-3 flex items-center gap-3">
+        <span class="text-xs font-bold text-[#4A6278] w-6">{{ m.match_number }}</span>
+        <div class="flex-1">
+          <p class="text-sm font-bold text-white">
+            {{ m.team1.name|default:"TBD" }} <span class="text-[#4A6278]">vs</span> {{ m.team2.name|default:"TBD" }}
+          </p>
+          {% if m.description %}<p class="text-[10px] text-[#4A6278]">{{ m.description }}</p>{% endif %}
+          {% if m.winner %}
+            <p class="text-[10px] text-emerald-400 font-bold mt-0.5">✓ Ganador: {{ m.winner.name }}</p>
+          {% else %}
+            <p class="text-[10px] text-[#2A4060] mt-0.5">Sin resultado</p>
+          {% endif %}
+        </div>
+
+        <!-- Asignar ganador -->
+        {% if not m.winner %}
+        <form method="post" class="flex gap-1 items-center">
+          {% csrf_token %}
+          <input type="hidden" name="match_id" value="{{ m.id }}">
+          <input type="hidden" name="round_slug" value="{{ round_slug }}">
+          <select name="winner_id" class="text-xs py-1 px-2" style="width:130px;">
+            {% if m.team1 %}<option value="{{ m.team1.id }}">{{ m.team1.name }}</option>{% endif %}
+            {% if m.team2 %}<option value="{{ m.team2.id }}">{{ m.team2.name }}</option>{% endif %}
+          </select>
+          <button name="action" value="set_winner" type="submit"
+                  class="px-2 py-1 rounded text-[10px] font-bold border border-emerald-800/50 text-emerald-400 hover:bg-emerald-900/20 transition flex-shrink-0">
+            Ganador
+          </button>
+        </form>
+        {% else %}
+        <span class="text-[10px] px-2 py-1 rounded bg-emerald-900/20 text-emerald-400 border border-emerald-800/30 font-bold">
+          {{ m.winner.name }} ✓
+        </span>
+        {% endif %}
+
+        <!-- Eliminar -->
+        <form method="post" onsubmit="return confirm('¿Eliminar partido #{{ m.match_number }}?')">
+          {% csrf_token %}
+          <input type="hidden" name="match_id" value="{{ m.id }}">
+          <input type="hidden" name="round_slug" value="{{ round_slug }}">
+          <button name="action" value="delete_match" type="submit"
+                  class="px-2 py-1 rounded text-[10px] font-bold border border-red-800/50 text-red-400 hover:bg-red-900/20 transition">✕</button>
+        </form>
+      </div>
+      {% empty %}
+      <div class="px-4 py-6 text-center text-[#4A6278] text-sm">Sin partidos en esta ronda.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% else %}
+<p class="text-[#4A6278]">Selecciona una ronda para gestionar sus partidos.</p>
+{% endif %}
+{% endblock %}

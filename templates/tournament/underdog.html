@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load tournament_extras %}
+{% block title %}Potenciador Underdog — CopaBet 26{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="text-center pt-2 pb-4">
+    <p class="text-[10px] font-bold uppercase tracking-[0.35em] text-red-400 mb-2">Sistema especial</p>
+    <h1 class="font-display font-black text-4xl sm:text-5xl text-white tracking-wide mb-3">
+      &#128293; POTENCIADOR <span style="color:#FF6B6B;">UNDERDOG</span>
+    </h1>
+    <p class="text-[#8AA6C0] text-sm max-w-xl mx-auto">
+      Un mecanismo de balanceo que le da a los jugadores rezagados una segunda oportunidad durante las eliminatorias.
+    </p>
+  </div>
+
+  <!-- ¿Qué es? -->
+  <div class="rounded-2xl overflow-hidden" style="background:#0C1827; border:1px solid #1A2E48;">
+    <div class="px-6 py-4 border-b border-[#1A2E48]" style="background:rgba(255,80,80,0.06);">
+      <h2 class="font-display font-bold text-lg text-white">¿Qué es el sistema Underdog?</h2>
+    </div>
+    <div class="px-6 py-5 text-sm text-[#9AA6B8] leading-relaxed space-y-3">
+      <p>
+        Al iniciar la fase eliminatoria, el sistema calcula el <strong class="text-white">promedio de puntos</strong>
+        de todos los jugadores activos. Quienes estén por debajo de ese promedio reciben automáticamente
+        un <strong class="text-red-300">potenciador multiplicador</strong> para sus predicciones eliminatorias.
+      </p>
+      <p>
+        El potenciador <strong class="text-white">no es automático para todos los partidos</strong> — cada jugador
+        elige en qué partidos activarlo mediante un checkbox al momento de predecir.
+        Tiene un número limitado de usos según su tier.
+      </p>
+      <p>
+        Se <strong class="text-white">recalcula automáticamente</strong> después de cada ronda de resultados.
+        Si subís en el ranking y superás el promedio, el boost desaparece y los boosts pendientes en partidos
+        no puntuados se revocan.
+      </p>
+      {% if avg_points is not None %}
+      <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.2);">
+        <span class="text-[#6A8AA6]">Promedio actual del torneo:</span>
+        <span class="font-bold text-gold">{{ avg_points|floatformat:1 }} pts</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Tiers -->
+  <div class="rounded-2xl overflow-hidden" style="background:#0C1827; border:1px solid #1A2E48;">
+    <div class="px-6 py-4 border-b border-[#1A2E48]" style="background:rgba(255,80,80,0.06);">
+      <h2 class="font-display font-bold text-lg text-white">Tiers del potenciador</h2>
+    </div>
+    <div class="divide-y divide-[#1A2E48]">
+
+      <!-- Fila encabezados -->
+      <div class="grid grid-cols-3 px-6 py-2.5 text-[10px] font-bold uppercase tracking-wider text-[#4A6278]">
+        <span>Rango (% del promedio)</span>
+        <span class="text-center">Multiplicador</span>
+        <span class="text-right">Usos totales</span>
+      </div>
+
+      <div class="grid grid-cols-3 px-6 py-3.5 items-center {% if user.is_authenticated and user.profile.underdog_multiplier == 1.0 and user.profile.total_points > 0 %}bg-[#0F2137]{% endif %}">
+        <div>
+          <p class="text-sm font-medium text-[#8AA6C0]">≥ 100% del promedio</p>
+          <p class="text-[11px] text-[#4A6278] mt-0.5">Zona normal — sin boost</p>
+        </div>
+        <div class="text-center">
+          <span class="text-[#4A6278] font-bold text-sm">—</span>
+        </div>
+        <div class="text-right">
+          <span class="text-[#4A6278] font-bold text-sm">—</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 px-6 py-3.5 items-center {% if user.is_authenticated and user.profile.underdog_multiplier == 1.5 and user.profile.underdog_boost_uses == 1 %}bg-red-900/10{% endif %}">
+        <div>
+          <p class="text-sm font-medium text-white">75–99% del promedio</p>
+          <p class="text-[11px] text-[#6A8AA6] mt-0.5">Ligeramente rezagado</p>
+        </div>
+        <div class="text-center">
+          <span class="text-red-300 font-black text-lg">&#128293; ×1.5</span>
+        </div>
+        <div class="text-right">
+          <span class="text-white font-bold">1 uso</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 px-6 py-3.5 items-center {% if user.is_authenticated and user.profile.underdog_multiplier == 1.5 and user.profile.underdog_boost_uses == 2 %}bg-red-900/10{% endif %}">
+        <div>
+          <p class="text-sm font-medium text-white">50–74% del promedio</p>
+          <p class="text-[11px] text-[#6A8AA6] mt-0.5">Bastante atrás</p>
+        </div>
+        <div class="text-center">
+          <span class="text-red-300 font-black text-lg">&#128293; ×1.5</span>
+        </div>
+        <div class="text-right">
+          <span class="text-white font-bold">2 usos</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 px-6 py-3.5 items-center {% if user.is_authenticated and user.profile.underdog_multiplier == 2.5 and user.profile.underdog_boost_uses == 2 %}bg-orange-900/10{% endif %}">
+        <div>
+          <p class="text-sm font-medium text-white">25–49% del promedio</p>
+          <p class="text-[11px] text-[#6A8AA6] mt-0.5">Muy atrás</p>
+        </div>
+        <div class="text-center">
+          <span class="text-orange-300 font-black text-lg">&#128293;&#128293; ×2.5</span>
+        </div>
+        <div class="text-right">
+          <span class="text-white font-bold">2 usos</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 px-6 py-3.5 items-center {% if user.is_authenticated and user.profile.underdog_multiplier == 2.5 and user.profile.underdog_boost_uses == 3 %}bg-orange-900/10{% endif %}">
+        <div>
+          <p class="text-sm font-medium text-white">0–24% del promedio</p>
+          <p class="text-[11px] text-[#6A8AA6] mt-0.5">En la cola del ranking</p>
+        </div>
+        <div class="text-center">
+          <span class="text-orange-400 font-black text-lg">&#128293;&#128293;&#128293; ×2.5</span>
+        </div>
+        <div class="text-right">
+          <span class="text-white font-bold">3 usos</span>
+        </div>
+      </div>
+
+    </div>
+    {% if user.is_authenticated and user.profile.underdog_multiplier > 1.0 %}
+    <div class="px-6 py-3 border-t border-[#1A2E48] flex items-center justify-between" style="background:rgba(255,80,80,0.05);">
+      <span class="text-xs text-red-400 font-bold">Tu tier actual está resaltado</span>
+      <span class="text-xs font-black" style="color:#FF6B6B;">&#128293; ×{{ user.profile.underdog_multiplier }} · {{ user.profile.underdog_boost_uses }} uso{{ user.profile.underdog_boost_uses|pluralize:"s" }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Cómo usar -->
+  <div class="rounded-2xl overflow-hidden" style="background:#0C1827; border:1px solid #1A2E48;">
+    <div class="px-6 py-4 border-b border-[#1A2E48]" style="background:rgba(255,80,80,0.06);">
+      <h2 class="font-display font-bold text-lg text-white">¿Cómo se activa?</h2>
+    </div>
+    <div class="px-6 py-5 space-y-4 text-sm">
+      <ol class="space-y-4">
+        <li class="flex gap-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-display font-black text-sm" style="background:rgba(255,80,80,0.15); color:#FF6B6B; border:1px solid rgba(255,80,80,0.3);">1</div>
+          <div>
+            <p class="font-medium text-white">Verificá tu estado</p>
+            <p class="text-[#8AA6C0] text-xs mt-0.5">Al comenzar las eliminatorias, revisá tu perfil o esta página para ver si tenés boost activo.</p>
+          </div>
+        </li>
+        <li class="flex gap-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-display font-black text-sm" style="background:rgba(255,80,80,0.15); color:#FF6B6B; border:1px solid rgba(255,80,80,0.3);">2</div>
+          <div>
+            <p class="font-medium text-white">Andá a predecir un partido eliminatorio</p>
+            <p class="text-[#8AA6C0] text-xs mt-0.5">En la pantalla de predicciones de eliminatorias, verás un checkbox "&#128293; Activar potenciador" en cada partido.</p>
+          </div>
+        </li>
+        <li class="flex gap-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-display font-black text-sm" style="background:rgba(255,80,80,0.15); color:#FF6B6B; border:1px solid rgba(255,80,80,0.3);">3</div>
+          <div>
+            <p class="font-medium text-white">Marcá el checkbox en los partidos donde querés el boost</p>
+            <p class="text-[#8AA6C0] text-xs mt-0.5">Tenés N usos en total (no por ronda). Usalos estratégicamente.</p>
+          </div>
+        </li>
+        <li class="flex gap-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-display font-black text-sm" style="background:rgba(255,80,80,0.15); color:#FF6B6B; border:1px solid rgba(255,80,80,0.3);">4</div>
+          <div>
+            <p class="font-medium text-white">Si acertás, tus puntos se multiplican automáticamente</p>
+            <p class="text-[#8AA6C0] text-xs mt-0.5">El multiplicador se aplica sobre el total de puntos del partido (base + bonus sorpresa).</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Advertencias -->
+  <div class="rounded-xl p-5 space-y-2.5" style="background:rgba(255,160,0,0.06); border:1px solid rgba(255,160,0,0.2);">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-orange-400 mb-1">Importante</p>
+    <div class="flex gap-2.5 text-sm">
+      <span class="text-orange-400 flex-shrink-0 mt-0.5">!</span>
+      <span class="text-[#9AA6B8]">Si superás el promedio de puntos después de una ronda, <strong class="text-white">perdés el potenciador</strong>. Los boosts activados en partidos que aún no se puntuaron se revocan automáticamente.</span>
+    </div>
+    <div class="flex gap-2.5 text-sm">
+      <span class="text-orange-400 flex-shrink-0 mt-0.5">!</span>
+      <span class="text-[#9AA6B8]">El boost solo aplica a predicciones de <strong class="text-white">fase eliminatoria</strong>, no a grupos.</span>
+    </div>
+    <div class="flex gap-2.5 text-sm">
+      <span class="text-orange-400 flex-shrink-0 mt-0.5">!</span>
+      <span class="text-[#9AA6B8]">Los usos son totales (no por ronda): podés usar todos en R32 o distribuirlos como quieras.</span>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  {% if user.is_authenticated %}
+  <div class="flex gap-3 justify-center pb-4">
+    {% if user.profile.underdog_multiplier > 1.0 %}
+    <a href="{% url 'tournament:bracket' %}"
+       class="px-6 py-3 rounded-xl font-display font-bold text-sm tracking-wider transition"
+       style="background:rgba(255,80,80,0.18); color:#FF6B6B; border:1px solid rgba(255,80,80,0.35);">
+      &#128293; Ir a Eliminatorias
+    </a>
+    {% endif %}
+    <a href="{% url 'accounts:profile' %}"
+       class="px-6 py-3 rounded-xl font-display font-bold text-sm tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white hover:border-[#C9A84C]/40 transition">
+      Ver mi perfil
+    </a>
+  </div>
+  {% else %}
+  <div class="text-center pb-4">
+    <a href="{% url 'accounts:register' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-sm tracking-wider hover:opacity-90 transition"
+       style="background:#C9A84C; color:#070F1C;">
+      CREAR CUENTA GRATIS
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

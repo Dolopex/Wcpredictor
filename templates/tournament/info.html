@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+{% load tournament_extras %}
+{% block title %}¿Cómo se juega? — CopaBet 26{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8">
+
+  <!-- Header -->
+  <div class="text-center pt-2 pb-2">
+    <p class="text-[10px] font-bold uppercase tracking-[0.35em] text-gold mb-2">Guía completa</p>
+    <h1 class="font-display font-black text-4xl sm:text-5xl text-white tracking-wide mb-3">¿CÓMO SE JUEGA?</h1>
+    <p class="text-[#8AA6C0] text-sm max-w-xl mx-auto">
+      Todo lo que hay que saber sobre CopaBet 26: créditos, predicciones, puntos y el sistema Underdog.
+    </p>
+  </div>
+
+  <!-- ¿Qué es? -->
+  <div class="card rounded-2xl p-6">
+    <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-gold mb-2">¿Qué es CopaBet 26?</p>
+    <h2 class="font-display font-bold text-2xl text-white mb-3">El juego de predicciones del FIFA World Cup 2026</h2>
+    <p class="text-[#8AA6C0] text-sm leading-relaxed mb-5">
+      CopaBet 26 es una plataforma de predicciones para el Mundial de Fútbol 2026.
+      Se cargan créditos, se predicen qué selecciones avanzan en cada fase y se compite
+      en el ranking global. Cuanto mayor sea la sorpresa — apostar por equipos con
+      peor ranking FIFA — más puntos se obtienen.
+    </p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.15);">
+        <p class="font-display font-bold text-2xl text-gold">48</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Selecciones</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">12</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Grupos</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">104</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Partidos</p>
+      </div>
+      <div class="rounded-xl p-3 text-center" style="background:rgba(201,168,76,0.04); border:1px solid #1A2E48;">
+        <p class="font-display font-bold text-2xl text-white">6</p>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider mt-0.5">Fases</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 pasos -->
+  <div>
+    <h2 class="font-display font-bold text-xl text-white tracking-wide mb-4 text-center">LOS 3 PASOS</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <div class="card rounded-2xl p-5 relative overflow-hidden">
+        <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/06 select-none">1</div>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.25);">
+          <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-white text-base mb-2">Cargar créditos</h3>
+        <p class="text-[#6A8AA6] text-sm leading-relaxed">
+          Se carga la cuenta con créditos (1 crd = $1 COP). Hay paquetes para Grupos, Eliminatorias o el torneo completo.
+        </p>
+      </div>
+
+      <div class="card rounded-2xl p-5 relative overflow-hidden border border-gold/20"
+           style="background:linear-gradient(160deg,#0F2137 0%,#0B1926 100%);">
+        <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/08 select-none">2</div>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(201,168,76,0.18); border:1px solid rgba(201,168,76,0.4);">
+          <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-white text-base mb-2">Predecir ganadores</h3>
+        <p class="text-[#8AA6C0] text-sm leading-relaxed">
+          Antes de cada fase se elige qué equipos avanzan. Cada predicción tiene un costo fijo en créditos.
+        </p>
+      </div>
+
+      <div class="card rounded-2xl p-5 relative overflow-hidden">
+        <div class="absolute top-3 right-4 font-display font-black text-6xl text-[#C9A84C]/06 select-none">3</div>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+             style="background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.25);">
+          <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-white text-base mb-2">Subir al ranking</h3>
+        <p class="text-[#6A8AA6] text-sm leading-relaxed">
+          Se acumulan puntos por cada acierto. Más puntos si se predice la sorpresa. El objetivo: llegar primero al final del torneo.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sistema de puntuación -->
+  <div>
+    <h2 class="font-display font-bold text-xl text-white tracking-wide mb-1 text-center">SISTEMA DE PUNTUACIÓN</h2>
+    <p class="text-[#4A6278] text-xs text-center mb-5">Así se calculan exactamente los puntos</p>
+
+    <!-- Grupos -->
+    <div class="card rounded-2xl p-6 mb-4">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+          <span class="text-gold font-bold text-xs">GRP</span>
+        </div>
+        <h3 class="font-bold text-white text-lg">Fase de Grupos</h3>
+      </div>
+
+      <div class="rounded-xl px-4 py-3 mb-4 flex items-center gap-3" style="background:#0D1F35; border:1px solid #1A2E48;">
+        <span class="text-gold font-bold text-sm flex-shrink-0">Costo:</span>
+        <span class="text-[#8AA6C0] text-sm">1.000 créditos por grupo × 12 grupos = <strong class="text-white">12.000 crd en total</strong></span>
+      </div>
+
+      <p class="text-[10px] font-bold uppercase tracking-widest text-[#4A6278] mb-2">Puntos por equipo que avanza</p>
+      <div class="rounded-xl px-4 py-3 mb-3 font-mono text-sm" style="background:#060E1A; border:1px solid #1A2E48;">
+        <span class="text-emerald-400">pts</span>
+        <span class="text-[#6A8AA6]"> = </span>
+        <span class="text-white">10</span>
+        <span class="text-[#6A8AA6]"> + </span>
+        <span class="text-amber-300">round(ranking_FIFA × 0.3)</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-5 text-xs text-center">
+        <div class="rounded-lg py-2 px-1" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <p class="text-[#4A6278] mb-1">España (rank 1)</p>
+          <p class="text-white font-bold">10 pts</p>
+        </div>
+        <div class="rounded-lg py-2 px-1" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <p class="text-[#4A6278] mb-1">México (rank 15)</p>
+          <p class="text-white font-bold">14 pts</p>
+        </div>
+        <div class="rounded-lg py-2 px-1" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <p class="text-[#4A6278] mb-1">Nueva Zelanda (rank 85)</p>
+          <p class="text-white font-bold">35 pts</p>
+        </div>
+      </div>
+
+      <p class="text-[10px] font-bold uppercase tracking-widest text-[#4A6278] mb-2">Bonus adicionales</p>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between rounded-lg px-3 py-2.5" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <span class="text-[#8AA6C0]">Acertar posición exacta del 1.° del grupo</span>
+          <span class="text-emerald-400 font-bold">+3 pts</span>
+        </div>
+        <div class="flex items-center justify-between rounded-lg px-3 py-2.5" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <span class="text-[#8AA6C0]">Acertar posición exacta del 2.° del grupo</span>
+          <span class="text-emerald-400 font-bold">+3 pts</span>
+        </div>
+        <div class="flex items-center justify-between rounded-lg px-3 py-2.5" style="background:#0D1F35; border:1px solid rgba(201,168,76,0.2);">
+          <span class="text-[#8AA6C0]">Acertar el mejor tercero que clasifica</span>
+          <span class="text-gold font-bold">+5 pts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mejores terceros -->
+    <div class="rounded-2xl p-5 mb-4" style="background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.2);">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span class="text-gold font-bold text-xs">3°</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-1">Los "mejores terceros" del Mundial 2026</h4>
+          <p class="text-[#8AA6C0] text-sm leading-relaxed mb-3">
+            El Mundial 2026 tiene <strong class="text-white">12 grupos</strong> de 4 equipos cada uno.
+            Pasan a la siguiente ronda los <strong class="text-white">2 primeros de cada grupo (24 equipos)</strong>,
+            más los <strong class="text-gold">8 mejores equipos terceros</strong> de entre los 12 grupos —
+            es decir, los terceros con mejor puntaje y diferencia de goles.
+            Así se completan los <strong class="text-white">32 clasificados</strong> para la Ronda de 32.
+          </p>
+          <div class="rounded-lg px-3 py-2.5 text-xs text-[#8AA6C0]" style="background:#060E1A; border:1px solid #1A2E48;">
+            <span class="text-gold font-bold">En CopaBet 26:</span>
+            en cada grupo se puede seleccionar opcionalmente un tercer equipo e indicar si se cree que
+            va a clasificar como uno de los 8 mejores terceros.
+            Si acierta → <strong class="text-white">+5 pts</strong> extras.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Eliminatorias -->
+    <div class="card rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+          <span class="text-gold font-bold text-xs">KO</span>
+        </div>
+        <h3 class="font-bold text-white text-lg">Eliminatorias</h3>
+      </div>
+
+      <p class="text-[#8AA6C0] text-sm mb-4 leading-relaxed">
+        En cada partido eliminatorio se predice el ganador. Los puntos base dependen de la ronda,
+        más un <strong class="text-white">bonus por sorpresa</strong> si el equipo con peor ranking derrota al favorito.
+      </p>
+
+      <div class="rounded-xl overflow-hidden mb-4" style="border:1px solid #1A2E48;">
+        <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#4A6278]" style="background:#060E1A;">
+          Puntos base y costo por ronda
+        </div>
+        <div class="divide-y divide-[#1A2E48] text-sm">
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#0D1F35;">
+            <span class="text-[#8AA6C0]">Ronda de 32 <span class="text-[#4A6278] text-xs">(R32)</span></span>
+            <div class="flex items-center gap-6 text-xs">
+              <span class="text-[#4A6278]">500 crd</span>
+              <span class="text-white font-bold w-16 text-right">10 pts base</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#0B1926;">
+            <span class="text-[#8AA6C0]">Ronda de 16 <span class="text-[#4A6278] text-xs">(Octavos)</span></span>
+            <div class="flex items-center gap-6 text-xs">
+              <span class="text-[#4A6278]">1.000 crd</span>
+              <span class="text-white font-bold w-16 text-right">15 pts base</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#0D1F35;">
+            <span class="text-[#8AA6C0]">Cuartos de Final</span>
+            <div class="flex items-center gap-6 text-xs">
+              <span class="text-[#4A6278]">1.000 crd</span>
+              <span class="text-white font-bold w-16 text-right">20 pts base</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#0B1926;">
+            <span class="text-[#8AA6C0]">Semifinales</span>
+            <div class="flex items-center gap-6 text-xs">
+              <span class="text-[#4A6278]">2.000 crd</span>
+              <span class="text-white font-bold w-16 text-right">25 pts base</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:rgba(201,168,76,0.05);">
+            <span class="text-gold font-semibold">Final</span>
+            <div class="flex items-center gap-6 text-xs">
+              <span class="text-[#6A8AA6]">2.000 crd</span>
+              <span class="text-gold font-bold w-16 text-right">35 pts base</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl p-4" style="background:rgba(52,211,153,0.05); border:1px solid rgba(52,211,153,0.15);">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-2">Bonus Sorpresa (upset bonus)</p>
+        <div class="font-mono text-sm rounded-lg px-3 py-2 mb-2" style="background:#060E1A; border:1px solid #1A2E48;">
+          <span class="text-emerald-400">bonus</span>
+          <span class="text-[#6A8AA6]"> = </span>
+          <span class="text-amber-300">max(0, ranking_ganador − ranking_perdedor) × 0.5</span>
+        </div>
+        <p class="text-xs text-[#6A8AA6] leading-relaxed">
+          Solo aplica cuando el ganador tiene <strong class="text-white">peor ranking FIFA</strong> que el perdedor.
+          Cuanto mayor sea la diferencia de ranking, más puntos extra se obtienen.
+        </p>
+        <div class="mt-2 rounded-lg px-3 py-2 text-xs text-[#6A8AA6]" style="background:#060E1A; border:1px solid #1A2E48;">
+          <span class="text-[#4A6278]">Ejemplo:</span> un equipo rank 50 elimina a uno rank 5
+          → bonus = (50 − 5) × 0.5 = <strong class="text-white">+22 pts</strong> adicionales
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Créditos -->
+  <div class="card rounded-2xl p-6">
+    <h2 class="font-display font-bold text-lg text-white mb-1">💳 Sistema de Créditos</h2>
+    <p class="text-[#4A6278] text-xs mb-4">La moneda del juego</p>
+    <div class="space-y-3 text-sm text-[#8AA6C0] leading-relaxed">
+      <p><strong class="text-white">1 crédito = $1 COP.</strong> Los créditos se usan para hacer predicciones. A diferencia de una apuesta convencional, los créditos no se devuelven al acertar: el objetivo es acumular <strong class="text-white">puntos</strong> para el ranking, no recuperar dinero.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+        <div class="rounded-lg px-3 py-2.5 text-center" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <p class="text-xs text-[#6A8AA6] mb-1">Pack Grupos</p>
+          <p class="font-bold text-white">12.000 crd</p>
+          <p class="text-[10px] text-[#4A6278] mt-0.5">Cubre los 12 grupos</p>
+        </div>
+        <div class="rounded-lg px-3 py-2.5 text-center" style="background:#0D1F35; border:1px solid #1A2E48;">
+          <p class="text-xs text-[#6A8AA6] mb-1">Pack Eliminatorias</p>
+          <p class="font-bold text-white">~32.000 crd</p>
+          <p class="text-[10px] text-[#4A6278] mt-0.5">R32 hasta Final</p>
+        </div>
+        <div class="rounded-lg px-3 py-2.5 text-center" style="background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.2);">
+          <p class="text-xs text-gold mb-1">Pack Completo</p>
+          <p class="font-bold text-gold">Todo incluido</p>
+          <p class="text-[10px] text-[#6A8AA6] mt-0.5">El mejor valor</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ranking y premios -->
+  <div class="card rounded-2xl p-6 border border-gold/20" style="background:linear-gradient(160deg,#0F2137 0%,#0B1926 100%)">
+    <h2 class="font-display font-bold text-lg text-white mb-1">🏆 Ranking y Premios</h2>
+    <p class="text-[#4A6278] text-xs mb-4">El pozo se reparte entre los 3 primeros al finalizar el torneo</p>
+
+    <p class="text-[#8AA6C0] text-sm leading-relaxed mb-5">
+      Todos los participantes compiten en un único ranking global. Los puntos se acumulan
+      durante toda la fase de grupos y las eliminatorias. Al finalizar la Final
+      del <strong class="text-white">19 de julio de 2026</strong>, el pozo total se reparte
+      entre los tres primeros del ranking.
+    </p>
+
+    <div class="rounded-xl overflow-hidden" style="border:1px solid rgba(201,168,76,0.25);">
+      <div class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gold flex items-center gap-2"
+           style="background:rgba(201,168,76,0.08);">
+        <span>Distribución del pozo</span>
+        <span class="text-[#4A6278] font-normal normal-case tracking-normal">· sobre el total recaudado</span>
+      </div>
+      <div class="divide-y divide-[#1A2E48]">
+        <div class="flex items-center justify-between px-4 py-3" style="background:rgba(201,168,76,0.04);">
+          <div class="flex items-center gap-3">
+            <span class="text-gold font-display font-black text-2xl w-7 text-center">1</span>
+            <div>
+              <p class="text-white font-semibold text-sm">Primer lugar</p>
+              <p class="text-[#4A6278] text-[10px]">Mayor cantidad de puntos</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-gold font-display font-black text-2xl">50%</p>
+            <p class="text-[#4A6278] text-[10px]">del pozo total</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <div class="flex items-center gap-3">
+            <span class="text-[#9BA8B5] font-display font-black text-2xl w-7 text-center">2</span>
+            <div>
+              <p class="text-white font-semibold text-sm">Segundo lugar</p>
+              <p class="text-[#4A6278] text-[10px]">Segundo mayor puntaje</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-[#9BA8B5] font-display font-black text-2xl">30%</p>
+            <p class="text-[#4A6278] text-[10px]">del pozo total</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <div class="flex items-center gap-3">
+            <span class="text-[#8B6A3E] font-display font-black text-2xl w-7 text-center">3</span>
+            <div>
+              <p class="text-white font-semibold text-sm">Tercer lugar</p>
+              <p class="text-[#4A6278] text-[10px]">Tercer mayor puntaje</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-[#8B6A3E] font-display font-black text-2xl">20%</p>
+            <p class="text-[#4A6278] text-[10px]">del pozo total</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-[#4A6278] text-[10px] mt-3 text-center">El monto exacto del pozo depende de la cantidad de participantes.</p>
+  </div>
+
+  <!-- Underdog -->
+  <div class="rounded-2xl overflow-hidden" style="border:1px solid rgba(255,80,80,0.35);">
+    <div class="px-6 py-5 flex items-center gap-4" style="background:linear-gradient(135deg,#1C0808,#1A1008);">
+      <span class="text-4xl">&#128293;</span>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-red-400 mb-0.5">Sistema especial</p>
+        <h2 class="font-display font-bold text-xl text-white">Potenciador Underdog</h2>
+      </div>
+      {% if user.is_authenticated and user.profile.underdog_multiplier > 1.0 %}
+      <div class="ml-auto text-right flex-shrink-0">
+        <p class="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-0.5">Tu boost activo</p>
+        <p class="text-xl font-black" style="color:#FF6B6B;">&#128293; ×{{ user.profile.underdog_multiplier }}</p>
+        <p class="text-[10px] text-red-700">{{ user.profile.underdog_boost_uses }} uso{{ user.profile.underdog_boost_uses|pluralize:"s" }}</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="px-6 py-5 space-y-4 text-sm" style="background:#0D1520;">
+      <p class="text-[#9AA6B8] leading-relaxed">
+        Al iniciar las eliminatorias, los jugadores que estén <strong class="text-white">por debajo del promedio de puntos</strong>
+        reciben un multiplicador. Cuanto más atrás se esté, más fuerte es el boost.
+        Se recalcula automáticamente después de cada ronda de resultados.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="rounded-xl p-4 space-y-2" style="background:#0C1520; border:1px solid rgba(255,80,80,0.3);">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-red-400">Tiers del potenciador</p>
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg" style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">≥ promedio</span>
+              <span class="text-[#4A6278] font-bold">Sin boost</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg
+              {% if user.is_authenticated and user.profile.underdog_multiplier == 1.5 and user.profile.underdog_boost_uses == 1 %}ring-1 ring-red-500/50{% endif %}"
+              style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">75–99% del promedio</span>
+              <span class="font-bold text-red-300">&#128293; ×1.5 · 1 uso</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg
+              {% if user.is_authenticated and user.profile.underdog_multiplier == 1.5 and user.profile.underdog_boost_uses == 2 %}ring-1 ring-red-500/50{% endif %}"
+              style="background:#0F1A28;">
+              <span class="text-[#8AA6C0]">50–74% del promedio</span>
+              <span class="font-bold text-red-300">&#128293; ×1.5 · 2 usos</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg
+              {% if user.is_authenticated and user.profile.underdog_multiplier == 2.5 and user.profile.underdog_boost_uses == 2 %}ring-1 ring-orange-500/50{% endif %}"
+              style="background:#120E0A;">
+              <span class="text-[#8AA6C0]">25–49% del promedio</span>
+              <span class="font-bold text-orange-300">&#128293;&#128293; ×2.5 · 2 usos</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5 px-2 rounded-lg
+              {% if user.is_authenticated and user.profile.underdog_multiplier == 2.5 and user.profile.underdog_boost_uses == 3 %}ring-1 ring-orange-500/50{% endif %}"
+              style="background:#160C08;">
+              <span class="text-[#8AA6C0]">0–24% del promedio</span>
+              <span class="font-bold text-orange-400">&#128293;&#128293;&#128293; ×2.5 · 3 usos</span>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl p-4 space-y-3" style="background:#0C1520; border:1px solid rgba(255,80,80,0.3);">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-red-400">¿Cómo se activa?</p>
+          <ol class="space-y-2 text-xs text-[#9AA6B8]">
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 font-bold">1.</span>Al predecir un partido eliminatorio aparece un checkbox para activar el boost.</li>
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 font-bold">2.</span>Se puede activar en N partidos en total (según el tier), en cualquier ronda.</li>
+            <li class="flex gap-2"><span class="text-red-400 flex-shrink-0 font-bold">3.</span>Si se acierta con boost activo, los puntos se multiplican automáticamente.</li>
+          </ol>
+          <div class="pt-2 border-t border-red-900/40 space-y-1.5 text-xs text-[#9AA6B8]">
+            <p class="flex gap-2"><span class="text-orange-400 flex-shrink-0">!</span>Si se supera el promedio, se pierde el potenciador y los boosts pendientes se revocan.</p>
+            <p class="flex gap-2"><span class="text-orange-400 flex-shrink-0">!</span>El boost solo aplica en eliminatorias, no en fase de grupos.</p>
+            {% if avg_points is not None %}
+            <p class="flex gap-2 mt-2"><span class="text-[#4A6278] flex-shrink-0">→</span>Promedio actual: <strong class="text-white ml-1">{{ avg_points|floatformat:1 }} pts</strong></p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="flex flex-col sm:flex-row gap-3 justify-center pb-4">
+    {% if user.is_authenticated %}
+    <a href="{% url 'tournament:groups' %}"
+       class="px-6 py-3 rounded-xl font-display font-bold text-sm tracking-wider hover:opacity-90 transition text-center"
+       style="background:#C9A84C; color:#070F1C;">
+      IR A GRUPOS
+    </a>
+    <a href="{% url 'tournament:bracket' %}"
+       class="px-6 py-3 rounded-xl font-display font-bold text-sm tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white hover:border-[#C9A84C]/40 transition text-center">
+      VER BRACKET
+    </a>
+    {% else %}
+    <a href="{% url 'accounts:register' %}"
+       class="px-8 py-3 rounded-xl font-display font-bold text-sm tracking-wider hover:opacity-90 transition text-center"
+       style="background:#C9A84C; color:#070F1C;">
+      CREAR CUENTA GRATIS
+    </a>
+    <a href="{% url 'accounts:login' %}"
+       class="px-6 py-3 rounded-xl font-display font-bold text-sm tracking-wider border border-[#1A2E48] text-[#8AA6C0] hover:text-white transition text-center">
+      YA TENGO CUENTA
+    </a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

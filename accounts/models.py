@@ -7,8 +7,20 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     total_points = models.IntegerField(default=0)
-    credits = models.IntegerField(default=1000, verbose_name='Créditos')
+    credits = models.IntegerField(default=0, verbose_name='Créditos')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    full_name = models.CharField(max_length=120, blank=True, verbose_name='Nombre completo')
+    phone_number = models.CharField(max_length=20, blank=True, verbose_name='Teléfono')
+    underdog_multiplier = models.FloatField(
+        default=1.0,
+        verbose_name='Multiplicador underdog',
+        help_text='Multiplicador aplicable a partidos elegidos por el usuario.'
+    )
+    underdog_boost_uses = models.IntegerField(
+        default=0,
+        verbose_name='Usos de potenciador',
+        help_text='Cantidad de partidos en los que puede activar el potenciador underdog.',
+    )
 
     class Meta:
         verbose_name = 'Perfil de usuario'

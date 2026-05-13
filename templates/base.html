@@ -1,9 +1,18 @@
+{% load tournament_extras %}{% load static %}
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Mundial 2026 Predictor{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA -->
+  <meta name="theme-color" content="#070F1C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CopaBet 26">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="{% url 'tournament:manifest' %}">
+  <link rel="apple-touch-icon" href="{% static 'tournament/img/wc2026-logo.webp' %}">
+  <title>{% block title %}CopaBet 26{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -44,7 +53,7 @@
     /* Input style */
     input[type=range] { accent-color: #C9A84C; }
     /* Form inputs */
-    input[type=text], input[type=email], input[type=password], select, textarea {
+    input[type=text], input[type=email], input[type=password], input[type=tel], select, textarea {
       width: 100%;
       background: #0C1827;
       border: 1px solid #1A2E48;
@@ -56,7 +65,7 @@
       outline: none;
     }
     input[type=text]:focus, input[type=email]:focus, input[type=password]:focus,
-    select:focus, textarea:focus {
+    input[type=tel]:focus, select:focus, textarea:focus {
       border-color: #C9A84C;
     }
     input::placeholder { color: #4A6278; }
@@ -78,7 +87,7 @@
             </svg>
           </div>
           <span class="font-display font-bold text-lg tracking-wide">
-            <span class="text-gold">MUNDIAL</span><span class="text-white"> 2026</span>
+            <span class="text-gold">COPA</span><span class="text-white">BET</span><span class="text-gold"> 26</span>
           </span>
         </a>
 
@@ -97,9 +106,18 @@
             Clasificación
           </a>
           {% if user.is_authenticated %}
+          <a href="{% url 'tournament:info' %}"
+             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
+            ¿Cómo jugar?
+          </a>
           <a href="{% url 'tournament:credits' %}"
              class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
             Créditos
+          </a>
+          <a href="{% url 'tournament:buy_credits' %}"
+             class="px-3 py-2 rounded-lg text-sm font-semibold transition"
+             style="background: rgba(201,168,76,0.15); color:#C9A84C; border:1px solid rgba(201,168,76,0.3);">
+            + Comprar
           </a>
           {% endif %}
         </div>
@@ -114,28 +132,31 @@
               <svg class="w-3.5 h-3.5 text-gold" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
               </svg>
-              <span class="text-gold font-bold text-sm">{{ user.profile.credits }}</span>
+              <span class="text-gold font-bold text-sm">{{ user.profile.credits|crd }}</span>
               <span class="text-[#8AA6C0] text-xs">crd</span>
             </a>
-            <!-- User menu -->
+            <!-- User menu (desktop) -->
             <a href="{% url 'accounts:profile' %}"
-               class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#112035] transition">
+               class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#112035] transition">
               <div class="w-7 h-7 rounded-full bg-[#172A45] border border-[#1A2E48] flex items-center justify-center text-xs font-bold text-gold">
                 {{ user.username|first|upper }}
               </div>
-              <span class="text-sm font-medium text-white hidden sm:block">{{ user.username }}</span>
+              <span class="text-sm font-medium text-white">{{ user.username }}</span>
             </a>
-            <a href="{% url 'accounts:logout' %}"
-               class="px-3 py-1.5 text-xs text-[#8AA6C0] hover:text-white transition rounded-lg hover:bg-[#112035]">
-              Salir
-            </a>
+            <form method="post" action="{% url 'accounts:logout' %}" class="hidden md:block">
+              {% csrf_token %}
+              <button type="submit"
+                class="px-3 py-1.5 text-xs text-[#8AA6C0] hover:text-white transition rounded-lg hover:bg-[#112035] bg-transparent border-0 cursor-pointer">
+                Salir
+              </button>
+            </form>
           {% else %}
             <a href="{% url 'accounts:login' %}"
-               class="px-4 py-2 text-sm rounded-lg text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition border border-[#1A2E48]">
+               class="hidden md:block px-4 py-2 text-sm rounded-lg text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition border border-[#1A2E48]">
               Iniciar sesión
             </a>
             <a href="{% url 'accounts:register' %}"
-               class="px-4 py-2 text-sm rounded-lg font-semibold transition"
+               class="hidden md:block px-4 py-2 text-sm rounded-lg font-semibold transition"
                style="background:#C9A84C; color:#070F1C;">
               Registrarse
             </a>
@@ -161,15 +182,110 @@
   {% endif %}
 
   <!-- Contenido principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-[#1A2E48] mt-16 py-8 text-center text-[#4A6278] text-sm">
-    <p class="font-display font-bold text-base text-[#8AA6C0] tracking-wider mb-1">MUNDIAL 2026 PREDICTOR</p>
-    <p class="text-xs">48 selecciones &middot; 12 grupos &middot; 6 rondas &middot; Sistema de créditos</p>
+  <!-- Footer (desktop only) -->
+  <footer class="hidden md:block border-t border-[#1A2E48] mt-16 py-8 text-center text-[#4A6278] text-sm">
+    <p class="font-display font-bold text-base text-[#8AA6C0] tracking-wider mb-1">COPABET 26</p>
+    <p class="text-xs">48 selecciones &middot; 12 grupos &middot; 6 rondas &middot; Apuestas con créditos</p>
   </footer>
+
+  <!-- ══════════════════════════════════════════════════════
+       BOTTOM NAV — Mobile PWA (hidden on md+)
+  ══════════════════════════════════════════════════════ -->
+  {% with cur=request.resolver_match.url_name %}
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch border-t border-[#1A2E48]"
+       style="background:#070F1C; padding-bottom: env(safe-area-inset-bottom);">
+
+    <!-- Inicio -->
+    <a href="{% url 'tournament:home' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'home' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Inicio</span>
+    </a>
+
+    <!-- Grupos -->
+    <a href="{% url 'tournament:groups' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'groups' or cur == 'group_predict' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Grupos</span>
+    </a>
+
+    <!-- Bracket -->
+    <a href="{% url 'tournament:bracket' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'bracket' or cur == 'round_predict' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17 12h-4V8h4V5l5 4.5L17 14v-2zM2 7h8v2H2zm0 4h6v2H2zm0 4h8v2H2z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Bracket</span>
+    </a>
+
+    <!-- Clasificación -->
+    <a href="{% url 'tournament:leaderboard' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'leaderboard' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Ranking</span>
+    </a>
+
+    {% if user.is_authenticated %}
+    <!-- Info -->
+    <a href="{% url 'tournament:info' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'info' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Info</span>
+    </a>
+    {% endif %}
+
+    <!-- Perfil / Login -->
+    {% if user.is_authenticated %}
+    <a href="{% url 'accounts:profile' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'profile' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <div class="w-5 h-5 rounded-full bg-[#172A45] border flex items-center justify-center text-[10px] font-bold
+                  {% if cur == 'profile' %}border-[#C9A84C] text-[#C9A84C]{% else %}border-[#1A2E48] text-[#8AA6C0]{% endif %}">
+        {{ user.username|first|upper }}
+      </div>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Perfil</span>
+    </a>
+    <form method="post" action="{% url 'accounts:logout' %}"
+          class="flex-1 flex flex-col items-center justify-center">
+      {% csrf_token %}
+      <button type="submit"
+        class="w-full flex flex-col items-center justify-center gap-0.5 py-2.5 transition text-[#6A4A4A] hover:text-red-400 bg-transparent border-0 cursor-pointer">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+        </svg>
+        <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Salir</span>
+      </button>
+    </form>
+    {% else %}
+    <a href="{% url 'accounts:login' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
+              {% if cur == 'login' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+      </svg>
+      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Entrar</span>
+    </a>
+    {% endif %}
+
+  </nav>
+  {% endwith %}
 
 </body>
 </html>

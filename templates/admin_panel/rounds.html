@@ -1,0 +1,58 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}Rondas{% endblock %}
+{% block heading %}Gestión de Rondas{% endblock %}
+{% block content %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for r in rounds %}
+  <div class="card rounded-xl p-5">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <p class="font-display font-bold text-white">{{ r.name }}</p>
+        <p class="text-[10px] text-[#4A6278] uppercase tracking-wider mt-0.5">{{ r.slug }}</p>
+      </div>
+      <div class="flex flex-col items-end gap-1.5">
+        {% if r.is_active %}
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-900/40 text-emerald-400 border border-emerald-800/40">ACTIVA</span>
+        {% else %}
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#1A2E48] text-[#4A6278]">INACTIVA</span>
+        {% endif %}
+        {% if r.is_locked %}
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-900/40 text-red-400 border border-red-800/40">CERRADA</span>
+        {% else %}
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#1A2E48] text-[#4A6278]">ABIERTA</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs text-[#6A8AA6] mb-4">
+      {% if r.start_date %}<p>Inicio: {{ r.start_date|date:"d/m/Y" }}</p>{% endif %}
+      {% if r.end_date %}<p>Fin: {{ r.end_date|date:"d/m/Y" }}</p>{% endif %}
+    </div>
+
+    <div class="flex gap-2">
+      <form method="post" class="flex-1">
+        {% csrf_token %}
+        <input type="hidden" name="round_id" value="{{ r.id }}">
+        <button name="action" value="toggle_active" type="submit"
+                class="w-full py-1.5 rounded-lg text-xs font-bold border transition
+                {% if r.is_active %}border-red-800/50 text-red-400 hover:bg-red-900/20{% else %}border-emerald-800/50 text-emerald-400 hover:bg-emerald-900/20{% endif %}">
+          {% if r.is_active %}Desactivar{% else %}Activar{% endif %}
+        </button>
+      </form>
+      <form method="post" class="flex-1">
+        {% csrf_token %}
+        <input type="hidden" name="round_id" value="{{ r.id }}">
+        <button name="action" value="toggle_lock" type="submit"
+                class="w-full py-1.5 rounded-lg text-xs font-bold border transition
+                {% if r.is_locked %}border-yellow-800/50 text-yellow-400 hover:bg-yellow-900/20{% else %}border-orange-800/50 text-orange-400 hover:bg-orange-900/20{% endif %}">
+          {% if r.is_locked %}Abrir{% else %}Cerrar{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-[#4A6278]">No hay rondas configuradas.</p>
+  {% endfor %}
+</div>
+{% endblock %}

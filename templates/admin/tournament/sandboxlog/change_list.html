@@ -1,0 +1,381 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content_title %}
+<h1>Área de Pruebas — Sandbox</h1>
+{% endblock %}
+
+{% block object-tools-items %}{% endblock %}
+
+{% block content %}
+
+{# ── Panel de control Sandbox (FUERA del form del admin) ──────────────────── #}
+<div style="margin-bottom:24px;">
+
+  {# Estadísticas actuales #}
+  <div style="
+    background: linear-gradient(135deg, #1a2744 0%, #0f1a2e 100%);
+    border: 1px solid #2a3f6f;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  ">
+    <h2 style="margin:0 0 16px 0; color:#e8d9a0; font-size:15px; font-weight:700; letter-spacing:.5px;">
+      📊 Estado actual de los datos de prueba
+    </h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;">
+
+      {% with s=sandbox_stats %}
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_users > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_users }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Usuarios bot
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_group_results > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_group_results }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Resultados de grupo
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_group_preds > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_group_preds }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Pred. de grupos
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_sandbox_matches > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_sandbox_matches }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Matches sandbox
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_knockout_preds > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_knockout_preds }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Pred. eliminatorias
+        </div>
+      </div>
+
+      {% endwith %}
+    </div>
+  </div>
+
+  {# Acciones — estos forms van ANTES del form principal del admin #}
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+
+    {# Generar datos #}
+    <form method="post" action="run/" style="flex:1; min-width:240px;">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="generate">
+      <div style="
+        background:#1a3022;
+        border:1px solid #2d6040;
+        border-radius:10px;
+        padding:20px;
+      ">
+        <h3 style="margin:0 0 12px 0; color:#7ec8a0; font-size:14px; font-weight:700;">
+          ⚡ Generar datos de prueba
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:12px; color:#8aa4be; line-height:1.6;">
+          Crea usuarios bot con predicciones aleatorias en todos los grupos y
+          rondas eliminatorias hasta la final, incluyendo resultados y puntajes.
+        </p>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:600; color:#a0bca8; display:block; margin-bottom:6px;">
+            Número de usuarios bot a crear:
+          </label>
+          <select name="n_users" style="
+            background:#0f2018;
+            color:#e0f0e8;
+            border:1px solid #2d6040;
+            border-radius:6px;
+            padding:6px 12px;
+            font-size:13px;
+            width:100%;
+          ">
+            <option value="5">5 usuarios</option>
+            <option value="10" selected>10 usuarios</option>
+            <option value="20">20 usuarios</option>
+            <option value="50">50 usuarios</option>
+          </select>
+        </div>
+        <button type="submit" style="
+          background: linear-gradient(135deg, #2d7a50, #1a5a38);
+          color: #d0f0de;
+          border: none;
+          border-radius: 7px;
+          padding: 10px 20px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+          letter-spacing: .3px;
+        ">
+          ⚡ Generar datos
+        </button>
+      </div>
+    </form>
+
+    {# Resetear datos #}
+    <form method="post" action="run/"
+          style="flex:1; min-width:240px;"
+          onsubmit="return confirm('¿Seguro? Esto eliminará TODOS los usuarios bot, matches sandbox y resultados de grupo.');">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="reset">
+      <div style="
+        background:#2a1a1a;
+        border:1px solid #6a2a2a;
+        border-radius:10px;
+        padding:20px;
+      ">
+        <h3 style="margin:0 0 12px 0; color:#f08080; font-size:14px; font-weight:700;">
+          🗑️ Resetear datos de prueba
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:12px; color:#b08080; line-height:1.6;">
+          Elimina todos los usuarios bot <code style="color:#f08080;">(bot_*)</code>,
+          sus predicciones, los matches de sandbox y todos los resultados de grupo.
+          Los usuarios reales no se ven afectados.
+        </p>
+        <div style="
+          background:rgba(255,80,80,0.08);
+          border:1px solid rgba(255,80,80,0.2);
+          border-radius:6px;
+          padding:10px 12px;
+          margin-bottom:14px;
+          font-size:11px;
+          color:#c08080;
+          line-height:1.5;
+        ">
+          ⚠️ <strong>Esta acción también borra los GroupResult</strong>, lo que
+          afecta el puntaje de todos los usuarios. Úsala solo en entorno de pruebas.
+        </div>
+        <button type="submit" style="
+          background: linear-gradient(135deg, #7a2d2d, #5a1a1a);
+          color: #f0d0d0;
+          border: none;
+          border-radius: 7px;
+          padding: 10px 20px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+          letter-spacing: .3px;
+        ">
+          🗑️ Resetear todos los datos sandbox
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{# ── Log de operaciones (tabla original del admin) ─────────────────────────── #}
+<h2 style="font-size:14px; font-weight:700; color:#aac; margin:24px 0 8px 0; text-transform:uppercase; letter-spacing:.5px;">
+  Historial de operaciones
+</h2>
+
+{{ block.super }}
+
+{% endblock %}
+
+
+{# ── Panel de control Sandbox ──────────────────────────────────────────────── #}
+<div style="margin-bottom:24px;">
+
+  {# Estadísticas actuales #}
+  <div style="
+    background: linear-gradient(135deg, #1a2744 0%, #0f1a2e 100%);
+    border: 1px solid #2a3f6f;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  ">
+    <h2 style="margin:0 0 16px 0; color:#e8d9a0; font-size:15px; font-weight:700; letter-spacing:.5px;">
+      📊 Estado actual de los datos de prueba
+    </h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;">
+
+      {% with s=sandbox_stats %}
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_users > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_users }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Usuarios bot
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_group_results > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_group_results }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Resultados de grupo
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_group_preds > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_group_preds }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Pred. de grupos
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_sandbox_matches > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_sandbox_matches }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Matches sandbox
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:{% if s.n_knockout_preds > 0 %}#7ec8a0{% else %}#5a7a8a{% endif %};">
+          {{ s.n_knockout_preds }}
+        </div>
+        <div style="font-size:11px; color:#8aa4be; margin-top:4px; font-weight:600; text-transform:uppercase;">
+          Pred. eliminatorias
+        </div>
+      </div>
+
+      {% endwith %}
+    </div>
+  </div>
+
+  {# Acciones #}
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+
+    {# Generar datos #}
+    <form method="post" action="run/" style="flex:1; min-width:240px;">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="generate">
+      <div style="
+        background:#1a3022;
+        border:1px solid #2d6040;
+        border-radius:10px;
+        padding:20px;
+      ">
+        <h3 style="margin:0 0 12px 0; color:#7ec8a0; font-size:14px; font-weight:700;">
+          ⚡ Generar datos de prueba
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:12px; color:#8aa4be; line-height:1.6;">
+          Crea usuarios bot con predicciones aleatorias en todos los grupos y
+          rondas eliminatorias hasta la final, incluyendo resultados y puntajes.
+        </p>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:600; color:#a0bca8; display:block; margin-bottom:6px;">
+            Número de usuarios bot a crear:
+          </label>
+          <select name="n_users" style="
+            background:#0f2018;
+            color:#e0f0e8;
+            border:1px solid #2d6040;
+            border-radius:6px;
+            padding:6px 12px;
+            font-size:13px;
+            width:100%;
+          ">
+            <option value="5">5 usuarios</option>
+            <option value="10" selected>10 usuarios</option>
+            <option value="20">20 usuarios</option>
+            <option value="50">50 usuarios</option>
+          </select>
+        </div>
+        <button type="submit" style="
+          background: linear-gradient(135deg, #2d7a50, #1a5a38);
+          color: #d0f0de;
+          border: none;
+          border-radius: 7px;
+          padding: 10px 20px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+          letter-spacing: .3px;
+        ">
+          ⚡ Generar datos
+        </button>
+      </div>
+    </form>
+
+    {# Resetear datos #}
+    <form method="post" action="run/"
+          style="flex:1; min-width:240px;"
+          onsubmit="return confirm('¿Seguro? Esto eliminará TODOS los usuarios bot, matches sandbox y resultados de grupo. Esta acción no se puede deshacer.');">
+      {% csrf_token %}
+      <input type="hidden" name="sandbox_action" value="reset">
+      <div style="
+        background:#2a1a1a;
+        border:1px solid #6a2a2a;
+        border-radius:10px;
+        padding:20px;
+      ">
+        <h3 style="margin:0 0 12px 0; color:#f08080; font-size:14px; font-weight:700;">
+          🗑️ Resetear datos de prueba
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:12px; color:#b08080; line-height:1.6;">
+          Elimina todos los usuarios bot <code style="color:#f08080;">(bot_*)</code>,
+          sus predicciones, los matches de sandbox y todos los resultados de grupo.
+          Los usuarios reales no se ven afectados.
+        </p>
+        <div style="
+          background:rgba(255,80,80,0.08);
+          border:1px solid rgba(255,80,80,0.2);
+          border-radius:6px;
+          padding:10px 12px;
+          margin-bottom:14px;
+          font-size:11px;
+          color:#c08080;
+          line-height:1.5;
+        ">
+          ⚠️ <strong>Esta acción también borra los GroupResult</strong>, lo que
+          afecta el puntaje de todos los usuarios (reales incluidos).
+          Úsala solo en entorno de pruebas.
+        </div>
+        <button type="submit" style="
+          background: linear-gradient(135deg, #7a2d2d, #5a1a1a);
+          color: #f0d0d0;
+          border: none;
+          border-radius: 7px;
+          padding: 10px 20px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+          letter-spacing: .3px;
+        ">
+          🗑️ Resetear todos los datos sandbox
+        </button>
+      </div>
+    </form>
+
+  </div>{# /acciones #}
+</div>{# /panel #}
+
+{# ── Log de operaciones (tabla normal) ────────────────────────────────────── #}
+<h2 style="font-size:14px; font-weight:700; color:#aac; margin:24px 0 8px 0; text-transform:uppercase; letter-spacing:.5px;">
+  Historial de operaciones
+</h2>
+{{ block.super }}
+
+{% endblock %}

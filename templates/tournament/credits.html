@@ -1,25 +1,34 @@
 {% extends 'base.html' %}
-{% block title %}Mis Créditos — Mundial 2026{% endblock %}
+{% load tournament_extras %}
+{% block title %}Mis Créditos — CopaBet 26{% endblock %}
 {% block content %}
 
 <div class="max-w-4xl mx-auto">
 
   <!-- Header -->
-  <div class="mb-8">
-    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Sistema de apuestas</p>
-    <h1 class="font-display font-bold text-3xl text-white tracking-wide">MIS CRÉDITOS</h1>
+  <div class="mb-8 flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Sistema de apuestas</p>
+      <h1 class="font-display font-bold text-3xl text-white tracking-wide">MIS CRÉDITOS</h1>
+    </div>
+    <a href="{% url 'tournament:buy_credits' %}"
+       class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm tracking-wide transition text-[#070F1C] hover:brightness-110"
+       style="background:#C9A84C;">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      Comprar créditos
+    </a>
   </div>
 
   <!-- Balance cards -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
     <div class="card rounded-xl p-5 text-center border-t-2 border-gold">
       <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Saldo total</p>
-      <p class="font-display font-bold text-4xl text-gold">{{ profile.credits }}</p>
+      <p class="font-display font-bold text-4xl text-gold">{{ profile.credits|crd }}</p>
       <p class="text-xs text-[#4A6278] mt-1">créditos disponibles</p>
     </div>
     <div class="card rounded-xl p-5 text-center border-t-2 border-[#1A2E48]">
       <p class="text-xs font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">En juego</p>
-      <p class="font-display font-bold text-4xl text-[#C8D8E8]">{{ total_in_play }}</p>
+      <p class="font-display font-bold text-4xl text-[#C8D8E8]">{{ total_in_play|crd }}</p>
       <p class="text-xs text-[#4A6278] mt-1">créditos apostados activos</p>
     </div>
     <div class="card rounded-xl p-5 text-center border-t-2 border-[#1A2E48]">
@@ -89,7 +98,7 @@
               </div>
             </td>
             <td class="px-4 py-3 text-right">
-              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits }}</span>
+              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits|crd }}</span>
               <span class="text-xs text-[#6A8AA6] ml-1">crd</span>
             </td>
           </tr>
@@ -132,7 +141,7 @@
               </div>
             </td>
             <td class="px-4 py-3 text-right">
-              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits }}</span>
+              <span class="font-display font-bold text-base text-white">{{ pred.bet_credits|crd }}</span>
               <span class="text-xs text-[#6A8AA6] ml-1">crd</span>
             </td>
           </tr>
@@ -177,9 +186,9 @@
                 <span class="text-xs text-[#C8D8E8]">{{ pred.predicted_second.name }}</span>
               </div>
             </td>
-            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits }}</td>
+            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits|crd }}</td>
             <td class="px-4 py-2.5 text-right font-bold text-sm {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
-              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won }}
+              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won|crd }}
             </td>
           </tr>
           {% endfor %}
@@ -195,9 +204,9 @@
                 <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_winner.name }}</span>
               </div>
             </td>
-            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits }}</td>
+            <td class="px-4 py-2.5 text-right text-sm text-[#8AA6C0]">{{ pred.bet_credits|crd }}</td>
             <td class="px-4 py-2.5 text-right font-bold text-sm {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
-              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won }}
+              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won|crd }}
             </td>
           </tr>
           {% endfor %}

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Predecir Grupo {{ group.name }} — Mundial 2026{% endblock %}
+{% load tournament_extras %}
+{% block title %}Predecir Grupo {{ group.name }} — CopaBet 26{% endblock %}
 {% block content %}
 
 <div class="max-w-2xl mx-auto">
@@ -13,129 +14,115 @@
       </svg>
       Volver a Grupos
     </a>
-    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Fase de Grupos</p>
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Fase de Grupos · arrastra para ordenar</p>
     <h1 class="font-display font-bold text-3xl text-white tracking-wide">
       PREDECIR GRUPO {{ group.name }}
     </h1>
   </div>
 
-  <!-- Créditos disponibles -->
-  <div class="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#C9A84C]/30 mb-6"
-       style="background: rgba(201,168,76,0.05)">
-    <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
-    </svg>
-    <div>
-      <p class="text-xs text-[#6A8AA6]">Créditos disponibles</p>
-      <p class="font-display font-bold text-xl text-gold" id="credits-display">{{ user_credits }}</p>
-    </div>
-    <div class="ml-auto text-right">
-      <p class="text-xs text-[#6A8AA6]">En juego</p>
-      <p class="font-display font-bold text-xl text-white" id="bet-display">0</p>
-    </div>
-  </div>
-
-  <form method="post">
+  <form method="post" id="predict-form">
     {% csrf_token %}
 
-    <!-- Selección 1° lugar -->
+    <!-- Inputs ocultos de orden -->
+    <input type="hidden" name="order_1" id="order-1" value="">
+    <input type="hidden" name="order_2" id="order-2" value="">
+    <input type="hidden" name="order_3" id="order-3" value="">
+    <input type="hidden" name="order_4" id="order-4" value="">
+    <input type="hidden" name="third_advances" id="third-advances"
+           value="{% if existing and existing.predicted_third_advances %}1{% else %}0{% endif %}">
+
+    <!-- ── Lista ordenable ────────────────────────────────────────────── -->
     <div class="card rounded-xl p-5 mb-4">
-      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-4">
-        1° Lugar — Clasificado directo
-      </h3>
-      <div class="space-y-2">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider">
+            Clasifica los equipos
+          </h3>
+          <p class="text-[10px] text-[#4A6278] mt-1">
+            Arrastra · Los 2 primeros clasifican directamente
+          </p>
+        </div>
+        <div class="text-right flex-shrink-0 ml-4">
+          <p class="text-[10px] text-[#6A8AA6] uppercase tracking-wider">Mejores 3ros</p>
+          <p class="font-bold text-sm">
+            <span class="text-gold">{{ thirds_count }}</span><span class="text-[#4A6278]">/8</span>
+          </p>
+        </div>
+      </div>
+
+      <ul id="sortable-teams" class="space-y-2">
         {% for td in teams_data %}
-        <label class="flex items-center gap-3 p-3 rounded-lg border border-[#1A2E48] cursor-pointer
-                       hover:border-[#C9A84C]/40 hover:bg-[#112035] transition has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
-          <input type="radio" name="first_place" value="{{ td.team.id }}" class="accent-gold"
-                 {% if existing and existing.predicted_first.id == td.team.id %}checked{% endif %}>
+        <li class="flex items-center gap-3 px-3 py-3 rounded-xl border transition-all duration-150
+                    cursor-grab active:cursor-grabbing select-none team-row"
+            style="border-color: #1A2E48; background: #0D1F35;"
+            data-id="{{ td.team.id }}"
+            data-mult="{{ td.net_mult }}"
+            data-name="{{ td.team.name }}">
+
+          <!-- Badge posición -->
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+                      flex-shrink-0 pos-badge transition-all duration-150"
+               style="background: rgba(26,46,72,0.9); color: #4A6278;">—</div>
+
+          <!-- Icono arrastre -->
+          <svg class="w-3.5 h-3.5 flex-shrink-0 opacity-30" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M7 2a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM7 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM7 15a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/>
+          </svg>
+
+          <!-- Bandera -->
           <img src="https://flagcdn.com/w40/{{ td.team.iso2_code }}.png"
                alt="{{ td.team.name }}"
                class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
-          <div class="flex-1 min-w-0">
-            <p class="font-medium text-sm text-white">{{ td.team.name }}</p>
-            <p class="text-xs text-[#4A6278]">FIFA #{{ td.team.fifa_ranking }}</p>
-          </div>
-          <div class="text-right flex-shrink-0">
-            <span class="text-xs font-bold text-gold">{{ td.net_mult|floatformat:2 }}x</span>
-            <p class="text-[10px] text-[#4A6278]">mult.</p>
-          </div>
-        </label>
-        {% endfor %}
-      </div>
-    </div>
 
-    <!-- Selección 2° lugar -->
-    <div class="card rounded-xl p-5 mb-4">
-      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-4">
-        2° Lugar — Clasificado como segundo
-      </h3>
-      <div class="space-y-2">
-        {% for td in teams_data %}
-        <label class="flex items-center gap-3 p-3 rounded-lg border border-[#1A2E48] cursor-pointer
-                       hover:border-[#C9A84C]/40 hover:bg-[#112035] transition has-[:checked]:border-[#C9A84C] has-[:checked]:bg-[#112035]">
-          <input type="radio" name="second_place" value="{{ td.team.id }}" class="accent-gold"
-                 {% if existing and existing.predicted_second.id == td.team.id %}checked{% endif %}>
-          <img src="https://flagcdn.com/w40/{{ td.team.iso2_code }}.png"
-               alt="{{ td.team.name }}"
-               class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+          <!-- Nombre + ranking -->
           <div class="flex-1 min-w-0">
-            <p class="font-medium text-sm text-white">{{ td.team.name }}</p>
-            <p class="text-xs text-[#4A6278]">FIFA #{{ td.team.fifa_ranking }}</p>
+            <p class="font-semibold text-sm text-white leading-tight">{{ td.team.name }}</p>
+            <p class="text-[10px] text-[#4A6278]">
+              FIFA #{{ td.team.fifa_ranking }} · <span class="text-gold font-bold">{{ td.net_mult|floatformat:2 }}x</span>
+            </p>
           </div>
-          <div class="text-right flex-shrink-0">
-            <span class="text-xs font-bold text-gold">{{ td.net_mult|floatformat:2 }}x</span>
-            <p class="text-[10px] text-[#4A6278]">mult.</p>
-          </div>
-        </label>
-        {% endfor %}
-      </div>
-    </div>
 
-    <!-- Apuesta de créditos -->
-    <div class="card rounded-xl p-5 mb-6">
-      <h3 class="font-display font-bold text-sm text-[#8AA6C0] uppercase tracking-wider mb-3">
-        Apostar créditos (opcional)
-      </h3>
-      <p class="text-xs text-[#6A8AA6] mb-4">
-        Si aciertas ambas posiciones, ganas <span class="text-gold">créditos × multiplicador</span> del equipo.
-        Si fallas, pierdes lo apostado.
-      </p>
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-[#8AA6C0]">Cantidad a apostar</span>
-          <span class="font-display font-bold text-gold text-lg" id="bet-amount-label">
-            {% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}
-          </span>
-        </div>
-        <input type="range" id="bet-range"
-               min="0" max="{{ user_credits }}" step="50"
-               value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}"
-               class="w-full h-2 rounded-lg cursor-pointer">
-        <input type="hidden" name="bet_credits" id="bet-credits-input"
-               value="{% if existing %}{{ existing.bet_credits }}{% else %}0{% endif %}">
-        <div class="flex justify-between text-xs text-[#4A6278]">
-          <span>0</span>
-          <span>{{ user_credits }}</span>
-        </div>
-        <div class="grid grid-cols-4 gap-2">
-          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.10 / 50) * 50)"
-                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
-            10%
-          </button>
-          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.25 / 50) * 50)"
-                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
-            25%
-          </button>
-          <button type="button" onclick="setBet(Math.floor({{ user_credits }} * 0.50 / 50) * 50)"
-                  class="py-1.5 rounded-lg text-xs font-bold border border-[#1A2E48] text-[#8AA6C0] hover:border-[#C9A84C]/40 hover:text-gold transition">
-            50%
-          </button>
-          <button type="button" onclick="setBet({{ user_credits }})"
-                  class="py-1.5 rounded-lg text-xs font-bold border border-[#C9A84C]/40 text-gold hover:bg-gold/10 transition">
-            MAX
+          <!-- Etiqueta de posición -->
+          <div class="flex-shrink-0">
+            <span class="pos-label text-[10px] font-semibold px-2 py-1 rounded-full transition-all duration-150"
+                  style="background: rgba(26,46,72,0.9); color: #4A6278;">—</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Toggle mejor tercero -->
+      <div id="third-toggle-row" class="mt-3 rounded-xl border p-3"
+           style="border-color: rgba(201,168,76,0.2); background: rgba(201,168,76,0.03);">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-white leading-tight">
+              <span id="third-team-name" class="text-gold">—</span>
+              clasifica como mejor tercero
+            </p>
+            <p class="text-[10px] text-[#6A8AA6] mt-0.5">
+              {% if thirds_remaining > 0 %}
+                Puedes elegir {{ thirds_remaining }} más (máx. 8 en total)
+              {% else %}
+                Límite de 8 mejores terceros alcanzado
+              {% endif %}
+            </p>
+          </div>
+          <!-- Toggle switch -->
+          <button type="button" id="third-toggle-btn" onclick="toggleThirdAdvances()"
+                  class="relative inline-flex flex-shrink-0 h-6 w-11 rounded-full
+                         transition-colors duration-200 focus:outline-none"
+                  style="background: #1A2E48;">
+            <span id="third-toggle-knob"
+                  class="pointer-events-none absolute top-1 left-1 h-4 w-4 rounded-full
+                         transition-transform duration-200"
+                  style="background: #4A6278; transform: translateX(0);"></span>
           </button>
         </div>
+        <p id="third-bonus-text"
+           class="text-[10px] text-gold mt-2 {% if not existing or not existing.predicted_third_advances %}hidden{% endif %}">
+          ✓ Si clasifica → <strong>+5 puntos bonus</strong>
+        </p>
       </div>
     </div>
 
@@ -145,36 +132,217 @@
       <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
       </svg>
-      Ya tienes una predicción para este grupo. Se actualizará al guardar.
+      Ya tienes predicción guardada para este grupo. Se actualizará al confirmar.
     </div>
     {% endif %}
 
+    <!-- Costo fijo -->
+    <div class="flex items-center justify-between px-4 py-3 rounded-xl border border-[#C9A84C]/30 mb-4"
+         style="background: rgba(201,168,76,0.05)">
+      <div>
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest">Costo de predicción</p>
+        <p class="font-display font-bold text-gold text-lg">{{ group_bet|crd }} <span class="text-xs font-sans text-[#6A8AA6]">crd</span></p>
+      </div>
+      <div class="text-right">
+        <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest">Tu saldo</p>
+        <p class="font-display font-bold text-white">{{ user_credits|crd }} <span class="text-xs font-sans text-[#6A8AA6]">crd</span></p>
+      </div>
+    </div>
+
     <button type="submit"
             class="w-full py-3.5 rounded-xl font-display font-bold text-base tracking-wider hover:opacity-90 transition"
-            style="background:#C9A84C; color:#070F1C;">
-      {% if existing %}ACTUALIZAR PREDICCIÓN{% else %}GUARDAR PREDICCIÓN{% endif %}
+            style="background: #C9A84C; color: #070F1C;">
+      {% if existing %}ACTUALIZAR PREDICCIÓN{% else %}CONFIRMAR PREDICCIÓN{% endif %}
     </button>
   </form>
+
+  <!-- ── Cómo funciona ──────────────────────────────────────────────── -->
+  <div class="mt-6 rounded-xl border border-[#1A2E48] overflow-hidden">
+    <button type="button" id="how-toggle"
+            onclick="document.getElementById('how-body').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')"
+            class="w-full flex items-center justify-between px-5 py-3.5 text-left"
+            style="background: #0D1F35;">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <span class="font-display font-bold text-sm text-white uppercase tracking-wide">¿Cómo funciona la predicción?</span>
+      </div>
+      <svg class="w-4 h-4 text-[#6A8AA6] transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+
+    <div id="how-body" class="hidden px-5 pb-5 pt-1 space-y-4" style="background: #0A1828;">
+
+      <!-- Puntos base -->
+      <div>
+        <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Puntos base por acierto</p>
+        <div class="space-y-2">
+          <div class="flex items-start gap-3 p-3 rounded-lg" style="background: rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.12)">
+            <span class="text-base leading-none mt-0.5">🟡</span>
+            <div>
+              <p class="text-sm text-white font-semibold">Equipo clasifica (1° o 2°)</p>
+              <p class="text-[11px] text-[#6A8AA6] mt-0.5">
+                Si uno de tus 2 clasificados realmente avanza,
+                ganas <span class="text-gold font-bold">10 + ranking FIFA × 0.3 pts</span> por ese equipo.<br>
+                <span class="text-[10px] text-[#4A6278]">Ejemplo: España (FIFA #1) → 10 + 0.3 = <strong class="text-white">10.3 pts</strong> · Marruecos (FIFA #14) → 10 + 4.2 = <strong class="text-white">14.2 pts</strong></span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bonus posición exacta -->
+      <div>
+        <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Bonus por posición exacta</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="p-3 rounded-lg" style="background: rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15)">
+            <p class="text-gold font-bold text-sm">+3 pts</p>
+            <p class="text-[11px] text-[#8AA6C0] mt-0.5">Tu 1° queda exactamente 1° en el grupo</p>
+          </div>
+          <div class="p-3 rounded-lg" style="background: rgba(148,163,184,0.06); border:1px solid rgba(148,163,184,0.12)">
+            <p class="text-[#94A3B8] font-bold text-sm">+3 pts</p>
+            <p class="text-[11px] text-[#8AA6C0] mt-0.5">Tu 2° queda exactamente 2° en el grupo</p>
+          </div>
+        </div>
+        <p class="text-[10px] text-[#4A6278] mt-2">
+          Si un equipo clasifica pero no en la posición exacta que predijiste, igualmente ganas los puntos base — simplemente sin el bonus.
+        </p>
+      </div>
+
+      <!-- Mejor tercero -->
+      <div>
+        <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Mejor tercero</p>
+        <div class="flex items-start gap-3 p-3 rounded-lg" style="background: rgba(96,165,250,0.05); border:1px solid rgba(96,165,250,0.12)">
+          <span class="text-base leading-none mt-0.5">🔵</span>
+          <div>
+            <p class="text-sm text-white font-semibold">+5 pts bonus</p>
+            <p class="text-[11px] text-[#6A8AA6] mt-0.5">
+              Si activas el toggle del 3° lugar <em>y</em> ese equipo efectivamente clasifica como uno de los 8 mejores terceros del torneo.
+            </p>
+            <p class="text-[10px] text-[#4A6278] mt-1">Puedes marcarlo en máximo 8 grupos distintos.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla resumen -->
+      <div>
+        <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Resumen rápido</p>
+        <div class="rounded-lg overflow-hidden border border-[#1A2E48]">
+          <table class="w-full text-[11px]">
+            <thead>
+              <tr style="background: #0D1F35;">
+                <th class="text-left px-3 py-2 text-[#6A8AA6] font-semibold">Situación</th>
+                <th class="text-right px-3 py-2 text-[#6A8AA6] font-semibold">Puntos</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1A2E48]">
+              <tr style="background: rgba(0,0,0,0.15)">
+                <td class="px-3 py-2 text-[#8AA6C0]">Aciertas que un equipo clasifica</td>
+                <td class="px-3 py-2 text-right text-white font-bold">10 + rank×0.3</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 text-[#8AA6C0]">Además aciertas que queda 1°</td>
+                <td class="px-3 py-2 text-right text-gold font-bold">+3 pts</td>
+              </tr>
+              <tr style="background: rgba(0,0,0,0.15)">
+                <td class="px-3 py-2 text-[#8AA6C0]">Además aciertas que queda 2°</td>
+                <td class="px-3 py-2 text-right text-[#94A3B8] font-bold">+3 pts</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 text-[#8AA6C0]">Aciertas el mejor tercero</td>
+                <td class="px-3 py-2 text-right text-[#60A5FA] font-bold">+5 pts</td>
+              </tr>
+              <tr style="background: rgba(0,0,0,0.15)">
+                <td class="px-3 py-2 text-[#8AA6C0]">Fallas (el equipo no clasifica)</td>
+                <td class="px-3 py-2 text-right text-[#4A6278] font-bold">0 pts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
 <script>
-const betRange = document.getElementById('bet-range');
-const betLabel = document.getElementById('bet-amount-label');
-const betInput = document.getElementById('bet-credits-input');
-const betDisplay = document.getElementById('bet-display');
+// ─── Constantes de posición ────────────────────────────────────────────────
+const POS = [
+  { badge: '1°', label: 'Clasificado',  badgeBg: 'rgba(201,168,76,0.2)',  badgeClr: '#C9A84C', pillBg: 'rgba(201,168,76,0.12)', pillClr: '#C9A84C'  },
+  { badge: '2°', label: 'Clasificado',  badgeBg: 'rgba(148,163,184,0.2)', badgeClr: '#94A3B8', pillBg: 'rgba(148,163,184,0.1)', pillClr: '#94A3B8' },
+  { badge: '3°', label: 'Posible 3ro',  badgeBg: 'rgba(96,165,250,0.15)', badgeClr: '#60A5FA', pillBg: 'rgba(96,165,250,0.08)', pillClr: '#60A5FA'  },
+  { badge: '4°', label: 'Eliminado',    badgeBg: 'rgba(74,98,120,0.2)',   badgeClr: '#4A6278', pillBg: 'rgba(74,98,120,0.08)',  pillClr: '#4A6278'  },
+];
 
-function setBet(val) {
-  const capped = Math.min(Math.max(0, Math.round(val)), {{ user_credits }});
-  betRange.value = capped;
-  betLabel.textContent = capped;
-  betInput.value = capped;
-  if (betDisplay) betDisplay.textContent = capped;
+let thirdAdvancesActive = {% if existing and existing.predicted_third_advances %}true{% else %}false{% endif %};
+const thirdsRemaining   = {{ thirds_remaining }};
+
+// ─── SortableJS ────────────────────────────────────────────────────────────
+const listEl = document.getElementById('sortable-teams');
+const sortable = new Sortable(listEl, {
+  animation: 200,
+  ghostClass: 'opacity-30',
+  onEnd: syncState,
+});
+
+function syncState() {
+  const items = listEl.querySelectorAll('li');
+  items.forEach((item, idx) => {
+    const p = POS[idx];
+
+    const badge = item.querySelector('.pos-badge');
+    badge.textContent      = p.badge;
+    badge.style.background = p.badgeBg;
+    badge.style.color      = p.badgeClr;
+
+    const pill = item.querySelector('.pos-label');
+    pill.textContent       = p.label;
+    pill.style.background  = p.pillBg;
+    pill.style.color       = p.pillClr;
+
+    // Borde dorado para los 2 clasificados
+    item.style.borderColor = idx < 2 ? 'rgba(201,168,76,0.25)' : '#1A2E48';
+
+    document.getElementById(`order-${idx + 1}`).value = item.dataset.id;
+  });
+
+  // Actualizar nombre del 3° en el toggle
+  if (items[2]) {
+    document.getElementById('third-team-name').textContent = items[2].dataset.name;
+  }
 }
 
-betRange.addEventListener('input', function() {
-  betLabel.textContent = this.value;
-  betInput.value = this.value;
-  if (betDisplay) betDisplay.textContent = this.value;
-});
+// ─── Toggle Mejor Tercero ──────────────────────────────────────────────────
+function toggleThirdAdvances() {
+  if (!thirdAdvancesActive && thirdsRemaining <= 0) return;
+  thirdAdvancesActive = !thirdAdvancesActive;
+  document.getElementById('third-advances').value = thirdAdvancesActive ? '1' : '0';
+  renderToggle();
+}
+
+function renderToggle() {
+  const btn   = document.getElementById('third-toggle-btn');
+  const knob  = document.getElementById('third-toggle-knob');
+  const bonus = document.getElementById('third-bonus-text');
+  if (thirdAdvancesActive) {
+    btn.style.background  = '#C9A84C';
+    knob.style.background = '#070F1C';
+    knob.style.transform  = 'translateX(20px)';
+    bonus.classList.remove('hidden');
+  } else {
+    btn.style.background  = '#1A2E48';
+    knob.style.background = '#4A6278';
+    knob.style.transform  = 'translateX(0)';
+    bonus.classList.add('hidden');
+  }
+}
+
+// ─── Inicializar ───────────────────────────────────────────────────────────
+syncState();
+renderToggle();
 </script>
 {% endblock %}
