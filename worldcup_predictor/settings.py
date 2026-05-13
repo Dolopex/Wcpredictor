@@ -3,14 +3,15 @@ Django settings for worldcup_predictor project.
 """
 
 from pathlib import Path
+import os
 from decouple import config
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-solo-para-desarrollo-local')
-DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = os.environ.get('SECRET_KEY') or config('SECRET_KEY', default='django-insecure-solo-para-desarrollo-local')
+DEBUG = (os.environ.get('DEBUG', '') or config('DEBUG', default='False')).lower() not in ('false', '0', '')
 
 # Seguridad: impedir inicio en producción con clave insegura
 if not DEBUG and 'insecure' in SECRET_KEY:
@@ -18,7 +19,7 @@ if not DEBUG and 'insecure' in SECRET_KEY:
         'SECRET_KEY no está configurada de forma segura. '
         'Agrega SECRET_KEY=<clave-larga-aleatoria> en el archivo .env antes de publicar.'
     )
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = (os.environ.get('ALLOWED_HOSTS') or config('ALLOWED_HOSTS', default='127.0.0.1,localhost')).split(',')
 
 # Application definition
 
@@ -66,7 +67,9 @@ WSGI_APPLICATION = 'worldcup_predictor.wsgi.application'
 
 # Database
 # En producción usa DATABASE_URL (Neon/PostgreSQL). En local puede seguir siendo SQLite.
-DATABASE_URL = config('DATABASE_URL', default='')
+# os.environ.get() lee directamente las variables del sistema (Vercel, Railway, etc.)
+# python-decouple se usa solo para las vars del .env local
+DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
 
 if DATABASE_URL:
     DATABASES = {
@@ -133,8 +136,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # ── Mercado Pago ──────────────────────────────────────────────────────────────
-MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
-MERCADOPAGO_WEBHOOK_SECRET = config('MERCADOPAGO_WEBHOOK_SECRET', default='')
+MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MERCADOPAGO_ACCESS_TOKEN') or config('MERCADOPAGO_ACCESS_TOKEN', default='')
+MERCADOPAGO_WEBHOOK_SECRET = os.environ.get('MERCADOPAGO_WEBHOOK_SECRET') or config('MERCADOPAGO_WEBHOOK_SECRET', default='')
 
 # ── Seguridad ─────────────────────────────────────────────────────────────────
 # Cabeceras aplicadas en todos los entornos
