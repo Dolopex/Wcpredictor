@@ -550,10 +550,27 @@ def _apply_payment(payment_id):
 
 @login_required
 def buy_credits_view(request):
-    packages = CreditPackage.objects.filter(is_active=True).select_related('requires_round').order_by('order', 'cop_price')
+    all_packages = CreditPackage.objects.filter(is_active=True).select_related('requires_round').order_by('order', 'cop_price')
     purchase_history = CreditPurchase.objects.filter(
         user=request.user
     ).select_related('package').order_by('-created_at')[:15]
+
+    # Nombres de paquetes ya comprados (pagos completados)
+    bought_names = set(
+        CreditPurchase.objects.filter(user=request.user, status='completed')
+        .values_list('package__name', flat=True)
+    )
+
+    # Reglas de visibilidad:
+    # - Compró "Pase Completo" → no mostrar ningún paquete
+    # - Compró "Fase de Grupos" → no mostrar "Pase Completo", solo "Pase Eliminatorias"
+    # - No compró nada → mostrar todos
+    if 'Pase Completo' in bought_names:
+        packages = all_packages.none()
+    elif 'Fase de Grupos' in bought_names:
+        packages = all_packages.exclude(name__in=['Fase de Grupos', 'Pase Completo'])
+    else:
+        packages = all_packages
 
     if request.method == 'POST':
         package_id = request.POST.get('package_id')
