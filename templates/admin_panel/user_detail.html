@@ -165,11 +165,39 @@
             <td>${{ c.cop_paid|floatformat:0 }}</td>
             <td class="text-right text-gold">{{ c.credits_applied|crd }}</td>
             <td>
-              {% if c.status == 'completed' %}<span class="text-emerald-400 text-xs font-bold">Completada</span>
-              {% elif c.status == 'pending' %}<span class="text-yellow-400 text-xs">Pendiente</span>
-              {% else %}<span class="text-[#4A6278] text-xs">Cancelada</span>{% endif %}
+              {% if c.status == 'completed' %}
+                <span class="text-emerald-400 text-xs font-bold">Completada</span>
+              {% elif c.status == 'pending' %}
+                <span class="text-yellow-400 text-xs font-bold">Pendiente</span>
+                <div class="flex gap-1 mt-1">
+                  {% if c.mp_payment_id %}
+                  <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="apply_payment">
+                    <input type="hidden" name="purchase_id" value="{{ c.id }}">
+                    <button type="submit"
+                      onclick="return confirm('¿Consultar MP y aplicar pago #{{ c.id }}?')"
+                      style="font-size:10px;padding:2px 7px;background:#1a3a2a;color:#7ec8a0;border:1px solid #2d6040;border-radius:4px;cursor:pointer;">
+                      🔄 Consultar MP
+                    </button>
+                  </form>
+                  {% endif %}
+                  <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="force_complete">
+                    <input type="hidden" name="purchase_id" value="{{ c.id }}">
+                    <button type="submit"
+                      onclick="return confirm('¿Completar manualmente la compra #{{ c.id }} y desembolsar {{ c.credits_applied }} créditos?')"
+                      style="font-size:10px;padding:2px 7px;background:#3a1a1a;color:#f08080;border:1px solid #6a2a2a;border-radius:4px;cursor:pointer;">
+                      ✅ Completar manual
+                    </button>
+                  </form>
+                </div>
+              {% else %}
+                <span class="text-[#4A6278] text-xs">Cancelada</span>
+              {% endif %}
             </td>
-            <td class="text-[#6A8AA6]">{{ c.created_at|date:"d/m/y H:i" }}</td>
+            <td class="text-[#6A8AA6] text-xs">{{ c.created_at|date:"d/m/y H:i" }}<br><span class="text-[#4A6278]">ID: {{ c.mp_payment_id|default:"—" }}</span></td>
           </tr>
           {% endfor %}
         </tbody>

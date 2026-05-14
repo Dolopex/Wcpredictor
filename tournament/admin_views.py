@@ -89,30 +89,75 @@ def panel_user_detail(request, user_id):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        with transaction.atomic():
-            prof = UserProfile.objects.select_for_update().get(user=user)
-            if action == 'set_credits':
-                try:
-                    new_val = int(request.POST.get('credits', prof.credits))
-                except (ValueError, TypeError):
-                    messages.error(request, 'Valor de créditos inválido.')
-                    return redirect('tournament:panel_user_detail', user_id=user_id)
-                prof.credits = max(0, new_val)
-                prof.save(update_fields=['credits'])
-                messages.success(request, f'Créditos de {user.username} ajustados a {prof.credits:,}.')
-            elif action == 'add_credits':
-                try:
-                    amount = int(request.POST.get('amount', 0))
-                except (ValueError, TypeError):
-                    messages.error(request, 'Cantidad de créditos inválida.')
-                    return redirect('tournament:panel_user_detail', user_id=user_id)
-                prof.credits += amount
-                prof.save(update_fields=['credits'])
-                messages.success(request, f'+{amount:,} créditos agregados a {user.username}.')
-            elif action == 'set_staff':
-                user.is_staff = request.POST.get('is_staff') == '1'
-                user.save(update_fields=['is_staff'])
-                messages.success(request, 'Permisos actualizados.')
+
+        if action in ('set_credits', 'add_credits', 'set_staff'):
+            with transaction.atomic():
+                prof = UserProfile.objects.select_for_update().get(user=user)
+                if action == 'set_credits':
+                    try:
+                        new_val = int(request.POST.get('credits', prof.credits))
+                    except (ValueError, TypeError):
+                        messages.error(request, 'Valor de créditos inválido.')
+                        return redirect('tournament:panel_user_detail', user_id=user_id)
+                    prof.credits = max(0, new_val)
+                    prof.save(update_fields=['credits'])
+                    messages.success(request, f'Créditos de {user.username} ajustados a {prof.credits:,}.')
+                elif action == 'add_credits':
+                    try:
+                        amount = int(request.POST.get('amount', 0))
+                    except (ValueError, TypeError):
+                        messages.error(request, 'Cantidad de créditos inválida.')
+                        return redirect('tournament:panel_user_detail', user_id=user_id)
+                    prof.credits += amount
+                    prof.save(update_fields=['credits'])
+                    messages.success(request, f'+{amount:,} créditos agregados a {user.username}.')
+                elif action == 'set_staff':
+                    user.is_staff = request.POST.get('is_staff') == '1'
+                    user.save(update_fields=['is_staff'])
+                    messages.success(request, 'Permisos actualizados.')
+
+        elif action == 'apply_payment':
+            # Consult MP API and apply if approved
+            purchase_id = request.POST.get('purchase_id')
+            try:
+                purchase = CreditPurchase.objects.get(id=int(purchase_id), user=user)
+                if purchase.status != 'pending':
+                    messages.warning(request, f'La compra #{purchase_id} ya fue procesada ({purchase.status}).')
+                elif not purchase.mp_payment_id:
+                    messages.error(request, f'La compra #{purchase_id} no tiene payment_id de MP. Usa "Completar manualmente".')
+                else:
+                    from .views import _apply_payment
+                    with transaction.atomic():
+                        _apply_payment(purchase.mp_payment_id)
+                    purchase.refresh_from_db()
+                    if purchase.status == 'completed':
+                        messages.success(request, f'Pago aplicado: +{purchase.credits_applied:,} crd a {user.username}.')
+                    else:
+                        messages.warning(request, f'MP aún no aprueba la compra #{purchase_id} (estado MP: pendiente).')
+            except (CreditPurchase.DoesNotExist, ValueError):
+                messages.error(request, 'Compra no encontrada.')
+            except Exception as exc:
+                messages.error(request, f'Error al aplicar pago: {exc}')
+            return redirect('tournament:panel_user_detail', user_id=user_id)
+
+        elif action == 'force_complete':
+            # Forzar completado sin consultar MP (para pagos confirmados manualmente)
+            purchase_id = request.POST.get('purchase_id')
+            try:
+                with transaction.atomic():
+                    purchase = CreditPurchase.objects.select_for_update().get(id=int(purchase_id), user=user)
+                    if purchase.status != 'pending':
+                        messages.warning(request, f'La compra #{purchase_id} ya fue procesada ({purchase.status}).')
+                    else:
+                        purchase.status = 'completed'
+                        purchase.save(update_fields=['status'])
+                        profile = purchase.user.profile
+                        profile.credits += purchase.credits_applied
+                        profile.save(update_fields=['credits'])
+                        messages.success(request, f'Compra #{purchase_id} completada manualmente: +{purchase.credits_applied:,} crd a {user.username}.')
+            except (CreditPurchase.DoesNotExist, ValueError):
+                messages.error(request, 'Compra no encontrada.')
+
         return redirect('tournament:panel_user_detail', user_id=user_id)
 
     return render(request, 'admin_panel/user_detail.html', {
