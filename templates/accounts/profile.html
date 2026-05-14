@@ -127,35 +127,90 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {% for pred in group_preds %}
       <div class="card rounded-xl p-4">
+        {# ── Header ── #}
         <div class="flex items-center justify-between mb-3">
           <span class="font-display font-bold text-gold">GRUPO {{ pred.group.name }}</span>
           {% if pred.is_scored %}
-            {% if pred.points_earned > 0 %}
-            <span class="text-xs font-bold text-green-400">+{{ pred.points_earned }} pts</span>
-            {% else %}
-            <span class="text-xs font-bold text-[#6A8AA6]">0 pts</span>
-            {% endif %}
+            <span class="text-xs font-black {% if pred.points_earned > 0 %}text-green-400{% else %}text-[#4A6278]{% endif %}">
+              +{{ pred.points_earned }} pts
+            </span>
           {% else %}
           <span class="text-xs text-[#4A6278]">Pendiente</span>
           {% endif %}
         </div>
-        <div class="space-y-1.5">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-[#6A8AA6] w-3">1°</span>
+
+        {# ── Column headers (only when result known) ── #}
+        {% if pred.actual_first or pred.actual_second %}
+        <div class="grid grid-cols-2 gap-1 mb-1.5">
+          <p class="text-[9px] font-bold text-[#4A6278] uppercase tracking-wider pl-5">Tu predicción</p>
+          <p class="text-[9px] font-bold text-[#4A6278] uppercase tracking-wider pl-5">Resultado real</p>
+        </div>
+        {% endif %}
+
+        {# ── 1st place ── #}
+        <div class="{% if pred.actual_first or pred.actual_second %}grid grid-cols-2 gap-1{% else %}space-y-0{% endif %} mb-1">
+          {# predicted #}
+          <div class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg
+            {% if pred.actual_first %}
+              {% if pred.predicted_first == pred.actual_first %}bg-green-900/20 border border-green-800/30{% else %}bg-red-900/15 border border-red-900/20{% endif %}
+            {% else %}bg-[#0A1828]{% endif %}">
+            <span class="text-[10px] font-bold text-[#4A6278] flex-shrink-0">1°</span>
             {% if pred.predicted_first.iso2_code %}
             <img src="https://flagcdn.com/w40/{{ pred.predicted_first.iso2_code }}.png"
-                 alt="{{ pred.predicted_first.name }}" class="w-6 h-4 object-cover rounded">
+                 alt="{{ pred.predicted_first.name }}" class="w-5 h-3.5 object-cover rounded flex-shrink-0">
             {% endif %}
-            <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_first.name }}</span>
+            <span class="text-xs {% if pred.actual_first and pred.predicted_first == pred.actual_first %}text-green-300 font-bold{% else %}text-[#C8D8E8]{% endif %} truncate">
+              {{ pred.predicted_first.name }}
+            </span>
+            {% if pred.actual_first %}
+              {% if pred.predicted_first == pred.actual_first %}<span class="ml-auto text-green-400 text-xs flex-shrink-0">✓</span>
+              {% else %}<span class="ml-auto text-red-400 text-xs flex-shrink-0">✗</span>{% endif %}
+            {% endif %}
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-[#6A8AA6] w-3">2°</span>
+          {# actual (only shown when result exists) #}
+          {% if pred.actual_first %}
+          <div class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#0A1828]">
+            <span class="text-[10px] font-bold text-[#4A6278] flex-shrink-0">1°</span>
+            {% if pred.actual_first.iso2_code %}
+            <img src="https://flagcdn.com/w40/{{ pred.actual_first.iso2_code }}.png"
+                 alt="{{ pred.actual_first.name }}" class="w-5 h-3.5 object-cover rounded flex-shrink-0">
+            {% endif %}
+            <span class="text-xs text-white font-medium truncate">{{ pred.actual_first.name }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        {# ── 2nd place ── #}
+        <div class="{% if pred.actual_first or pred.actual_second %}grid grid-cols-2 gap-1{% else %}space-y-0{% endif %}">
+          {# predicted #}
+          <div class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg
+            {% if pred.actual_second %}
+              {% if pred.predicted_second == pred.actual_second %}bg-green-900/20 border border-green-800/30{% else %}bg-red-900/15 border border-red-900/20{% endif %}
+            {% else %}bg-[#0A1828]{% endif %}">
+            <span class="text-[10px] font-bold text-[#4A6278] flex-shrink-0">2°</span>
             {% if pred.predicted_second.iso2_code %}
             <img src="https://flagcdn.com/w40/{{ pred.predicted_second.iso2_code }}.png"
-                 alt="{{ pred.predicted_second.name }}" class="w-6 h-4 object-cover rounded">
+                 alt="{{ pred.predicted_second.name }}" class="w-5 h-3.5 object-cover rounded flex-shrink-0">
             {% endif %}
-            <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_second.name }}</span>
+            <span class="text-xs {% if pred.actual_second and pred.predicted_second == pred.actual_second %}text-green-300 font-bold{% else %}text-[#C8D8E8]{% endif %} truncate">
+              {{ pred.predicted_second.name }}
+            </span>
+            {% if pred.actual_second %}
+              {% if pred.predicted_second == pred.actual_second %}<span class="ml-auto text-green-400 text-xs flex-shrink-0">✓</span>
+              {% else %}<span class="ml-auto text-red-400 text-xs flex-shrink-0">✗</span>{% endif %}
+            {% endif %}
           </div>
+          {# actual (only shown when result exists) #}
+          {% if pred.actual_second %}
+          <div class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#0A1828]">
+            <span class="text-[10px] font-bold text-[#4A6278] flex-shrink-0">2°</span>
+            {% if pred.actual_second.iso2_code %}
+            <img src="https://flagcdn.com/w40/{{ pred.actual_second.iso2_code }}.png"
+                 alt="{{ pred.actual_second.name }}" class="w-5 h-3.5 object-cover rounded flex-shrink-0">
+            {% endif %}
+            <span class="text-xs text-white font-medium truncate">{{ pred.actual_second.name }}</span>
+          </div>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -194,59 +249,100 @@
         <div class="divide-y divide-[#1A2E48]">
           {% for pred in rg.preds %}
           <div class="px-4 py-3">
-            <div class="flex items-center gap-3">
-              <!-- Flag + team name -->
-              <div class="flex items-center gap-2 flex-1 min-w-0">
-                {% if pred.predicted_winner.iso2_code %}
-                <img src="https://flagcdn.com/w40/{{ pred.predicted_winner.iso2_code }}.png"
-                     alt="{{ pred.predicted_winner.name }}"
-                     class="w-7 h-5 object-cover rounded flex-shrink-0 shadow-sm">
-                {% endif %}
-                <div class="min-w-0">
-                  <p class="text-sm font-bold text-white truncate">{{ pred.predicted_winner.name }}</p>
-                  <p class="text-[10px] text-[#4A6278]">Partido #{{ pred.match.match_number }}</p>
-                </div>
-              </div>
-              <!-- Result badge -->
-              {% if pred.is_correct == True %}
-              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border"
-                    style="background:rgba(34,197,94,0.10); color:#4ade80; border-color:rgba(34,197,94,0.25);">
-                ✓ ACERTASTE
+            {# ── Header row: match number + result badge + points ── #}
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold text-[#4A6278] uppercase tracking-wider">
+                Partido #{{ pred.match.match_number }}
+                {% if pred.match.description %}<span class="text-[#2A4060]"> · {{ pred.match.description }}</span>{% endif %}
               </span>
-              {% elif pred.is_correct == False %}
-              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border"
-                    style="background:rgba(239,68,68,0.10); color:#f87171; border-color:rgba(239,68,68,0.25);">
-                ✗ FALLASTE
-              </span>
-              {% else %}
-              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium border border-[#1A2E48] text-[#4A6278]"
-                    style="background:rgba(0,0,0,0.15)">
-                Pendiente
-              </span>
-              {% endif %}
-              <!-- Points -->
-              <div class="text-right flex-shrink-0 w-12">
-                {% if pred.is_correct is not None %}
-                <p class="font-bold text-sm {% if pred.points_earned > 0 %}text-gold{% else %}text-[#6A8AA6]{% endif %}">
-                  +{{ pred.points_earned }}
-                </p>
-                <p class="text-[9px] text-[#4A6278]">pts</p>
+              <div class="flex items-center gap-2">
+                {% if pred.is_correct == True %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black border"
+                      style="background:rgba(34,197,94,.10); color:#4ade80; border-color:rgba(34,197,94,.25);">✓ ACERTASTE</span>
+                {% elif pred.is_correct == False %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black border"
+                      style="background:rgba(239,68,68,.10); color:#f87171; border-color:rgba(239,68,68,.25);">✗ FALLASTE</span>
                 {% else %}
-                <span class="text-[#4A6278] text-xs">—</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium border border-[#1A2E48] text-[#4A6278]"
+                      style="background:rgba(0,0,0,.15)">Pendiente</span>
+                {% endif %}
+                {% if pred.is_correct is not None %}
+                <span class="font-black text-sm {% if pred.points_earned > 0 %}text-gold{% else %}text-[#4A6278]{% endif %}">
+                  +{{ pred.points_earned }}<span class="text-[9px] font-normal ml-0.5">pts</span>
+                </span>
+                {% else %}
+                <span class="text-[#4A6278] text-xs font-medium">— pts</span>
                 {% endif %}
               </div>
             </div>
-            <!-- Show actual winner when prediction was wrong -->
-            {% if pred.is_correct == False and pred.match.winner %}
-            <div class="mt-2 ml-9 flex items-center gap-1.5">
-              <span class="text-[10px] text-[#4A6278]">Ganó:</span>
-              {% if pred.match.winner.iso2_code %}
-              <img src="https://flagcdn.com/w40/{{ pred.match.winner.iso2_code }}.png"
-                   alt="{{ pred.match.winner.name }}" class="w-5 h-3.5 object-cover rounded">
+            {# ── Team rows ── #}
+            <div class="space-y-1">
+              {# Team 1 #}
+              {% if pred.match.team1 %}
+              {% if pred.predicted_winner == pred.match.team1 %}
+                {% if pred.is_correct == True %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.2);">
+                {% elif pred.is_correct == False %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.18);">
+                {% else %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.22);">
+                {% endif %}
+              {% else %}
+              <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(0,0,0,.18);">
               {% endif %}
-              <span class="text-[11px] text-[#8AA6C0]">{{ pred.match.winner.name }}</span>
+                {% if pred.match.team1.iso2_code %}
+                <img src="https://flagcdn.com/w40/{{ pred.match.team1.iso2_code }}.png"
+                     alt="{{ pred.match.team1.name }}" class="w-7 h-5 object-cover rounded flex-shrink-0">
+                {% endif %}
+                <span class="text-sm flex-1 {% if pred.predicted_winner == pred.match.team1 %}text-white font-bold{% else %}text-[#6A8AA6]{% endif %}">
+                  {{ pred.match.team1.name }}
+                </span>
+                {% if pred.predicted_winner == pred.match.team1 %}
+                <span class="text-[10px] font-bold" style="color:#C9A84C;">TU APUESTA</span>
+                {% endif %}
+                {% if pred.match.winner == pred.match.team1 %}
+                <span class="text-[10px] font-bold text-green-400 ml-1">GANÓ ✓</span>
+                {% endif %}
+              </div>
+              {% endif %}
+
+              {# vs divider #}
+              <div class="text-center text-[10px] text-[#2A4060] font-bold leading-none py-0.5">vs</div>
+
+              {# Team 2 #}
+              {% if pred.match.team2 %}
+              {% if pred.predicted_winner == pred.match.team2 %}
+                {% if pred.is_correct == True %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.2);">
+                {% elif pred.is_correct == False %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.18);">
+                {% else %}
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.22);">
+                {% endif %}
+              {% else %}
+              <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(0,0,0,.18);">
+              {% endif %}
+                {% if pred.match.team2.iso2_code %}
+                <img src="https://flagcdn.com/w40/{{ pred.match.team2.iso2_code }}.png"
+                     alt="{{ pred.match.team2.name }}" class="w-7 h-5 object-cover rounded flex-shrink-0">
+                {% endif %}
+                <span class="text-sm flex-1 {% if pred.predicted_winner == pred.match.team2 %}text-white font-bold{% else %}text-[#6A8AA6]{% endif %}">
+                  {{ pred.match.team2.name }}
+                </span>
+                {% if pred.predicted_winner == pred.match.team2 %}
+                <span class="text-[10px] font-bold" style="color:#C9A84C;">TU APUESTA</span>
+                {% endif %}
+                {% if pred.match.winner == pred.match.team2 %}
+                <span class="text-[10px] font-bold text-green-400 ml-1">GANÓ ✓</span>
+                {% endif %}
+              </div>
+              {% else %}
+              {# Teams not yet assigned — show only prediction #}
+              <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background:rgba(0,0,0,.18);">
+                <span class="text-sm text-[#4A6278] italic">Por definir</span>
+              </div>
+              {% endif %}
             </div>
-            {% endif %}
           </div>
           {% endfor %}
         </div>

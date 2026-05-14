@@ -72,14 +72,27 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    from tournament.models import GroupPrediction, KnockoutPrediction
+    from tournament.models import GroupPrediction, KnockoutPrediction, GroupResult
 
     group_preds = list(GroupPrediction.objects.filter(
         user=request.user).select_related('group', 'predicted_first', 'predicted_second'))
 
+    # Attach actual top-2 results to each group prediction
+    group_ids = [p.group_id for p in group_preds]
+    actual_results_qs = GroupResult.objects.filter(
+        group_id__in=group_ids, position__in=[1, 2]
+    ).select_related('team')
+    actual_by_group = {}
+    for r in actual_results_qs:
+        actual_by_group.setdefault(r.group_id, {})[r.position] = r.team
+    for pred in group_preds:
+        grp = actual_by_group.get(pred.group_id, {})
+        pred.actual_first = grp.get(1)
+        pred.actual_second = grp.get(2)
+
     knockout_preds = list(KnockoutPrediction.objects.filter(
         user=request.user).select_related(
-            'match__round', 'match__winner', 'predicted_winner'
+            'match__round', 'match__winner', 'match__team1', 'match__team2', 'predicted_winner'
         ).order_by('match__round__order', 'match__match_number'))
 
     group_points_total = sum(p.points_earned or 0 for p in group_preds)

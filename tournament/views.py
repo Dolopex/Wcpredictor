@@ -448,14 +448,13 @@ def leaderboard_view(request):
     top3 = list(users[:3])
 
     # Tournament finished flag + World Cup champion
-    final_round = Round.objects.filter(slug='final').first()
-    tournament_finished = bool(final_round and final_round.is_locked)
     world_cup_winner = None
     final_match = Match.objects.filter(
         round__slug='final', winner__isnull=False
     ).select_related('winner').first()
     if final_match:
         world_cup_winner = final_match.winner
+    tournament_finished = bool(world_cup_winner)
 
     return render(request, 'tournament/leaderboard.html', {
         'page_obj': page_obj,
