@@ -223,21 +223,56 @@ def _create_knockout_data(users):
 
 def reset_test_data():
     """
-    Elimina todos los datos de prueba:
-    - Usuarios bot (y sus predicciones en cascada)
-    - Matches de sandbox (y sus predicciones en cascada)
-    - Resultados de todos los grupos
-    Retorna un dict con lo eliminado.
+    Reset completo:
+    - Elimina usuarios bot (y sus predicciones en cascada)
+    - Elimina matches de sandbox (y sus predicciones en cascada)
+    - Borra todos los GroupResult
+    - Limpia el winner de todos los matches reales
+    - Resetea puntos/estado de todas las predicciones de usuarios reales
+    - Resetea total_points en todos los perfiles de usuarios reales
+    Retorna un dict con lo eliminado/reseteado.
     """
+    from django.contrib.auth.models import User
+    from accounts.models import UserProfile
+
     with transaction.atomic():
+        # 1. Borrar usuarios bot (cascada borra sus predicciones)
         deleted_users, _ = get_bot_users().delete()
+
+        # 2. Borrar matches sandbox (cascada borra predicciones de eliminatorias asociadas)
         deleted_matches, _ = Match.objects.filter(
             description__startswith=SANDBOX_TAG
         ).delete()
+
+        # 3. Borrar todos los resultados de grupos
         deleted_results, _ = GroupResult.objects.all().delete()
+
+        # 4. Limpiar winner en todos los matches reales (no sandbox)
+        cleared_winners = Match.objects.exclude(
+            description__startswith=SANDBOX_TAG
+        ).filter(winner__isnull=False).update(winner=None)
+
+        # 5. Resetear predicciones eliminatorias de usuarios reales
+        reset_knockout = KnockoutPrediction.objects.exclude(
+            user__username__startswith=BOT_PREFIX
+        ).update(is_correct=None, points_earned=0, credits_won=0)
+
+        # 6. Resetear predicciones de grupos de usuarios reales
+        reset_groups = GroupPrediction.objects.exclude(
+            user__username__startswith=BOT_PREFIX
+        ).update(is_scored=False, points_earned=0, credits_won=0)
+
+        # 7. Resetear total_points de todos los perfiles de usuarios reales
+        reset_profiles = UserProfile.objects.exclude(
+            user__username__startswith=BOT_PREFIX
+        ).update(total_points=0)
 
     return {
         'deleted_users': deleted_users,
         'deleted_matches': deleted_matches,
         'deleted_results': deleted_results,
+        'cleared_winners': cleared_winners,
+        'reset_knockout': reset_knockout,
+        'reset_groups': reset_groups,
+        'reset_profiles': reset_profiles,
     }

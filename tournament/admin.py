@@ -182,14 +182,20 @@ class SandboxLogAdmin(admin.ModelAdmin):
                 result = reset_test_data()
                 SandboxLog.objects.create(
                     action='reset',
-                    notes="Bots: {} | Matches: {} | Resultados: {}".format(
+                    notes="Bots: {} | Matches sandbox: {} | Resultados grupo: {} | Winners borrados: {} | Pred. elim. reset: {} | Pred. grupos reset: {} | Perfiles reset: {}".format(
                         result['deleted_users'], result['deleted_matches'], result['deleted_results'],
+                        result['cleared_winners'], result['reset_knockout'],
+                        result['reset_groups'], result['reset_profiles'],
                     ),
                 )
                 messages.success(
                     request,
-                    "Reseteado: {} bots, {} matches, {} resultados eliminados.".format(
-                        result['deleted_users'], result['deleted_matches'], result['deleted_results'],
+                    "Reset completo: {} bots eliminados, {} ganadores borrados, "
+                    "{} pred. eliminatorias reseteadas, {} pred. grupos reseteadas, "
+                    "{} perfiles a 0 pts.".format(
+                        result['deleted_users'], result['cleared_winners'],
+                        result['reset_knockout'], result['reset_groups'],
+                        result['reset_profiles'],
                     ),
                 )
             except Exception as exc:
