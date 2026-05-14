@@ -115,7 +115,14 @@
 
   <!-- Predicciones de grupos -->
   <div>
-    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">PREDICCIONES DE GRUPOS</h2>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-display font-bold text-lg text-white tracking-wide">PREDICCIONES DE GRUPOS</h2>
+      {% if group_preds %}
+      <span class="text-sm font-bold {% if group_points_total > 0 %}text-gold{% else %}text-[#6A8AA6]{% endif %}">
+        {{ group_points_total }} pts
+      </span>
+      {% endif %}
+    </div>
     {% if group_preds %}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {% for pred in group_preds %}
@@ -150,16 +157,6 @@
             <span class="text-sm text-[#C8D8E8]">{{ pred.predicted_second.name }}</span>
           </div>
         </div>
-        {% if pred.bet_credits > 0 %}
-        <div class="mt-2 pt-2 border-t border-[#1A2E48] flex items-center justify-between">
-          <span class="text-xs text-[#6A8AA6]">Apuesta: {{ pred.bet_credits|crd }} crd</span>
-          {% if pred.is_scored %}
-            <span class="text-xs font-bold {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
-              {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won|crd }} crd
-            </span>
-          {% endif %}
-        </div>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -173,66 +170,88 @@
 
   <!-- Predicciones eliminatorias -->
   <div>
-    <h2 class="font-display font-bold text-lg text-white tracking-wide mb-4">PREDICCIONES ELIMINATORIAS</h2>
-    {% if knockout_preds %}
-    <div class="card rounded-xl overflow-hidden">
-      <table class="w-full">
-        <thead style="background: rgba(201,168,76,0.06);">
-          <tr>
-            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Ronda</th>
-            <th class="px-4 py-2.5 text-left text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Predicción</th>
-            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider">Puntos</th>
-            <th class="px-4 py-2.5 text-right text-xs font-bold text-[#6A8AA6] uppercase tracking-wider hidden sm:table-cell">Créditos</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[#1A2E48]">
-          {% for pred in knockout_preds %}
-          <tr class="hover:bg-[#112035] transition">
-            <td class="px-4 py-2.5 text-xs text-[#6A8AA6] whitespace-nowrap">{{ pred.match.round.name }}</td>
-            <td class="px-4 py-2.5">
-              <div class="flex items-center gap-2">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-display font-bold text-lg text-white tracking-wide">PREDICCIONES ELIMINATORIAS</h2>
+      {% if knockout_by_round %}
+      <span class="text-sm font-bold {% if knockout_points_total > 0 %}text-gold{% else %}text-[#6A8AA6]{% endif %}">
+        {{ knockout_points_total }} pts
+      </span>
+      {% endif %}
+    </div>
+    {% if knockout_by_round %}
+    <div class="space-y-5">
+      {% for rg in knockout_by_round %}
+      <div class="card rounded-xl overflow-hidden">
+        <!-- Round header -->
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-[#1A2E48]"
+             style="background: rgba(201,168,76,0.06)">
+          <span class="text-xs font-bold text-[#8AA6C0] uppercase tracking-wider">{{ rg.round.name }}</span>
+          <span class="text-xs font-bold {% if rg.total_pts > 0 %}text-gold{% else %}text-[#4A6278]{% endif %}">
+            {{ rg.total_pts }} pts
+          </span>
+        </div>
+        <!-- Predictions in this round -->
+        <div class="divide-y divide-[#1A2E48]">
+          {% for pred in rg.preds %}
+          <div class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <!-- Flag + team name -->
+              <div class="flex items-center gap-2 flex-1 min-w-0">
                 {% if pred.predicted_winner.iso2_code %}
                 <img src="https://flagcdn.com/w40/{{ pred.predicted_winner.iso2_code }}.png"
-                     alt="{{ pred.predicted_winner.name }}" class="w-6 h-4 object-cover rounded">
+                     alt="{{ pred.predicted_winner.name }}"
+                     class="w-7 h-5 object-cover rounded flex-shrink-0 shadow-sm">
                 {% endif %}
-                <span class="text-sm text-white">{{ pred.predicted_winner.name }}</span>
-                {% if pred.is_correct == True %}
-                  <svg class="w-4 h-4 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                {% elif pred.is_correct == False %}
-                  <svg class="w-4 h-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                  </svg>
-                {% endif %}
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-white truncate">{{ pred.predicted_winner.name }}</p>
+                  <p class="text-[10px] text-[#4A6278]">Partido #{{ pred.match.match_number }}</p>
+                </div>
               </div>
-            </td>
-            <td class="px-4 py-2.5 text-right font-bold text-sm">
-              {% if pred.is_correct is not None %}
-              <span class="{% if pred.points_earned > 0 %}text-gold{% else %}text-[#6A8AA6]{% endif %}">
-                {{ pred.points_earned }}
+              <!-- Result badge -->
+              {% if pred.is_correct == True %}
+              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border"
+                    style="background:rgba(34,197,94,0.10); color:#4ade80; border-color:rgba(34,197,94,0.25);">
+                ✓ ACERTASTE
+              </span>
+              {% elif pred.is_correct == False %}
+              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border"
+                    style="background:rgba(239,68,68,0.10); color:#f87171; border-color:rgba(239,68,68,0.25);">
+                ✗ FALLASTE
               </span>
               {% else %}
-              <span class="text-[#4A6278] text-xs">—</span>
+              <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium border border-[#1A2E48] text-[#4A6278]"
+                    style="background:rgba(0,0,0,0.15)">
+                Pendiente
+              </span>
               {% endif %}
-            </td>
-            <td class="px-4 py-2.5 text-right hidden sm:table-cell">
-              {% if pred.bet_credits > 0 %}
+              <!-- Points -->
+              <div class="text-right flex-shrink-0 w-12">
                 {% if pred.is_correct is not None %}
-                <span class="text-sm font-bold {% if pred.credits_won >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
-                  {% if pred.credits_won >= 0 %}+{% endif %}{{ pred.credits_won|crd }}
-                </span>
+                <p class="font-bold text-sm {% if pred.points_earned > 0 %}text-gold{% else %}text-[#6A8AA6]{% endif %}">
+                  +{{ pred.points_earned }}
+                </p>
+                <p class="text-[9px] text-[#4A6278]">pts</p>
                 {% else %}
-                <span class="text-xs text-[#6A8AA6]">{{ pred.bet_credits|crd }} en juego</span>
+                <span class="text-[#4A6278] text-xs">—</span>
                 {% endif %}
-              {% else %}
-              <span class="text-[#4A6278] text-xs">—</span>
+              </div>
+            </div>
+            <!-- Show actual winner when prediction was wrong -->
+            {% if pred.is_correct == False and pred.match.winner %}
+            <div class="mt-2 ml-9 flex items-center gap-1.5">
+              <span class="text-[10px] text-[#4A6278]">Ganó:</span>
+              {% if pred.match.winner.iso2_code %}
+              <img src="https://flagcdn.com/w40/{{ pred.match.winner.iso2_code }}.png"
+                   alt="{{ pred.match.winner.name }}" class="w-5 h-3.5 object-cover rounded">
               {% endif %}
-            </td>
-          </tr>
+              <span class="text-[11px] text-[#8AA6C0]">{{ pred.match.winner.name }}</span>
+            </div>
+            {% endif %}
+          </div>
           {% endfor %}
-        </tbody>
-      </table>
+        </div>
+      </div>
+      {% endfor %}
     </div>
     {% else %}
     <div class="card rounded-xl p-6 text-center">

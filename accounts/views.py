@@ -73,14 +73,36 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     from tournament.models import GroupPrediction, KnockoutPrediction
-    group_preds = GroupPrediction.objects.filter(
-        user=request.user).select_related('group', 'predicted_first', 'predicted_second')
-    knockout_preds = KnockoutPrediction.objects.filter(
-        user=request.user).select_related('match__round', 'predicted_winner')
+
+    group_preds = list(GroupPrediction.objects.filter(
+        user=request.user).select_related('group', 'predicted_first', 'predicted_second'))
+
+    knockout_preds = list(KnockoutPrediction.objects.filter(
+        user=request.user).select_related(
+            'match__round', 'match__winner', 'predicted_winner'
+        ).order_by('match__round__order', 'match__match_number'))
+
+    group_points_total = sum(p.points_earned or 0 for p in group_preds)
+    knockout_points_total = sum(p.points_earned or 0 for p in knockout_preds)
+
+    # Agrupar predicciones eliminatorias por ronda
+    knockout_by_round = []
+    for pred in knockout_preds:
+        round_slug = pred.match.round.slug
+        if not knockout_by_round or knockout_by_round[-1]['round'].slug != round_slug:
+            knockout_by_round.append({
+                'round': pred.match.round,
+                'preds': [],
+                'total_pts': 0,
+            })
+        knockout_by_round[-1]['preds'].append(pred)
+        knockout_by_round[-1]['total_pts'] += (pred.points_earned or 0)
 
     context = {
         'group_preds': group_preds,
-        'knockout_preds': knockout_preds,
+        'knockout_by_round': knockout_by_round,
         'total_points': request.user.profile.total_points,
+        'group_points_total': group_points_total,
+        'knockout_points_total': knockout_points_total,
     }
     return render(request, 'accounts/profile.html', context)
