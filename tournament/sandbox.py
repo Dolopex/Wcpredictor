@@ -223,55 +223,42 @@ def _create_knockout_data(users):
 
 def reset_test_data():
     """
-    Reset completo:
-    - Elimina usuarios bot (y sus predicciones en cascada)
-    - Elimina matches de sandbox (y sus predicciones en cascada)
-    - Borra todos los GroupResult
-    - Limpia el winner de todos los matches reales
-    - Resetea puntos/estado de todas las predicciones de usuarios reales
-    - Resetea total_points en todos los perfiles de usuarios reales
+    Reset completo en una sola transacción, sin filtros complejos:
+    1. Borra TODAS las predicciones eliminatorias y de grupos
+    2. Borra todos los GroupResult
+    3. Limpia winner en todos los matches
+    4. Borra matches sandbox
+    5. Borra usuarios bot
+    6. Resetea perfiles (puntos + underdog)
     """
-    deleted_users = deleted_matches = deleted_results = 0
-    cleared_winners = reset_knockout = reset_groups = reset_profiles = 0
+    from accounts.models import UserProfile
 
-    # Paso 1: bots (cascada borra sus predicciones y perfil)
     with transaction.atomic():
-        deleted_users, _ = get_bot_users().delete()
+        # 1. Borrar TODAS las predicciones (las de bots se borrarán por cascada igual,
+        #    así que las borramos todas directamente — es más rápido y seguro)
+        reset_knockout, _ = KnockoutPrediction.objects.all().delete()
+        reset_groups, _ = GroupPrediction.objects.all().delete()
 
-    # Paso 2: matches sandbox (cascada borra predicciones asociadas)
-    with transaction.atomic():
+        # 2. Borrar todos los resultados de grupos
+        deleted_results, _ = GroupResult.objects.all().delete()
+
+        # 3. Limpiar todos los ganadores de matches
+        cleared_winners = Match.objects.filter(winner__isnull=False).update(winner=None)
+
+        # 4. Borrar matches sandbox (sin predicciones ya, la cascada no hace nada extra)
         deleted_matches, _ = Match.objects.filter(
             description__startswith=SANDBOX_TAG
         ).delete()
 
-    # Paso 3: resultados de grupos
-    with transaction.atomic():
-        deleted_results, _ = GroupResult.objects.all().delete()
+        # 5. Borrar usuarios bot (sus predicciones ya están borradas)
+        deleted_users, _ = get_bot_users().delete()
 
-    # Paso 4: limpiar winner en matches reales
-    with transaction.atomic():
-        cleared_winners = Match.objects.exclude(
-            description__startswith=SANDBOX_TAG
-        ).filter(winner__isnull=False).update(winner=None)
-
-    # Paso 5: eliminar predicciones eliminatorias de usuarios reales
-    with transaction.atomic():
-        reset_knockout, _ = KnockoutPrediction.objects.exclude(
-            user__username__startswith=BOT_PREFIX
-        ).delete()
-
-    # Paso 6: eliminar predicciones de grupos de usuarios reales
-    with transaction.atomic():
-        reset_groups, _ = GroupPrediction.objects.exclude(
-            user__username__startswith=BOT_PREFIX
-        ).delete()
-
-    # Paso 7: resetear puntos + underdog en perfiles de usuarios reales
-    with transaction.atomic():
-        from accounts.models import UserProfile
-        reset_profiles = UserProfile.objects.exclude(
-            user__username__startswith=BOT_PREFIX
-        ).update(total_points=0, underdog_multiplier=1.0, underdog_boost_uses=0)
+        # 6. Resetear puntos y underdog de TODOS los perfiles
+        reset_profiles = UserProfile.objects.all().update(
+            total_points=0,
+            underdog_multiplier=1.0,
+            underdog_boost_uses=0,
+        )
 
     return {
         'deleted_users': deleted_users,

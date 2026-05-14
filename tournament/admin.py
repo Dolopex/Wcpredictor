@@ -219,7 +219,8 @@ class SandboxLogAdmin(admin.ModelAdmin):
                     ),
                 )
             except Exception as exc:
-                messages.error(request, "Error al resetear: {}".format(exc))
+                import traceback
+                messages.error(request, "Error al resetear: {} | {}".format(exc, traceback.format_exc()))
 
         return HttpResponseRedirect('../')
 
