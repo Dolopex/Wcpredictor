@@ -254,24 +254,24 @@ def reset_test_data():
             description__startswith=SANDBOX_TAG
         ).filter(winner__isnull=False).update(winner=None)
 
-    # Paso 5: resetear predicciones eliminatorias de usuarios reales
+    # Paso 5: eliminar predicciones eliminatorias de usuarios reales
     with transaction.atomic():
-        reset_knockout = KnockoutPrediction.objects.exclude(
+        reset_knockout, _ = KnockoutPrediction.objects.exclude(
             user__username__startswith=BOT_PREFIX
-        ).update(is_correct=None, points_earned=0, credits_won=0)
+        ).delete()
 
-    # Paso 6: resetear predicciones de grupos de usuarios reales
+    # Paso 6: eliminar predicciones de grupos de usuarios reales
     with transaction.atomic():
-        reset_groups = GroupPrediction.objects.exclude(
+        reset_groups, _ = GroupPrediction.objects.exclude(
             user__username__startswith=BOT_PREFIX
-        ).update(is_scored=False, points_earned=0, credits_won=0)
+        ).delete()
 
-    # Paso 7: resetear total_points de perfiles de usuarios reales
+    # Paso 7: resetear puntos + underdog en perfiles de usuarios reales
     with transaction.atomic():
         from accounts.models import UserProfile
         reset_profiles = UserProfile.objects.exclude(
             user__username__startswith=BOT_PREFIX
-        ).update(total_points=0)
+        ).update(total_points=0, underdog_multiplier=1.0, underdog_boost_uses=0)
 
     return {
         'deleted_users': deleted_users,

@@ -25,7 +25,7 @@ def home_view(request):
     groups = Group.objects.prefetch_related('teams').all()
     active_round = Round.objects.filter(is_active=True).order_by('order').first()
     top_users = (
-        User.objects.filter(profile__total_points__gt=0)
+        User.objects.filter(profile__total_points__gt=0, is_staff=False, is_superuser=False)
         .select_related('profile')
         .order_by('-profile__total_points')[:5]
     )
@@ -425,7 +425,7 @@ def leaderboard_view(request):
     from django.db.models import Sum
 
     users = (
-        User.objects.filter(is_active=True)
+        User.objects.filter(is_active=True, is_staff=False, is_superuser=False)
         .select_related('profile')
         .order_by('-profile__total_points')
     )
@@ -435,9 +435,10 @@ def leaderboard_view(request):
     page_obj = paginator.get_page(page_number)
 
     user_rank = None
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser:
         better_count = User.objects.filter(
-            profile__total_points__gt=request.user.profile.total_points
+            is_active=True, is_staff=False, is_superuser=False,
+            profile__total_points__gt=request.user.profile.total_points,
         ).count()
         user_rank = better_count + 1
 
