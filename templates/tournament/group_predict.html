@@ -141,7 +141,8 @@
          style="background: rgba(201,168,76,0.05)">
       <div>
         <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest">Costo de predicción</p>
-        <p class="font-display font-bold text-gold text-lg">{{ group_bet|crd }} <span class="text-xs font-sans text-[#6A8AA6]">crd</span></p>
+        <p class="font-display font-bold text-gold text-lg" id="cost-display">{{ group_bet|crd }} <span class="text-xs font-sans text-[#6A8AA6]">crd</span></p>
+        <p class="text-[10px] text-gold mt-0.5 hidden" id="third-cost-line">+{{ third_best_fee|crd }} crd por mejor tercero</p>
       </div>
       <div class="text-right">
         <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest">Tu saldo</p>
@@ -325,19 +326,22 @@ function toggleThirdAdvances() {
 }
 
 function renderToggle() {
-  const btn   = document.getElementById('third-toggle-btn');
-  const knob  = document.getElementById('third-toggle-knob');
-  const bonus = document.getElementById('third-bonus-text');
+  const btn       = document.getElementById('third-toggle-btn');
+  const knob      = document.getElementById('third-toggle-knob');
+  const bonus     = document.getElementById('third-bonus-text');
+  const costLine  = document.getElementById('third-cost-line');
   if (thirdAdvancesActive) {
     btn.style.background  = '#C9A84C';
     knob.style.background = '#070F1C';
     knob.style.transform  = 'translateX(20px)';
     bonus.classList.remove('hidden');
+    if (costLine) costLine.classList.remove('hidden');
   } else {
     btn.style.background  = '#1A2E48';
     knob.style.background = '#4A6278';
     knob.style.transform  = 'translateX(0)';
     bonus.classList.add('hidden');
+    if (costLine) costLine.classList.add('hidden');
   }
 }
 

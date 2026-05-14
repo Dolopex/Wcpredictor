@@ -142,6 +142,7 @@ def group_predict_view(request, group_name):
         teams_data = [{'team': t, 'net_mult': mult_map[t.id]} for t in teams]
 
     GROUP_BET = 1000
+    THIRD_BEST_FEE = 500
 
     context = {
         'group': group,
@@ -151,11 +152,15 @@ def group_predict_view(request, group_name):
         'thirds_count': thirds_count,
         'thirds_remaining': thirds_remaining,
         'group_bet': GROUP_BET,
+        'third_best_fee': THIRD_BEST_FEE,
     }
 
     if request.method == 'POST':
         from django.db import transaction
         from accounts.models import UserProfile
+
+        GROUP_BET = 1000
+        THIRD_BEST_FEE = 500
 
         order_ids = [request.POST.get(f'order_{i}', '').strip() for i in range(1, 5)]
 
@@ -170,6 +175,8 @@ def group_predict_view(request, group_name):
 
         third_advances = request.POST.get('third_advances') == '1'
 
+        new_bet = GROUP_BET + (THIRD_BEST_FEE if third_advances else 0)
+
         if third_advances and thirds_count >= 8:
             messages.error(request, 'Ya alcanzaste el límite de 8 mejores terceros seleccionados.')
             return render(request, 'tournament/group_predict.html', context)
@@ -182,7 +189,6 @@ def group_predict_view(request, group_name):
             messages.error(request, 'Equipo no válido.')
             return render(request, 'tournament/group_predict.html', context)
 
-        new_bet = GROUP_BET
         old_bet = existing.bet_credits if existing else 0
         # Créditos disponibles = saldo actual + lo apostado previamente en este grupo (se devuelve)
         effective_available = user_credits + old_bet
