@@ -332,14 +332,18 @@ def panel_simulate(request):
             messages.success(request, f'{count} partidos simulados.')
 
         elif action == 'reset_all_scores':
-            # Resetear todos los puntajes (para empezar pruebas desde cero)
+            # Resetear todo: borrar predicciones, resultados, ganadores y underdogs
             with transaction.atomic():
-                GroupPrediction.objects.all().update(points_earned=0, credits_won=0, is_scored=False)
-                KnockoutPrediction.objects.all().update(points_earned=0, credits_won=0, is_correct=None)
+                KnockoutPrediction.objects.all().delete()
+                GroupPrediction.objects.all().delete()
                 GroupResult.objects.all().delete()
-                Match.objects.all().update(winner=None)
-                UserProfile.objects.all().update(total_points=0)
-            messages.success(request, 'Todos los resultados y puntajes reseteados.')
+                Match.objects.filter(winner__isnull=False).update(winner=None)
+                UserProfile.objects.all().update(
+                    total_points=0,
+                    underdog_multiplier=1.0,
+                    underdog_boost_uses=0,
+                )
+            messages.success(request, 'Reset completo: predicciones eliminadas, resultados y underdogs reseteados.')
 
         elif action == 'sandbox_generate':
             try:
