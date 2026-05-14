@@ -35,66 +35,100 @@
   <!-- Matches grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
     {% for match in rd.matches %}
-    <div class="card rounded-xl p-4 {% if match.id in user_preds %}border-l-2 border-gold{% endif %}">
-      <div class="text-[10px] text-[#4A6278] font-bold uppercase tracking-wider mb-3 flex justify-between">
-        <span>Partido {{ match.match_number }}</span>
-        {% if match.id in user_preds %}
-          <span class="text-gold">Predicho</span>
+    <div class="card rounded-xl overflow-hidden {% if match.user_pred %}border-l-2 {% if match.user_pred.is_correct == True %}border-green-500{% elif match.user_pred.is_correct == False %}border-red-500{% else %}border-gold{% endif %}{% endif %}">
+
+      {# ── Header ── #}
+      <div class="flex items-center justify-between px-3 py-2 border-b border-[#1A2E48]"
+           style="background:rgba(201,168,76,0.04)">
+        <span class="text-[10px] text-[#4A6278] font-bold uppercase tracking-wider">
+          Partido {{ match.match_number }}
+        </span>
+        {% if match.user_pred %}
+          {% if match.user_pred.is_correct == True %}
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-full border"
+                  style="background:rgba(34,197,94,.10);color:#4ade80;border-color:rgba(34,197,94,.25);">✓ ACERTASTE</span>
+            <span class="text-[10px] font-black text-gold">+{{ match.user_pred.points_earned }}pts</span>
+          </div>
+          {% elif match.user_pred.is_correct == False %}
+          <span class="text-[10px] font-black px-2 py-0.5 rounded-full border"
+                style="background:rgba(239,68,68,.10);color:#f87171;border-color:rgba(239,68,68,.25);">✗ FALLASTE</span>
+          {% else %}
+          <span class="text-[10px] font-bold text-gold uppercase tracking-wider">PREDICHO</span>
+          {% endif %}
         {% endif %}
       </div>
 
-      <!-- Team 1 -->
-      <div class="flex items-center gap-2.5 py-2 border-b border-[#1A2E48]
-        {% if match.winner == match.team1 %}text-white{% else %}text-[#8AA6C0]{% endif %}">
-        {% if match.team1 and match.team1.iso2_code %}
-        <img src="https://flagcdn.com/w40/{{ match.team1.iso2_code }}.png"
-             alt="{{ match.team1.name }}"
-             class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+      <div class="p-3 space-y-1">
+        {# ── Team 1 ── #}
+        {% if match.team1 %}
+        <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg
+          {% if match.user_pred and match.user_pred.predicted_winner == match.team1 %}
+            {% if match.user_pred.is_correct == True %}border border-green-700/40{% elif match.user_pred.is_correct == False %}border border-red-800/40{% else %}border border-[#C9A84C]/35{% endif %}
+          {% else %}{% endif %}"
+          style="{% if match.user_pred and match.user_pred.predicted_winner == match.team1 %}{% if match.user_pred.is_correct == True %}background:rgba(34,197,94,.08){% elif match.user_pred.is_correct == False %}background:rgba(239,68,68,.07){% else %}background:rgba(201,168,76,.07){% endif %}{% else %}background:rgba(0,0,0,.18){% endif %}">
+          <img src="https://flagcdn.com/w40/{{ match.team1.iso2_code }}.png"
+               alt="{{ match.team1.name }}" class="w-7 h-5 object-cover rounded flex-shrink-0">
+          <span class="text-sm flex-1 truncate
+            {% if match.winner == match.team1 %}text-white font-bold{% elif match.user_pred and match.user_pred.predicted_winner == match.team1 %}text-white font-semibold{% else %}text-[#8AA6C0]{% endif %}">
+            {{ match.team1.name }}
+          </span>
+          {% if match.user_pred and match.user_pred.predicted_winner == match.team1 %}
+          <span class="text-[9px] font-bold flex-shrink-0" style="color:#C9A84C;">★</span>
+          {% endif %}
+          {% if match.winner == match.team1 %}
+          <span class="text-green-400 flex-shrink-0">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+          {% endif %}
+        </div>
         {% else %}
-        <div class="w-8 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+        <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg" style="background:rgba(0,0,0,.18)">
+          <div class="w-7 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+          <span class="text-sm text-[#4A6278] italic flex-1">Por definir</span>
+        </div>
         {% endif %}
-        <span class="text-sm font-medium flex-1 truncate">
-          {% if match.team1 %}{{ match.team1.name }}{% else %}<span class="text-[#4A6278]">Por definir</span>{% endif %}
-        </span>
-        {% if match.winner == match.team1 %}
-        <span class="text-green-400 flex-shrink-0">
-          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-        </span>
-        {% endif %}
-      </div>
 
-      <!-- VS -->
-      <div class="text-center text-[10px] text-[#4A6278] font-bold py-1">vs</div>
+        {# ── VS ── #}
+        <div class="text-center text-[10px] text-[#2A4060] font-bold leading-none py-0.5">vs</div>
 
-      <!-- Team 2 -->
-      <div class="flex items-center gap-2.5 py-2
-        {% if match.winner == match.team2 %}text-white{% else %}text-[#8AA6C0]{% endif %}">
-        {% if match.team2 and match.team2.iso2_code %}
-        <img src="https://flagcdn.com/w40/{{ match.team2.iso2_code }}.png"
-             alt="{{ match.team2.name }}"
-             class="w-8 h-5 object-cover rounded shadow-sm flex-shrink-0">
+        {# ── Team 2 ── #}
+        {% if match.team2 %}
+        <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg
+          {% if match.user_pred and match.user_pred.predicted_winner == match.team2 %}
+            {% if match.user_pred.is_correct == True %}border border-green-700/40{% elif match.user_pred.is_correct == False %}border border-red-800/40{% else %}border border-[#C9A84C]/35{% endif %}
+          {% else %}{% endif %}"
+          style="{% if match.user_pred and match.user_pred.predicted_winner == match.team2 %}{% if match.user_pred.is_correct == True %}background:rgba(34,197,94,.08){% elif match.user_pred.is_correct == False %}background:rgba(239,68,68,.07){% else %}background:rgba(201,168,76,.07){% endif %}{% else %}background:rgba(0,0,0,.18){% endif %}">
+          <img src="https://flagcdn.com/w40/{{ match.team2.iso2_code }}.png"
+               alt="{{ match.team2.name }}" class="w-7 h-5 object-cover rounded flex-shrink-0">
+          <span class="text-sm flex-1 truncate
+            {% if match.winner == match.team2 %}text-white font-bold{% elif match.user_pred and match.user_pred.predicted_winner == match.team2 %}text-white font-semibold{% else %}text-[#8AA6C0]{% endif %}">
+            {{ match.team2.name }}
+          </span>
+          {% if match.user_pred and match.user_pred.predicted_winner == match.team2 %}
+          <span class="text-[9px] font-bold flex-shrink-0" style="color:#C9A84C;">★</span>
+          {% endif %}
+          {% if match.winner == match.team2 %}
+          <span class="text-green-400 flex-shrink-0">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+          {% endif %}
+        </div>
         {% else %}
-        <div class="w-8 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+        <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg" style="background:rgba(0,0,0,.18)">
+          <div class="w-7 h-5 rounded bg-[#1A2E48] flex-shrink-0"></div>
+          <span class="text-sm text-[#4A6278] italic flex-1">Por definir</span>
+        </div>
         {% endif %}
-        <span class="text-sm font-medium flex-1 truncate">
-          {% if match.team2 %}{{ match.team2.name }}{% else %}<span class="text-[#4A6278]">Por definir</span>{% endif %}
-        </span>
-        {% if match.winner == match.team2 %}
-        <span class="text-green-400 flex-shrink-0">
-          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-          </svg>
-        </span>
+
+        {% if match.match_date %}
+        <p class="text-[10px] text-[#4A6278] pt-1 text-right">{{ match.match_date|date:"d M Y" }}</p>
         {% endif %}
       </div>
-
-      {% if match.match_date %}
-      <p class="text-[10px] text-[#4A6278] mt-2 text-right">
-        {{ match.match_date|date:"d M Y" }}
-      </p>
-      {% endif %}
     </div>
     {% empty %}
     <p class="text-[#6A8AA6] text-sm col-span-4">Sin partidos programados todavía.</p>

@@ -87,10 +87,13 @@ def groups_view(request):
         else:
             ordered = all_teams
 
+        results_by_pos = {r.position: r.team for r in group.results.all()}
         groups_data.append({
             'group': group,
             'teams_ordered': ordered,
             'prediction': pred,
+            'actual_first': results_by_pos.get(1),
+            'actual_second': results_by_pos.get(2),
         })
 
     context = {
@@ -232,12 +235,18 @@ def bracket_view(request):
     rounds_data = []
     user_preds = set()
 
+    preds_by_match = {}
     if request.user.is_authenticated:
-        preds = KnockoutPrediction.objects.filter(user=request.user).values_list('match_id', flat=True)
-        user_preds = set(preds)
+        preds_qs = KnockoutPrediction.objects.filter(
+            user=request.user
+        ).select_related('predicted_winner')
+        preds_by_match = {p.match_id: p for p in preds_qs}
+        user_preds = set(preds_by_match.keys())
 
     for round_obj in rounds:
-        matches = round_obj.matches.select_related('team1', 'team2', 'winner').order_by('match_number')
+        matches = list(round_obj.matches.select_related('team1', 'team2', 'winner').order_by('match_number'))
+        for match in matches:
+            match.user_pred = preds_by_match.get(match.id)
         rounds_data.append({'round': round_obj, 'matches': matches})
 
     context = {'rounds_data': rounds_data, 'user_preds': user_preds}
