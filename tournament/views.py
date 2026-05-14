@@ -443,12 +443,22 @@ def leaderboard_view(request):
         user_rank = better_count + 1
 
     # ── Premio ────────────────────────────────────────────────────────────────
-    total_collected = CreditPurchase.objects.filter(
-        status='completed'
-    ).aggregate(total=Sum('cop_paid'))['total'] or 0
+    # Comisión real de MercadoPago Colombia: 3.29% + IVA (19%) + 952 COP fijo
+    MP_FEE_RATE  = 0.039151   # 3.29% × 1.19
+    MP_FEE_FIXED = 952        # COP fijos por transacción
 
-    COMMISSION = 0.20
-    prize_pool = int(total_collected * (1 - COMMISSION))   # 80%
+    # Del dinero que llega neto a la cuenta, qué % se queda la plataforma
+    # El resto (1 - PLATFORM_CUT) va al pozo de premios
+    PLATFORM_CUT = 0.35       # 35 % del neto para la plataforma
+
+    purchases_qs    = CreditPurchase.objects.filter(status='completed')
+    total_gross     = purchases_qs.aggregate(total=Sum('cop_paid'))['total'] or 0
+    n_purchases     = purchases_qs.count()
+
+    # Neto real que llega a la cuenta después de fees de MP
+    total_net = max(0, total_gross * (1 - MP_FEE_RATE) - MP_FEE_FIXED * n_purchases)
+
+    prize_pool = int(total_net * (1 - PLATFORM_CUT))   # 65 % del neto
     prizes = {
         1: int(prize_pool * 0.50),
         2: int(prize_pool * 0.30),
@@ -475,7 +485,7 @@ def leaderboard_view(request):
         'top3_user': top3[2] if len(top3) >= 3 else None,
         'prizes': prizes,
         'prize_pool': prize_pool,
-        'total_collected': total_collected,
+        'total_collected': total_gross,
         'tournament_finished': tournament_finished,
         'world_cup_winner': world_cup_winner,
     })
