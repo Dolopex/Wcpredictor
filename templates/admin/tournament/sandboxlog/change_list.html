@@ -135,7 +135,7 @@
     {# Resetear datos #}
     <form method="post" action="run/"
           style="flex:1; min-width:240px;"
-          onsubmit="return confirm('¿Seguro? Esto eliminará TODOS los usuarios bot, matches sandbox y resultados de grupo.');">
+          onsubmit="return confirm('⚠️ RESET COMPLETO\n\nEsto eliminará:\n• Todos los usuarios bot\n• Matches sandbox\n• Todos los GroupResult\n• Ganadores de todos los matches reales\n• Puntos y estado de TODAS las predicciones\n• Total de puntos de todos los perfiles\n\n¿Continuar?');">
       {% csrf_token %}
       <input type="hidden" name="sandbox_action" value="reset">
       <div style="
@@ -145,12 +145,13 @@
         padding:20px;
       ">
         <h3 style="margin:0 0 12px 0; color:#f08080; font-size:14px; font-weight:700;">
-          🗑️ Resetear datos de prueba
+          🗑️ Reset completo
         </h3>
         <p style="margin:0 0 14px 0; font-size:12px; color:#b08080; line-height:1.6;">
-          Elimina todos los usuarios bot <code style="color:#f08080;">(bot_*)</code>,
-          sus predicciones, los matches de sandbox y todos los resultados de grupo.
-          Los usuarios reales no se ven afectados.
+          Elimina usuarios bot, matches sandbox y resultados de grupo.<br>
+          <strong style="color:#f08080;">También borra los ganadores de todos los matches reales,
+          resetea puntos y estado de todas las predicciones de usuarios reales
+          y pone a 0 los puntos totales de cada perfil.</strong>
         </p>
         <div style="
           background:rgba(255,80,80,0.08);
@@ -162,8 +163,8 @@
           color:#c08080;
           line-height:1.5;
         ">
-          ⚠️ <strong>Esta acción también borra los GroupResult</strong>, lo que
-          afecta el puntaje de todos los usuarios. Úsala solo en entorno de pruebas.
+          ⚠️ <strong>Afecta a TODOS los usuarios reales.</strong>
+          Úsala solo para volver al estado inicial antes de fijar resultados definitivos.
         </div>
         <button type="submit" style="
           background: linear-gradient(135deg, #7a2d2d, #5a1a1a);
@@ -177,7 +178,7 @@
           width: 100%;
           letter-spacing: .3px;
         ">
-          🗑️ Resetear todos los datos sandbox
+          🗑️ Reset completo
         </button>
       </div>
     </form>

@@ -230,39 +230,45 @@ def reset_test_data():
     - Limpia el winner de todos los matches reales
     - Resetea puntos/estado de todas las predicciones de usuarios reales
     - Resetea total_points en todos los perfiles de usuarios reales
-    Retorna un dict con lo eliminado/reseteado.
     """
-    from django.contrib.auth.models import User
-    from accounts.models import UserProfile
+    deleted_users = deleted_matches = deleted_results = 0
+    cleared_winners = reset_knockout = reset_groups = reset_profiles = 0
 
+    # Paso 1: bots (cascada borra sus predicciones y perfil)
     with transaction.atomic():
-        # 1. Borrar usuarios bot (cascada borra sus predicciones)
         deleted_users, _ = get_bot_users().delete()
 
-        # 2. Borrar matches sandbox (cascada borra predicciones de eliminatorias asociadas)
+    # Paso 2: matches sandbox (cascada borra predicciones asociadas)
+    with transaction.atomic():
         deleted_matches, _ = Match.objects.filter(
             description__startswith=SANDBOX_TAG
         ).delete()
 
-        # 3. Borrar todos los resultados de grupos
+    # Paso 3: resultados de grupos
+    with transaction.atomic():
         deleted_results, _ = GroupResult.objects.all().delete()
 
-        # 4. Limpiar winner en todos los matches reales (no sandbox)
+    # Paso 4: limpiar winner en matches reales
+    with transaction.atomic():
         cleared_winners = Match.objects.exclude(
             description__startswith=SANDBOX_TAG
         ).filter(winner__isnull=False).update(winner=None)
 
-        # 5. Resetear predicciones eliminatorias de usuarios reales
+    # Paso 5: resetear predicciones eliminatorias de usuarios reales
+    with transaction.atomic():
         reset_knockout = KnockoutPrediction.objects.exclude(
             user__username__startswith=BOT_PREFIX
         ).update(is_correct=None, points_earned=0, credits_won=0)
 
-        # 6. Resetear predicciones de grupos de usuarios reales
+    # Paso 6: resetear predicciones de grupos de usuarios reales
+    with transaction.atomic():
         reset_groups = GroupPrediction.objects.exclude(
             user__username__startswith=BOT_PREFIX
         ).update(is_scored=False, points_earned=0, credits_won=0)
 
-        # 7. Resetear total_points de todos los perfiles de usuarios reales
+    # Paso 7: resetear total_points de perfiles de usuarios reales
+    with transaction.atomic():
+        from accounts.models import UserProfile
         reset_profiles = UserProfile.objects.exclude(
             user__username__startswith=BOT_PREFIX
         ).update(total_points=0)

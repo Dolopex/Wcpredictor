@@ -48,12 +48,32 @@ class MatchAdmin(admin.ModelAdmin):
     list_editable = ('winner',)
     raw_id_fields = ('team1', 'team2', 'winner')
     ordering = ('round__order', 'match_number')
+    actions = ['action_reset_all_results']
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if obj.winner:
             from .signals import score_knockout_predictions
             score_knockout_predictions(obj)
+
+    def action_reset_all_results(self, request, queryset):
+        """Reset completo: borra ganadores, resetea predicciones y puntos de todos los usuarios reales."""
+        from .sandbox import reset_test_data
+        try:
+            result = reset_test_data()
+            self.message_user(
+                request,
+                "Reset completo OK: {} ganadores borrados, {} pred. eliminatorias reseteadas, "
+                "{} pred. grupos reseteadas, {} perfiles a 0 pts.".format(
+                    result['cleared_winners'], result['reset_knockout'],
+                    result['reset_groups'], result['reset_profiles'],
+                ),
+                messages.SUCCESS,
+            )
+        except Exception as exc:
+            self.message_user(request, "Error en reset: {}".format(exc), messages.ERROR)
+
+    action_reset_all_results.short_description = "⚠️ RESET COMPLETO: borrar ganadores, pred. y puntos"
 
 
 @admin.register(GroupResult)
