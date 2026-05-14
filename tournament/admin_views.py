@@ -118,28 +118,46 @@ def panel_user_detail(request, user_id):
 
         elif action == 'apply_payment':
             purchase_id = request.POST.get('purchase_id')
+            manual_mp_id = request.POST.get('manual_mp_id', '').strip()
             try:
                 purchase = CreditPurchase.objects.get(id=int(purchase_id), user=user)
                 if purchase.status != 'pending':
                     messages.warning(request, f'La compra #{purchase_id} ya fue procesada ({purchase.status}).')
                 else:
                     from .views import _apply_payment, _mp_sdk
-                    mp_pid = purchase.mp_payment_id
-                    # Si no hay payment_id guardado, buscarlo en MP por external_reference
+                    # Prioridad: manual > guardado > buscar en MP
+                    mp_pid = manual_mp_id or purchase.mp_payment_id
                     if not mp_pid:
                         try:
                             sdk = _mp_sdk()
-                            search = sdk.payment().search({'filters': {'external_reference': str(purchase.id)}})
+                            # La SDK acepta los filtros directamente, sin anidar bajo 'filters'
+                            search = sdk.payment().search({'external_reference': str(purchase.id)})
                             if search.get('status') == 200:
                                 results = search['response'].get('results', [])
                                 if results:
                                     mp_pid = str(results[0]['id'])
+                            if not mp_pid:
+                                # Intento alternativo con paginación explícita
+                                search2 = sdk.payment().search({
+                                    'external_reference': str(purchase.id),
+                                    'sort': 'date_created',
+                                    'criteria': 'desc',
+                                    'range': 'date_created',
+                                    'begin_date': 'NOW-30DAYS',
+                                    'end_date': 'NOW',
+                                })
+                                if search2.get('status') == 200:
+                                    results2 = search2['response'].get('results', [])
+                                    if results2:
+                                        mp_pid = str(results2[0]['id'])
                         except Exception as exc:
                             messages.error(request, f'Error buscando en MP: {exc}')
                             return redirect('tournament:panel_user_detail', user_id=user_id)
 
                     if not mp_pid:
-                        messages.error(request, 'No se encontró ningún pago en MP para esta compra. Usa "Completar manual".')
+                        messages.error(request, 
+                            f'No se encontró el pago en MP (external_reference={purchase.id}). '
+                            f'Ve al panel de MP, copia el Payment ID del pago aprobado y pégalo en el campo de abajo.')
                     else:
                         with transaction.atomic():
                             _apply_payment(mp_pid)

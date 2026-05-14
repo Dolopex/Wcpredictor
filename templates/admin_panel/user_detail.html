@@ -169,15 +169,27 @@
                 <span class="text-emerald-400 text-xs font-bold">Completada</span>
               {% elif c.status == 'pending' %}
                 <span class="text-yellow-400 text-xs font-bold">Pendiente</span>
-                <div class="flex gap-1 mt-1">
+                <div class="flex gap-1 mt-1 flex-wrap">
                   <form method="post" style="display:inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="apply_payment">
                     <input type="hidden" name="purchase_id" value="{{ c.id }}">
                     <button type="submit"
-                      onclick="return confirm('¿Buscar y aplicar pago #{{ c.id }} desde MercadoPago?')"
+                      onclick="return confirm('\u00bfBuscar y aplicar pago #{{ c.id }} desde MercadoPago?')"
                       style="font-size:10px;padding:2px 7px;background:#1a3a2a;color:#7ec8a0;border:1px solid #2d6040;border-radius:4px;cursor:pointer;">
-                      🔄 Consultar MP
+                      \ud83d\udd04 Consultar MP
+                    </button>
+                  </form>
+                  <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="apply_payment">
+                    <input type="hidden" name="purchase_id" value="{{ c.id }}">
+                    <input type="text" name="manual_mp_id" placeholder="Payment ID de MP"
+                      style="font-size:10px;padding:2px 6px;background:#0d1f35;color:#e0e8f0;border:1px solid #2a4060;border-radius:4px;width:140px;">
+                    <button type="submit"
+                      onclick="return confirm('\u00bfAplicar con este Payment ID?')"
+                      style="font-size:10px;padding:2px 7px;background:#1a2a4a;color:#8ab0d0;border:1px solid #2a4060;border-radius:4px;cursor:pointer;">
+                      \u2192 Aplicar ID
                     </button>
                   </form>
                   <form method="post" style="display:inline">
