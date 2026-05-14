@@ -1,9 +1,78 @@
 {% extends 'base.html' %}
 {% load tournament_extras %}
+
+{% block extra_head %}
+{% if tournament_finished %}
+<style>
+  /* ── Podium entrance animations ───────────────────────────── */
+  .podium-2nd { opacity: 0; transform: translateX(-40px); }
+  .podium-1st { opacity: 0; transform: translateY(-60px) scale(.88); }
+  .podium-3rd { opacity: 0; transform: translateX(40px); }
+
+  .podium-active .podium-2nd { animation: podSlideL .6s cubic-bezier(.215,.61,.355,1) .3s forwards; }
+  .podium-active .podium-1st { animation: podDropIn .72s cubic-bezier(.175,.885,.32,1.275) .62s forwards; }
+  .podium-active .podium-3rd { animation: podSlideR .6s cubic-bezier(.215,.61,.355,1) .95s forwards; }
+
+  @keyframes podSlideL  { to { opacity:1; transform:translateX(0); } }
+  @keyframes podDropIn  { to { opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes podSlideR  { to { opacity:1; transform:translateX(0); } }
+
+  /* Gold glow pulse on 1st place card */
+  .podium-1st-glow { animation: podGlow 2.8s ease-in-out 1.4s infinite alternate; }
+  @keyframes podGlow {
+    from { box-shadow: inset 0 0 0 0 rgba(201,168,76,.0); }
+    to   { box-shadow: inset 0 0 30px 4px rgba(201,168,76,.18), 0 0 25px rgba(201,168,76,.22); }
+  }
+
+  /* Champion banner */
+  .finished-banner {
+    background: linear-gradient(135deg, rgba(201,168,76,.12) 0%, rgba(11,25,38,0) 100%);
+    border: 1px solid rgba(201,168,76,.32); border-radius: 1rem;
+    padding: 1.25rem 1.5rem; margin-bottom: 2rem; text-align: center;
+    animation: bannerDrop .55s cubic-bezier(.215,.61,.355,1) forwards;
+  }
+  @keyframes bannerDrop {
+    from { opacity:0; transform:translateY(-20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Confetti canvas */
+  #podium-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .podium-2nd, .podium-1st, .podium-3rd { opacity:1 !important; transform:none !important; animation:none !important; }
+    .finished-banner { animation: none; }
+  }
+</style>
+{% endif %}
+{% endblock %}
+
 {% block title %}Clasificación — CopaBet 26{% endblock %}
 {% block content %}
 
 <div class="max-w-3xl mx-auto">
+
+  {% if tournament_finished %}
+  <canvas id="podium-confetti" aria-hidden="true"></canvas>
+  {# ── Torneo finalizado — banner + campeón ── #}
+  <div class="finished-banner">
+    <p class="text-xs font-bold tracking-[.3em] uppercase mb-3" style="color:#C9A84C;">🏆 &nbsp;FIFA World Cup 2026 · Torneo Finalizado</p>
+    {% if world_cup_winner %}
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <img src="https://flagcdn.com/w80/{{ world_cup_winner.iso2_code }}.png"
+           alt="{{ world_cup_winner.name }}"
+           class="rounded-lg object-cover"
+           style="width:72px; height:48px; box-shadow:0 0 24px rgba(201,168,76,.45);">
+      <div class="text-left">
+        <p class="font-display font-black text-white text-xl leading-tight">{{ world_cup_winner.name|upper }}</p>
+        <p class="text-xs mt-0.5" style="color:#8AA6C0;">{{ world_cup_winner.flag_emoji }} Campeón Mundial 2026</p>
+      </div>
+    </div>
+    {% else %}
+    <p class="font-display font-black text-white text-xl">TORNEO FINALIZADO</p>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <div class="mb-8">
     <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Ranking global</p>
@@ -32,11 +101,11 @@
     </div>
 
     <!-- Top 3 podio -->
-    <div class="grid grid-cols-3 divide-x divide-[#1A2E48] border-t border-[#1A2E48]">
+    <div class="grid grid-cols-3 divide-x divide-[#1A2E48] border-t border-[#1A2E48] {% if tournament_finished %}podium-active{% endif %}">
 
       {# 2do lugar #}
       {% if top2 %}
-      <div class="px-4 py-5 text-center flex flex-col items-center gap-2">
+      <div class="px-4 py-5 text-center flex flex-col items-center gap-2 {% if tournament_finished %}podium-2nd{% endif %}">
         <span class="text-2xl">🥈</span>
         <div class="w-10 h-10 rounded-full bg-[#112035] border-2 border-[#9BA8B5] flex items-center justify-center font-display font-bold text-[#9BA8B5] text-sm">
           {{ top2.username|first|upper }}
@@ -56,7 +125,7 @@
 
       {# 1er lugar (al centro, más destacado) #}
       {% if top1 %}
-      <div class="px-4 py-5 text-center flex flex-col items-center gap-2 relative" style="background:rgba(201,168,76,0.04);">
+      <div class="px-4 py-5 text-center flex flex-col items-center gap-2 relative {% if tournament_finished %}podium-1st podium-1st-glow{% endif %}" style="background:rgba(201,168,76,0.04);">
         <span class="text-3xl">🥇</span>
         <div class="w-12 h-12 rounded-full bg-[#112035] border-2 border-gold flex items-center justify-center font-display font-bold text-gold text-base">
           {{ top1.username|first|upper }}
@@ -76,7 +145,7 @@
 
       {# 3er lugar #}
       {% if top3_user %}
-      <div class="px-4 py-5 text-center flex flex-col items-center gap-2">
+      <div class="px-4 py-5 text-center flex flex-col items-center gap-2 {% if tournament_finished %}podium-3rd{% endif %}">
         <span class="text-2xl">🥉</span>
         <div class="w-10 h-10 rounded-full bg-[#112035] border-2 border-[#8B6A3E] flex items-center justify-center font-display font-bold text-[#C8956A] text-sm">
           {{ top3_user.username|first|upper }}
@@ -177,4 +246,56 @@
   {% endif %}
 
 </div>
+
+{% if tournament_finished %}
+<script>
+/* ═══ Podium confetti ═══════════════════════════════════════ */
+(function() {
+  var canvas = document.getElementById('podium-confetti');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  var colors = ['#C9A84C','#F0D07A','#ffffff','#9BA8B5','#C8956A','#60a5fa','#f472b6'];
+  var parts = [];
+  for (var i = 0; i < 160; i++) {
+    parts.push({
+      x: Math.random() * window.innerWidth,
+      y: -Math.random() * window.innerHeight * .6 - 10,
+      r: Math.random() * 5 + 2, d: Math.random() * 14 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: 0, tiltAngle: 0, tiltSpeed: Math.random() * .07 + .04,
+      rect: Math.random() > .5,
+    });
+  }
+  var angle = 0, raf;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    angle += .008;
+    for (var j = 0; j < parts.length; j++) {
+      var p = parts[j];
+      p.tiltAngle += p.tiltSpeed;
+      p.y += Math.cos(angle + p.d) + 1.2 + p.r / 8;
+      p.x += Math.sin(angle) * 1.2;
+      p.tilt = Math.sin(p.tiltAngle) * 12;
+      ctx.save(); ctx.globalAlpha = .75; ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y); ctx.rotate(p.tilt * Math.PI / 180);
+      if (p.rect) { ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r); }
+      else { ctx.beginPath(); ctx.arc(0,0,p.r,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+      if (p.y > canvas.height + 10) { p.y = -10; p.x = Math.random() * canvas.width; }
+    }
+    raf = requestAnimationFrame(draw);
+  }
+  draw();
+  /* Fade out after 6 s, stop at 7.5 s */
+  setTimeout(function() {
+    canvas.style.transition = 'opacity 1.5s ease'; canvas.style.opacity = '0';
+    setTimeout(function() { cancelAnimationFrame(raf); }, 1600);
+  }, 6000);
+})();
+</script>
+{% endif %}
+
 {% endblock %}

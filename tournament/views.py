@@ -35,11 +35,20 @@ def home_view(request):
         preds = GroupPrediction.objects.filter(user=request.user).values_list('group_id', flat=True)
         user_group_preds = set(preds)
 
+    # World Cup champion (set once admin records the final match winner)
+    world_cup_winner = None
+    final_match = Match.objects.filter(
+        round__slug='final', winner__isnull=False
+    ).select_related('winner').first()
+    if final_match:
+        world_cup_winner = final_match.winner
+
     context = {
         'groups': groups,
         'active_round': active_round,
         'top_users': top_users,
         'user_group_preds': user_group_preds,
+        'world_cup_winner': world_cup_winner,
     }
     return render(request, 'tournament/home.html', context)
 
@@ -438,6 +447,16 @@ def leaderboard_view(request):
 
     top3 = list(users[:3])
 
+    # Tournament finished flag + World Cup champion
+    final_round = Round.objects.filter(slug='final').first()
+    tournament_finished = bool(final_round and final_round.is_locked)
+    world_cup_winner = None
+    final_match = Match.objects.filter(
+        round__slug='final', winner__isnull=False
+    ).select_related('winner').first()
+    if final_match:
+        world_cup_winner = final_match.winner
+
     return render(request, 'tournament/leaderboard.html', {
         'page_obj': page_obj,
         'user_rank': user_rank,
@@ -448,6 +467,8 @@ def leaderboard_view(request):
         'prizes': prizes,
         'prize_pool': prize_pool,
         'total_collected': total_collected,
+        'tournament_finished': tournament_finished,
+        'world_cup_winner': world_cup_winner,
     })
 
 

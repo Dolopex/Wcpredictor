@@ -256,10 +256,111 @@
     #wc-intro { display: none !important; }
     .anim-card { opacity: 1 !important; transform: none !important; animation: none !important; }
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     WORLD CUP CHAMPION OVERLAY
+  ═══════════════════════════════════════════════════════════ */
+  #wc-champion {
+    position: fixed; inset: 0; z-index: 9990;
+    background: radial-gradient(ellipse at 50% 30%, #0b200e 0%, #030912 65%);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  #wc-champion.champ-exit { opacity: 0; transform: scale(1.05); pointer-events: none; }
+  #wc-champion.champ-hidden { display: none !important; }
+  #champ-confetti { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .champ-rays {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 85% 55% at 50% 40%, rgba(201,168,76,.2) 0%, transparent 65%);
+    animation: champRays 3s ease-in-out infinite alternate;
+  }
+  @keyframes champRays { from { opacity:.55; } to { opacity:1; transform:scale(1.12); } }
+  .champ-content { position: relative; z-index: 2; text-align: center; padding: 0 1.5rem; max-width: 520px; width: 100%; }
+  .champ-trophy {
+    font-size: clamp(4.5rem,16vw,6rem); display: block; margin-bottom: 1rem;
+    opacity: 0; animation: champBounce .65s cubic-bezier(.175,.885,.32,1.275) .15s forwards;
+  }
+  .champ-eyebrow {
+    font-size: .72rem; font-weight: 700; letter-spacing: .4em; text-transform: uppercase;
+    color: #C9A84C; margin-bottom: .5rem;
+    opacity: 0; animation: champSlideUp .4s ease .7s forwards;
+  }
+  .champ-title1 {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900; color: #fff;
+    font-size: clamp(2.6rem,10vw,4.5rem); line-height: 1; margin: 0; letter-spacing: .06em;
+    opacity: 0; animation: champSlideUp .42s ease .87s forwards;
+  }
+  .champ-title2 {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900; color: #C9A84C;
+    font-size: clamp(2.6rem,10vw,4.5rem); line-height: 1; margin: 0 0 1.5rem; letter-spacing: .06em;
+    opacity: 0; animation: champSlideUp .42s ease 1.01s forwards;
+  }
+  .champ-divider {
+    height: 1px; background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+    width: 0; opacity: 0; margin: 0 auto 1.5rem;
+    animation: champLineGrow .5s ease 1.25s forwards;
+  }
+  .champ-team {
+    display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; flex-wrap: wrap;
+    opacity: 0; animation: champSlideUp .42s ease 1.4s forwards;
+  }
+  .champ-flag { width: 110px; height: 74px; object-fit: cover; border-radius: .75rem;
+    box-shadow: 0 0 50px rgba(201,168,76,.5); }
+  .champ-team-name {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900; color: #fff;
+    font-size: clamp(1.5rem,6vw,2.2rem); line-height: 1.1; text-align: left; }
+  .champ-team-sub { font-size: .85rem; color: #8AA6C0; text-align: left; margin-top: .3rem; }
+  .champ-btn {
+    opacity: 0; animation: champSlideUp .4s ease 2.15s forwards;
+    padding: .75rem 2rem; border-radius: .75rem;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: .9rem; letter-spacing: .1em;
+    border: 1px solid rgba(201,168,76,.4); color: #C9A84C; background: transparent;
+    cursor: pointer; transition: background .2s;
+  }
+  .champ-btn:hover { background: rgba(201,168,76,.1); }
+  @keyframes champBounce {
+    from { opacity:0; transform:scale(.2) rotate(-25deg); }
+    to   { opacity:1; transform:scale(1) rotate(0deg); }
+  }
+  @keyframes champSlideUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes champLineGrow {
+    from { opacity:0; width:0; }
+    to   { opacity:1; width:clamp(160px,50vw,260px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #wc-champion { display: none !important; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+
+{% if world_cup_winner %}
+{# ─── World Cup Champion overlay — shown once per session after intro ─── #}
+<div id="wc-champion" class="champ-hidden" aria-live="polite">
+  <canvas id="champ-confetti" aria-hidden="true"></canvas>
+  <div class="champ-rays"></div>
+  <div class="champ-content">
+    <span class="champ-trophy">🏆</span>
+    <p class="champ-eyebrow">FIFA World Cup 2026</p>
+    <h2 class="champ-title1">¡CAMPEÓN</h2>
+    <h2 class="champ-title2">MUNDIAL!</h2>
+    <div class="champ-divider"></div>
+    <div class="champ-team">
+      <img src="https://flagcdn.com/w160/{{ world_cup_winner.iso2_code }}.png"
+           alt="{{ world_cup_winner.name }}" class="champ-flag">
+      <div>
+        <p class="champ-team-name">{{ world_cup_winner.name|upper }}</p>
+        <p class="champ-team-sub">{{ world_cup_winner.flag_emoji }} Campeón FIFA World Cup 2026</p>
+      </div>
+    </div>
+    <button onclick="dismissChampion()" class="champ-btn">Continuar &rarr;</button>
+  </div>
+</div>
+{% endif %}
 
 {# ─── WC 2026 intro splash — once per session ─── #}
 <div id="wc-intro" aria-hidden="true">
@@ -1161,6 +1262,89 @@
     tick();
   }
 })();
+
+{% if world_cup_winner %}
+/* ═══ Champion overlay — shown once per session after intro exits ═══ */
+(function() {
+  var CHAMP_KEY = 'wc2026_champion_seen_v1';
+  var seen = false;
+  try { seen = !!sessionStorage.getItem(CHAMP_KEY); } catch(e) {}
+  if (seen) return;
+  try { sessionStorage.setItem(CHAMP_KEY, '1'); } catch(e) {}
+  var el = document.getElementById('wc-champion');
+  if (!el) return;
+
+  window.dismissChampion = function() {
+    el.classList.add('champ-exit');
+    setTimeout(function() { el.classList.add('champ-hidden'); }, 720);
+  };
+
+  function showChampion() {
+    el.classList.remove('champ-hidden');
+    startChampConfetti();
+    setTimeout(dismissChampion, 8500);
+  }
+
+  // Show after intro exits, or immediately if already gone
+  var introEl = document.getElementById('wc-intro');
+  if (!introEl || introEl.classList.contains('intro-hidden')) {
+    setTimeout(showChampion, 300);
+  } else {
+    var obs = new MutationObserver(function() {
+      if (introEl.classList.contains('intro-hidden')) {
+        obs.disconnect();
+        setTimeout(showChampion, 400);
+      }
+    });
+    obs.observe(introEl, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function startChampConfetti() {
+    var canvas = document.getElementById('champ-confetti');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    var colors = ['#C9A84C','#F0D07A','#ffffff','#4ade80','#60a5fa','#f472b6','#fb923c'];
+    var parts = [];
+    for (var i = 0; i < 200; i++) {
+      parts.push({
+        x: Math.random() * window.innerWidth,
+        y: -Math.random() * window.innerHeight * .5 - 10,
+        r: Math.random() * 6 + 3, d: Math.random() * 15 + 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: 0, tiltAngle: 0, tiltSpeed: Math.random() * .07 + .04,
+        rect: Math.random() > .5,
+      });
+    }
+    var angle = 0, raf;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      angle += .01;
+      for (var j = 0; j < parts.length; j++) {
+        var p = parts[j];
+        p.tiltAngle += p.tiltSpeed;
+        p.y += Math.cos(angle + p.d) + 1.6 + p.r / 6;
+        p.x += Math.sin(angle) * 1.5;
+        p.tilt = Math.sin(p.tiltAngle) * 12;
+        ctx.save(); ctx.globalAlpha = .82; ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y); ctx.rotate(p.tilt * Math.PI / 180);
+        if (p.rect) { ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r); }
+        else { ctx.beginPath(); ctx.arc(0,0,p.r,0,Math.PI*2); ctx.fill(); }
+        ctx.restore();
+        if (p.y > canvas.height + 10) { p.y = -10; p.x = Math.random() * canvas.width; }
+      }
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    setTimeout(function() {
+      canvas.style.transition = 'opacity 1.5s ease'; canvas.style.opacity = '0';
+      setTimeout(function() { cancelAnimationFrame(raf); }, 1600);
+    }, 7500);
+  }
+})();
+{% endif %}
 </script>
 
 {% endblock %}
