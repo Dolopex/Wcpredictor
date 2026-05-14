@@ -170,18 +170,16 @@
               {% elif c.status == 'pending' %}
                 <span class="text-yellow-400 text-xs font-bold">Pendiente</span>
                 <div class="flex gap-1 mt-1">
-                  {% if c.mp_payment_id %}
                   <form method="post" style="display:inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="apply_payment">
                     <input type="hidden" name="purchase_id" value="{{ c.id }}">
                     <button type="submit"
-                      onclick="return confirm('¿Consultar MP y aplicar pago #{{ c.id }}?')"
+                      onclick="return confirm('¿Buscar y aplicar pago #{{ c.id }} desde MercadoPago?')"
                       style="font-size:10px;padding:2px 7px;background:#1a3a2a;color:#7ec8a0;border:1px solid #2d6040;border-radius:4px;cursor:pointer;">
                       🔄 Consultar MP
                     </button>
                   </form>
-                  {% endif %}
                   <form method="post" style="display:inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="force_complete">

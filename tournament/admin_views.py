@@ -117,23 +117,37 @@ def panel_user_detail(request, user_id):
                     messages.success(request, 'Permisos actualizados.')
 
         elif action == 'apply_payment':
-            # Consult MP API and apply if approved
             purchase_id = request.POST.get('purchase_id')
             try:
                 purchase = CreditPurchase.objects.get(id=int(purchase_id), user=user)
                 if purchase.status != 'pending':
                     messages.warning(request, f'La compra #{purchase_id} ya fue procesada ({purchase.status}).')
-                elif not purchase.mp_payment_id:
-                    messages.error(request, f'La compra #{purchase_id} no tiene payment_id de MP. Usa "Completar manualmente".')
                 else:
-                    from .views import _apply_payment
-                    with transaction.atomic():
-                        _apply_payment(purchase.mp_payment_id)
-                    purchase.refresh_from_db()
-                    if purchase.status == 'completed':
-                        messages.success(request, f'Pago aplicado: +{purchase.credits_applied:,} crd a {user.username}.')
+                    from .views import _apply_payment, _mp_sdk
+                    mp_pid = purchase.mp_payment_id
+                    # Si no hay payment_id guardado, buscarlo en MP por external_reference
+                    if not mp_pid:
+                        try:
+                            sdk = _mp_sdk()
+                            search = sdk.payment().search({'filters': {'external_reference': str(purchase.id)}})
+                            if search.get('status') == 200:
+                                results = search['response'].get('results', [])
+                                if results:
+                                    mp_pid = str(results[0]['id'])
+                        except Exception as exc:
+                            messages.error(request, f'Error buscando en MP: {exc}')
+                            return redirect('tournament:panel_user_detail', user_id=user_id)
+
+                    if not mp_pid:
+                        messages.error(request, 'No se encontró ningún pago en MP para esta compra. Usa "Completar manual".')
                     else:
-                        messages.warning(request, f'MP aún no aprueba la compra #{purchase_id} (estado MP: pendiente).')
+                        with transaction.atomic():
+                            _apply_payment(mp_pid)
+                        purchase.refresh_from_db()
+                        if purchase.status == 'completed':
+                            messages.success(request, f'Pago aplicado: +{purchase.credits_applied:,} crd a {user.username}.')
+                        else:
+                            messages.warning(request, f'MP aún no aprueba este pago (estado: {purchase.status}). Usa "Completar manual" si ya está confirmado.')
             except (CreditPurchase.DoesNotExist, ValueError):
                 messages.error(request, 'Compra no encontrada.')
             except Exception as exc:
