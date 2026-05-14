@@ -634,6 +634,7 @@ def buy_credits_view(request):
         # Crear preferencia en Mercado Pago
         try:
             sdk = _mp_sdk()
+            is_public_url = request.get_host() not in ('localhost', '127.0.0.1', 'localhost:8000', '127.0.0.1:8000')
             preference_data = {
                 "items": [{
                     "id": str(package.id),
@@ -649,8 +650,8 @@ def buy_credits_view(request):
                 },
                 "external_reference": str(purchase.id),
             }
-            # auto_return y notification_url solo funcionan con URLs públicas (no localhost)
-            if not settings.DEBUG:
+            if is_public_url:
+                # Redirección automática tras pago aprobado + webhook para notificaciones
                 preference_data["auto_return"] = "approved"
                 preference_data["notification_url"] = request.build_absolute_uri(reverse('tournament:mp_webhook'))
             pref_resp = sdk.preference().create(preference_data)
@@ -662,9 +663,9 @@ def buy_credits_view(request):
             purchase.mp_preference_id = preference["id"]
             purchase.save(update_fields=['mp_preference_id'])
 
-            # En DEBUG → sandbox, en producción → init_point
+            # URLs públicas → init_point real; localhost → sandbox_init_point
             checkout_url = preference.get(
-                "sandbox_init_point" if settings.DEBUG else "init_point"
+                "init_point" if is_public_url else "sandbox_init_point"
             )
             return redirect(checkout_url)
 
@@ -699,11 +700,32 @@ def mp_success_view(request):
             pass
 
     # Si tenemos payment_id y aún está pendiente, procesar ahora mismo
-    if payment_id and purchase and purchase.status == 'pending':
+    if purchase and purchase.status == 'pending':
         from django.db import transaction
-        with transaction.atomic():
-            _apply_payment(payment_id)
-        purchase.refresh_from_db()
+        if payment_id:
+            with transaction.atomic():
+                _apply_payment(payment_id)
+            purchase.refresh_from_db()
+        elif purchase.mp_preference_id:
+            # Sin payment_id en la URL: buscar el pago via API de MP por preference_id
+            try:
+                sdk = _mp_sdk()
+                resp = sdk.preference().get(purchase.mp_preference_id)
+                if resp.get('status') == 200:
+                    # Buscar pagos asociados a esta preferencia
+                    search = sdk.payment().search({
+                        'filters': {'external_reference': str(purchase.id)}
+                    })
+                    if search.get('status') == 200:
+                        results = search['response'].get('results', [])
+                        if results:
+                            mp_pid = results[0].get('id')
+                            if mp_pid:
+                                with transaction.atomic():
+                                    _apply_payment(mp_pid)
+                                purchase.refresh_from_db()
+            except Exception:
+                pass
 
     return render(request, 'tournament/mp_success.html', {'purchase': purchase})
 
