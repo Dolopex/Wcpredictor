@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
@@ -25,9 +25,9 @@ def home_view(request):
     groups = Group.objects.prefetch_related('teams').all()
     active_round = Round.objects.filter(is_active=True).order_by('order').first()
     top_users = (
-        User.objects.filter(profile__total_points__gt=0, is_staff=False, is_superuser=False)
+        User.objects.filter(is_active=True, is_staff=False, is_superuser=False)
         .select_related('profile')
-        .order_by('-profile__total_points')[:5]
+        .order_by(F('profile__total_points').desc(nulls_last=True))[:5]
     )
 
     user_group_preds = set()
@@ -422,12 +422,11 @@ def round_predict_view(request, round_slug):
 
 def leaderboard_view(request):
     from django.core.paginator import Paginator
-    from django.db.models import Sum
 
     users = (
         User.objects.filter(is_active=True, is_staff=False, is_superuser=False)
         .select_related('profile')
-        .order_by('-profile__total_points')
+        .order_by(F('profile__total_points').desc(nulls_last=True), 'username')
     )
 
     paginator = Paginator(users, 20)
