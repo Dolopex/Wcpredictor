@@ -12,11 +12,21 @@ from tournament.models import CreditPackage, Round
 #  Gran Final:        1 partido              = 1  × $2.000 = $2.000
 #  ─────────────────────────────────────────────────────────────────────────────
 #  Total eliminatorias:             8+8+4+4+2 = 26.000 crd
-#  Comprando por fases:   $12.000 + $22.000  = $34.000
-#  Pase Completo:                              $30.000  (ahorra $4.000)
+#  Comprando por fases:   $12.000 + $26.000  = $38.000
+#  Pase Completo:                              $30.000  (ahorra $8.000)
 # ─────────────────────────────────────────────────────────────────────────────
 
 PACKAGES = [
+    {
+        # Grupos (12.000) + Eliminatorias (26.000) + regalo terceros (4.000) = 42.000
+        # Comprando por separado: $12.000 + $26.000 = $38.000 → aquí $30.000 (ahorras $8.000)
+        'name': 'Pase Completo',
+        'cop_price': 30_000,
+        'credits_amount': 38_000,
+        'bonus_credits': 4_000,
+        'is_featured': True,
+        'order': 1,
+    },
     {
         # Grupos: 24 apuestas × 500 = 12.000 + regalo 4.000 (mejores terceros)
         'name': 'Fase de Grupos',
@@ -24,25 +34,15 @@ PACKAGES = [
         'credits_amount': 12_000,
         'bonus_credits': 4_000,
         'is_featured': False,
-        'order': 1,
+        'order': 2,
     },
     {
         # R32 (8.000) + R16 (8.000) + QF (4.000) + SF (4.000) + Final (2.000) = 26.000
         'name': 'Pase Eliminatorias',
-        'cop_price': 22_000,
+        'cop_price': 26_000,
         'credits_amount': 26_000,
         'bonus_credits': 0,
         'is_featured': False,
-        'order': 2,
-    },
-    {
-        # Grupos (12.000) + Eliminatorias (26.000) + regalo terceros (4.000) = 42.000
-        # Comprando por separado: $12.000 + $22.000 = $34.000 → aquí $30.000 (ahorras $4.000)
-        'name': 'Pase Completo',
-        'cop_price': 30_000,
-        'credits_amount': 38_000,
-        'bonus_credits': 4_000,
-        'is_featured': True,
         'order': 3,
     },
 ]

@@ -96,10 +96,10 @@
         </tr>
         <tr class="border-t-2 border-[#1A2E48]">
           <td colspan="3" class="pt-3 text-[#6A8AA6] text-xs">Comprando fases por separado</td>
-          <td class="pt-3 text-right font-bold text-[#8AA6C0] line-through">$34.000</td>
+          <td class="pt-3 text-right font-bold text-[#8AA6C0] line-through">$38.000</td>
         </tr>
         <tr>
-          <td colspan="3" class="pb-1 text-gold text-xs font-bold">Pase Completo (ahorra $4.000)</td>
+          <td colspan="3" class="pb-1 text-gold text-xs font-bold">Pase Completo (ahorras $8.000)</td>
           <td class="pb-1 text-right font-display font-bold text-gold text-lg">$30.000</td>
         </tr>
       </tbody>
@@ -113,13 +113,13 @@
 
     {# Decidir si es el pase completo para darle tratamiento especial #}
     {% if pkg.is_featured %}
-    {# ──── PASE COMPLETO (featured, ocupa posición central) ────────────── #}
-    <div class="card rounded-2xl overflow-hidden relative border-2 border-gold md:order-2 flex flex-col"
+    {# ──── PASE COMPLETO (featured, va primero) ────────────────────── #}
+    <div class="card rounded-2xl overflow-hidden relative border-2 border-gold md:order-1 flex flex-col"
          style="background: linear-gradient(160deg,#0F2137 0%,#0B1926 100%);">
 
       <!-- Cinta superior "MÁS POPULAR" -->
       <div class="bg-gold text-[#070F1C] text-center text-[11px] font-black uppercase tracking-widest py-1.5">
-        ⭐ Mejor opción — ahorras $4.000 COP
+        ⭐ Mejor opción — ahorras $8.000 COP
       </div>
 
       <div class="p-6 flex flex-col flex-1">
@@ -130,7 +130,7 @@
         <div class="mb-4">
           <span class="font-display font-black text-5xl text-gold">{{ pkg.cop_price|cop }}</span>
           <span class="text-[#8AA6C0] text-sm ml-1">COP</span>
-          <span class="ml-3 text-xs text-[#4A6278] line-through">$34.000 COP</span>
+          <span class="ml-3 text-xs text-[#4A6278] line-through">$38.000 COP</span>
         </div>
 
         <!-- Desglose de créditos -->
@@ -173,9 +173,9 @@
       </div>
     </div>
 
-    {% elif pkg.order == 1 %}
-    {# ──── FASE DE GRUPOS ───────────────────────────────────────────────── #}
-    <div class="card rounded-xl overflow-hidden relative md:order-1 flex flex-col">
+    {% elif pkg.name == 'Fase de Grupos' %}
+    {# ──── FASE DE GRUPOS ──────────────────────────────────────────── #}
+    <div class="card rounded-xl overflow-hidden relative md:order-2 flex flex-col">
       <div class="p-6 flex flex-col flex-1">
         <h3 class="font-display font-black text-xl text-white tracking-wide mb-1">{{ pkg.name }}</h3>
         <p class="text-[#8AA6C0] text-xs mb-5">Apuesta en los 12 grupos del torneo</p>
