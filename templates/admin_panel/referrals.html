@@ -1,0 +1,116 @@
+{% extends 'admin_panel/base.html' %}
+{% load tournament_extras %}
+{% block title %}Referidos{% endblock %}
+{% block heading %}Sistema de Referidos{% endblock %}
+{% block content %}
+
+<!-- Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="card rounded-xl p-4 border-t-2 border-emerald-600">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Total referidos</p>
+    <p class="font-display font-bold text-2xl text-white">{{ total_referrals }}</p>
+  </div>
+  <div class="card rounded-xl p-4 border-t-2 border-gold">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Créditos entregados</p>
+    <p class="font-display font-bold text-2xl text-gold">{{ total_credits_given|crd }}</p>
+  </div>
+  <div class="card rounded-xl p-4">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Reward por referido</p>
+    <p class="font-display font-bold text-2xl text-white">{{ reward_each|crd }} c/u</p>
+  </div>
+  <div class="card rounded-xl p-4">
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Máx. por usuario</p>
+    <p class="font-display font-bold text-2xl text-white">{{ max_referrals }}</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+  <!-- Top referidores -->
+  <div class="card rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-[#1A2E48]" style="background:#0D1F35">
+      <p class="font-bold text-white text-sm uppercase tracking-wide">Top referidores</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Usuario</th>
+            <th class="text-right">Referidos</th>
+            <th class="text-right">Crd. ganados</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stat in referrer_stats %}
+          <tr>
+            <td class="text-[#4A6278]">{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'tournament:panel_user_detail' stat.referrer__id %}"
+                 class="text-gold hover:underline font-bold">{{ stat.referrer__username }}</a>
+            </td>
+            <td class="text-right">
+              <span class="font-bold text-white">{{ stat.count }}</span>
+              <span class="text-[#4A6278]">/{{ max_referrals }}</span>
+            </td>
+            <td class="text-right text-emerald-400 font-bold">{{ stat.count|multiply_by:reward_each|crd }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-[#4A6278] py-6">Sin referidos aún.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Historial completo -->
+  <div class="card rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-[#1A2E48]" style="background:#0D1F35">
+      <p class="font-bold text-white text-sm uppercase tracking-wide">Historial de referidos</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Referidor</th>
+            <th>Referido</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in referrals %}
+          <tr>
+            <td>
+              <a href="{% url 'tournament:panel_user_detail' r.referrer.id %}"
+                 class="text-gold hover:underline">{{ r.referrer.username }}</a>
+            </td>
+            <td>
+              <a href="{% url 'tournament:panel_user_detail' r.referred.id %}"
+                 class="text-[#C8D8E8] hover:underline">{{ r.referred.username }}</a>
+            </td>
+            <td>
+              {% if r.signup_reward_given %}
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                    style="background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.2)">
+                Completado
+              </span>
+              {% else %}
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                    style="background:rgba(201,168,76,0.1); color:#C9A84C; border:1px solid rgba(201,168,76,0.2)">
+                Pendiente
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-[#6A8AA6]">{{ r.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-[#4A6278] py-6">Sin registros.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

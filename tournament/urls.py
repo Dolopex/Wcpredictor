@@ -30,4 +30,5 @@ urlpatterns = [
     path('panel/partidos/', admin_views.panel_matches, name='panel_matches'),
     path('panel/grupos/', admin_views.panel_groups, name='panel_groups'),
     path('panel/simulador/', admin_views.panel_simulate, name='panel_simulate'),
+    path('panel/referidos/', admin_views.panel_referrals, name='panel_referrals'),
 ]

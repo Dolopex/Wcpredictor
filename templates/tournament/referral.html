@@ -6,6 +6,196 @@
 
   <!-- Encabezado -->
   <div class="text-center">
+    <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">Sistema de referidos</p>
+    <h1 class="font-display font-black text-3xl text-white">Invita y Gana Créditos</h1>
+    <p class="text-[#6A8AA6] text-sm mt-2">Por cada amigo que se registre con tu código, <span class="text-emerald-400 font-bold">ambos reciben +{{ C_REWARD_EACH|crd }} crd</span></p>
+  </div>
+
+  <!-- Código y enlace -->
+  <div class="card rounded-2xl p-5 border border-[#C9A84C]/20">
+    <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-3">Tu código de invitación</p>
+
+    <div class="flex items-center gap-3 mb-4">
+      <div class="flex-1 bg-[#0A1828] border border-[#C9A84C]/40 rounded-xl px-4 py-3 text-center">
+        <span class="font-display font-black text-2xl text-gold tracking-[0.3em]" id="promo-code">{{ promo_code }}</span>
+      </div>
+      <button onclick="copyCode()" title="Copiar código"
+              class="flex-shrink-0 w-12 h-12 rounded-xl border border-[#C9A84C]/30 flex items-center justify-center hover:bg-[#C9A84C]/10 transition"
+              style="background:rgba(201,168,76,0.06)">
+        <svg id="copy-icon" class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Enlace -->
+    <div class="flex items-center gap-2 mb-3">
+      <input id="referral-link" type="text" readonly value="{{ referral_link }}"
+             class="flex-1 bg-[#071525] border border-[#1A2E48] rounded-lg px-3 py-2 text-xs text-[#6A8AA6] truncate focus:outline-none"/>
+      <button onclick="copyLink()" id="copy-link-btn"
+              class="px-3 py-2 rounded-lg text-xs font-bold border border-[#1A2E48] hover:border-gold/40 transition text-[#8AA6C0] hover:text-gold whitespace-nowrap"
+              style="background:#0A1828">
+        Copiar enlace
+      </button>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="shareWhatsApp()"
+              class="flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-800/30 text-emerald-400 hover:bg-emerald-900/20 transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+      <button onclick="copyLink()"
+              class="flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 border border-[#1A2E48] text-[#8AA6C0] hover:text-gold hover:border-gold/40 transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+        </svg>
+        Copiar enlace
+      </button>
+    </div>
+  </div>
+
+  <!-- Cómo funciona -->
+  <div class="card rounded-2xl overflow-hidden border border-[#1A2E48]">
+    <div class="px-5 py-4 border-b border-[#1A2E48]" style="background:#0D1F35">
+      <p class="font-display font-bold text-sm text-white uppercase tracking-wide">¿Cómo funciona?</p>
+    </div>
+    <div class="p-5 space-y-3">
+      <div class="flex items-start gap-4 p-3 rounded-xl" style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15)">
+        <span class="text-2xl mt-0.5">1️⃣</span>
+        <div class="flex-1">
+          <p class="text-sm text-white font-bold">Comparte tu código o enlace</p>
+          <p class="text-xs text-[#6A8AA6] mt-0.5">Envíalo por WhatsApp o donde quieras.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 p-3 rounded-xl" style="background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.12)">
+        <span class="text-2xl mt-0.5">2️⃣</span>
+        <div class="flex-1">
+          <p class="text-sm text-white font-bold">Tu amigo se registra con tu código</p>
+          <p class="text-xs text-[#6A8AA6] mt-0.5">Debe ingresarlo al crear su cuenta.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 p-3 rounded-xl" style="background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2)">
+        <span class="text-2xl mt-0.5">🎁</span>
+        <div class="flex-1">
+          <p class="text-sm text-white font-bold">Ambos reciben créditos al instante</p>
+          <p class="text-xs text-emerald-400 font-bold mt-0.5">+{{ C_REWARD_EACH|crd }} crd tú · +{{ C_REWARD_EACH|crd }} crd tu amigo</p>
+        </div>
+        <span class="font-display font-black text-gold text-lg">×2</span>
+      </div>
+      <p class="text-center text-xs text-[#4A6278] pt-1">Máximo <span class="text-white font-bold">{{ max_referrals }} referidos</span> por usuario · Total posible: <span class="text-gold font-bold">+{{ C_REWARD_EACH|multiply_by:max_referrals|crd }} crd</span></p>
+    </div>
+  </div>
+
+  <!-- Tu progreso -->
+  <div class="card rounded-2xl overflow-hidden border border-[#1A2E48]">
+    <div class="px-5 py-4 flex items-center justify-between border-b border-[#1A2E48]" style="background:#0D1F35">
+      <p class="font-display font-bold text-sm text-white uppercase tracking-wide">Tu progreso</p>
+      <span class="text-xs px-2 py-1 rounded-full font-bold"
+            style="background:rgba(201,168,76,0.1); color:#C9A84C; border:1px solid rgba(201,168,76,0.2)">
+        {{ referrals_count }}/{{ max_referrals }} referidos
+      </span>
+    </div>
+
+    <div class="p-5 space-y-4">
+      <!-- Barra progreso -->
+      <div>
+        <div class="flex justify-between text-xs mb-1.5">
+          <span class="text-[#6A8AA6]">Amigos invitados</span>
+          <span class="text-white font-bold">{{ referrals_count }}/{{ max_referrals }}</span>
+        </div>
+        <div class="h-2.5 rounded-full" style="background:#0A1828">
+          {% with pct=referrals_count|multiply_by:100|divide_by:max_referrals %}
+          <div class="h-2.5 rounded-full transition-all" style="background:linear-gradient(90deg,#059669,#10B981); width:{{ pct }}%"></div>
+          {% endwith %}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-3 rounded-xl text-center" style="background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.12)">
+          <p class="font-display font-black text-xl text-gold">{{ total_earned_as_referrer|crd }}</p>
+          <p class="text-[10px] text-[#6A8AA6] mt-0.5 uppercase tracking-wide">Créditos ganados</p>
+        </div>
+        <div class="p-3 rounded-xl text-center" style="background:rgba(74,98,120,0.05); border:1px solid rgba(74,98,120,0.12)">
+          <p class="font-display font-black text-xl text-[#8AA6C0]">{{ slots_remaining }}</p>
+          <p class="text-[10px] text-[#4A6278] mt-0.5 uppercase tracking-wide">Cupos restantes</p>
+        </div>
+      </div>
+
+      <!-- Lista de amigos invitados -->
+      {% if referrals_made %}
+      <div>
+        <p class="text-[10px] font-bold text-[#6A8AA6] uppercase tracking-widest mb-2">Amigos invitados</p>
+        <div class="space-y-2">
+          {% for r in referrals_made %}
+          <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg" style="background:#071525; border:1px solid #1A2E48">
+            <div class="w-8 h-8 rounded-full bg-[#0A1828] border border-[#1A2E48] flex items-center justify-center font-display font-bold text-[#8AA6C0] text-sm">
+              {{ r.referred.username|first|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white font-semibold truncate">{{ r.referred.username }}</p>
+              <p class="text-[10px] text-[#4A6278]">{{ r.created_at|date:"d M Y" }}</p>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold" style="background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.2)">+{{ C_REWARD_EACH|crd }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center py-6">
+        <p class="text-[#4A6278] text-sm">Aún no has invitado a nadie.</p>
+        <p class="text-[#4A6278] text-xs mt-1">¡Comparte tu código arriba y gana créditos!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Fuiste invitado por alguien -->
+  {% if own_referral %}
+  <div class="card rounded-2xl overflow-hidden border border-blue-900/30">
+    <div class="px-5 py-4 border-b border-blue-900/20" style="background:rgba(59,130,246,0.04)">
+      <p class="font-display font-bold text-sm text-white uppercase tracking-wide">Fuiste invitado</p>
+      <p class="text-xs text-[#6A8AA6] mt-0.5">Por <span class="text-white font-bold">{{ own_referral.referrer.username }}</span> — ya recibiste <span class="text-emerald-400 font-bold">+{{ C_REWARD_EACH|crd }} crd</span> de bienvenida 🎉</p>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+const CODE  = '{{ promo_code }}';
+const LINK  = '{{ referral_link }}';
+const MSG   = `🏆 Juega CopaBet 26 conmigo!\nPredice el Mundial y gana premios. Usa mi código *${CODE}* al registrarte para obtener 1.000 créditos gratis: ${LINK}`;
+
+function copyCode() {
+  navigator.clipboard.writeText(CODE).then(() => {
+    const icon = document.getElementById('copy-icon');
+    icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    icon.style.color = '#10B981';
+    setTimeout(() => {
+      icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+      icon.style.color = '';
+    }, 2000);
+  });
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(LINK).then(() => {
+    const btn = document.getElementById('copy-link-btn');
+    if (btn) { const old = btn.innerHTML; btn.textContent = '¡Copiado!'; btn.style.color = '#10B981'; setTimeout(() => { btn.innerHTML = old; btn.style.color = ''; }, 2000); }
+  });
+}
+
+function shareWhatsApp() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(MSG), '_blank');
+}
+</script>
+{% endblock %}
+<div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- Encabezado -->
+  <div class="text-center">
     <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1">Sistema de referidos</p>
     <h1 class="font-display font-black text-3xl text-white">Invita y Gana Créditos</h1>
     <p class="text-[#6A8AA6] text-sm mt-2">Comparte tu código, acumula recompensas escalonadas</p>

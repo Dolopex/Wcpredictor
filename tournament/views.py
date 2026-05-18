@@ -31,9 +31,15 @@ def home_view(request):
     )
 
     user_group_preds = set()
+    referral_progress = None
     if request.user.is_authenticated:
         preds = GroupPrediction.objects.filter(user=request.user).values_list('group_id', flat=True)
         user_group_preds = set(preds)
+        try:
+            from accounts.referrals import get_referral_progress
+            referral_progress = get_referral_progress(request.user)
+        except Exception:
+            pass
 
     # World Cup champion (set once admin records the final match winner)
     world_cup_winner = None
@@ -49,6 +55,7 @@ def home_view(request):
         'top_users': top_users,
         'user_group_preds': user_group_preds,
         'world_cup_winner': world_cup_winner,
+        'referral_progress': referral_progress,
     }
     return render(request, 'tournament/home.html', context)
 
@@ -576,12 +583,6 @@ def _apply_payment(payment_id):
             profile.credits += purchase.credits_applied
             profile.save(update_fields=['credits'])
             logger.info("Créditos aplicados: %s → %s crd", purchase.user, purchase.credits_applied)
-            # Procesar bonos de referidos por la compra
-            try:
-                from accounts.referrals import process_referral_on_purchase
-                process_referral_on_purchase(purchase.user)
-            except Exception as exc:
-                logger.warning("Error procesando referral on purchase: %s", exc)
         elif mp_status in ('rejected', 'cancelled'):
             purchase.status = 'cancelled'
             purchase.save(update_fields=['status', 'mp_payment_id'])

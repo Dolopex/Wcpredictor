@@ -18,6 +18,7 @@ from .models import (
 from .sandbox import generate_test_data, reset_test_data, sandbox_stats
 from .signals import score_group_predictions, score_knockout_predictions
 from accounts.models import UserProfile
+from accounts.referrals import MAX_REFERRALS, REWARD_EACH
 
 
 def staff_required(view_func):
@@ -461,3 +462,38 @@ def panel_simulate(request):
         'matches': matches,
         'sandbox': sandbox_stats(),
     })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Referidos
+# ─────────────────────────────────────────────────────────────────────────────
+
+@staff_required
+def panel_referrals(request):
+    from accounts.models import Referral
+
+    referrals = (
+        Referral.objects.select_related('referrer', 'referred')
+        .order_by('-created_at')
+    )
+
+    # Agrupados por referidor
+    referrer_stats = (
+        Referral.objects.filter(signup_reward_given=True)
+        .values('referrer__username', 'referrer__id')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+
+    total_referrals = Referral.objects.count()
+    total_credits_given = Referral.objects.filter(signup_reward_given=True).count() * REWARD_EACH * 2
+
+    context = {
+        'referrals': referrals,
+        'referrer_stats': referrer_stats,
+        'total_referrals': total_referrals,
+        'total_credits_given': total_credits_given,
+        'reward_each': REWARD_EACH,
+        'max_referrals': MAX_REFERRALS,
+    }
+    return render(request, 'admin_panel/referrals.html', context)
