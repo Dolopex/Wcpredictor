@@ -92,8 +92,13 @@
      WC 2026 INTRO SPLASH  —  once per session (JS-controlled)
   ═══════════════════════════════════════════════════════════ */
   #wc-intro {
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    z-index: 9999;
     background: #030912;
+    display: grid;
+    place-items: center;
     overflow: hidden;
     transition: opacity .75s ease, transform .75s ease;
   }
@@ -123,19 +128,14 @@
     animation: introFadeIn .9s ease .1s forwards;
   }
   /* ── Intro responsive: mobile portrait & landscape ── */
-  /* intro-content ocupa todo el overlay y centra sus hijos directamente */
   .intro-content {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    z-index: 2;
     text-align: center;
     padding: 0 1.5rem;
-    /* Espacio inferior para botones absolutos + safe area */
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
-    z-index: 2;
+    width: 100%;
+    max-width: 500px;
     box-sizing: border-box;
   }
 
