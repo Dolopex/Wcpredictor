@@ -18,7 +18,7 @@ from .models import (
 from .sandbox import generate_test_data, reset_test_data, sandbox_stats
 from .signals import score_group_predictions, score_knockout_predictions
 from accounts.models import UserProfile
-from accounts.referrals import MAX_REFERRALS, REWARD_EACH
+from accounts.referrals import MAX_REFERRALS_BASE, MAX_REFERRALS_REFERRED, REWARD_EACH
 
 
 def staff_required(view_func):
@@ -494,6 +494,7 @@ def panel_referrals(request):
         'total_referrals': total_referrals,
         'total_credits_given': total_credits_given,
         'reward_each': REWARD_EACH,
-        'max_referrals': MAX_REFERRALS,
+        'max_referrals_base': MAX_REFERRALS_BASE,
+        'max_referrals_referred': MAX_REFERRALS_REFERRED,
     }
     return render(request, 'admin_panel/referrals.html', context)

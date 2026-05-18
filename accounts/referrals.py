@@ -3,8 +3,19 @@ from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
-MAX_REFERRALS = 4
-REWARD_EACH   = 1000
+MAX_REFERRALS_BASE     = 4  # sin codigo de referido al registrarse
+MAX_REFERRALS_REFERRED = 3  # con codigo de referido (ya recibio 1k extra)
+REWARD_EACH            = 1000
+
+
+def _max_referrals_for(user):
+    """Usuarios que fueron referidos pueden invitar a 3 (1k+3k=4k total).
+    Usuarios sin codigo pueden invitar a 4 (4k total)."""
+    from .models import Referral
+    was_referred = Referral.objects.filter(
+        referred=user, referred_signup_reward_given=True
+    ).exists()
+    return MAX_REFERRALS_REFERRED if was_referred else MAX_REFERRALS_BASE
 
 
 def process_referral_signup(new_user, promo_code):
@@ -27,10 +38,11 @@ def process_referral_signup(new_user, promo_code):
     if Referral.objects.filter(referred=new_user).exists():
         return False, 'Ya tienes un referido registrado.'
 
+    max_for_referrer = _max_referrals_for(referrer)
     rewarded_count = Referral.objects.filter(
         referrer=referrer, signup_reward_given=True
     ).count()
-    if rewarded_count >= MAX_REFERRALS:
+    if rewarded_count >= max_for_referrer:
         return False, 'Este codigo ya alcanzo su limite de referidos.'
 
     with transaction.atomic():
@@ -72,11 +84,13 @@ def get_referral_progress(user):
     except Referral.DoesNotExist:
         pass
 
+    max_referrals = _max_referrals_for(user)
+
     return {
         'referrals_made': referrals_made,
         'referrals_count': len(referrals_made),
-        'max_referrals': MAX_REFERRALS,
-        'slots_remaining': max(0, MAX_REFERRALS - len(referrals_made)),
+        'max_referrals': max_referrals,
+        'slots_remaining': max(0, max_referrals - len(referrals_made)),
         'total_earned_as_referrer': total_earned,
         'own_referral': own_referral,
         'C_REWARD_EACH': REWARD_EACH,

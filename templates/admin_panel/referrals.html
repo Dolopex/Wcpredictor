@@ -19,8 +19,9 @@
     <p class="font-display font-bold text-2xl text-white">{{ reward_each|crd }} c/u</p>
   </div>
   <div class="card rounded-xl p-4">
-    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">Máx. por usuario</p>
-    <p class="font-display font-bold text-2xl text-white">{{ max_referrals }}</p>
+    <p class="text-[10px] text-[#6A8AA6] uppercase tracking-widest mb-1">M&aacute;x. por usuario</p>
+    <p class="font-display font-bold text-2xl text-white">{{ max_referrals_base }} / {{ max_referrals_referred }}</p>
+    <p class="text-[10px] text-[#4A6278] mt-1">sin c&oacute;digo / con c&oacute;digo</p>
   </div>
 </div>
 
@@ -51,7 +52,7 @@
             </td>
             <td class="text-right">
               <span class="font-bold text-white">{{ stat.count }}</span>
-              <span class="text-[#4A6278]">/{{ max_referrals }}</span>
+              <span class="text-[#4A6278]">/{{ max_referrals_base }}</span>
             </td>
             <td class="text-right text-emerald-400 font-bold">{{ stat.count|multiply_by:reward_each|crd }}</td>
           </tr>
