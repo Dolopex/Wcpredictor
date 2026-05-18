@@ -10,6 +10,13 @@
   box-sizing:border-box;
   overflow:hidden;
 }
+/* Bloqueo de scroll — se aplica al <html> para no alterar el layout del body */
+html.cb-tut-open,
+html.cb-tut-open body {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+}
 #cb-tut-card {
   position:relative; width:100%; max-width:440px;
   max-height:92vh;
@@ -637,11 +644,8 @@
     overlay.style.transition = 'opacity .35s ease';
     setTimeout(function() {
       overlay.style.display = 'none';
-      // Restaurar scroll del body
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width    = '';
-      document.body.style.top      = '';
+      // Restaurar scroll
+      document.documentElement.classList.remove('cb-tut-open');
       if (_savedScrollY) { window.scrollTo(0, parseInt(_savedScrollY)); }
     }, 360);
   };
@@ -673,12 +677,9 @@
   /* ── Show tutorial ───────────────────────────────────── */
   var _savedScrollY = 0;
   function showTutorial() {
-    // Bloquear scroll del body (iOS y Android)
+    // Bloquear scroll sin alterar el layout del body
     _savedScrollY = window.scrollY || window.pageYOffset || 0;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width    = '100%';
-    document.body.style.top      = '-' + _savedScrollY + 'px';
+    document.documentElement.classList.add('cb-tut-open');
 
     overlay.style.display = 'flex';
     overlay.style.opacity = '0';

@@ -124,9 +124,37 @@
     opacity: 0; transform: translateY(0);
     animation: introFadeIn .9s ease .1s forwards;
   }
+  /* ── Intro responsive: mobile portrait & landscape ── */
+  /* El intro-content nunca debe exceder el área visual disponible */
   .intro-content {
     position: relative; z-index: 2;
     text-align: center; padding: 0 1.5rem;
+    width: 100%;
+    /* Deja espacio para los botones absolutos del fondo + safe area */
+    max-height: calc(100vh - 5rem - env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  /* Landscape / pantallas cortas: ≤ 500 px de alto */
+  @media (max-height: 500px) {
+    .intro-logo-svg { display: none !important; }
+    .intro-year     { font-size: clamp(2.4rem, 11vh, 4rem) !important; line-height: 1; }
+    .intro-title    { font-size: clamp(1.4rem, 6vh, 2.2rem) !important; }
+    .intro-label    { margin-bottom: .1rem !important; }
+    .intro-line     { margin: .25rem auto !important; }
+    .intro-hosts    { font-size: .52rem !important; margin-top: .2rem !important; }
+    .intro-sub      { margin-top: .15rem !important; }
+  }
+  /* Portrait pequeño: iPhone SE, Galaxy A, etc. ≤ 700 px de alto */
+  @media (max-height: 700px) and (min-height: 501px) {
+    .intro-logo-svg { width: clamp(60px, 10vh, 90px) !important; margin-bottom: .8rem !important; }
+    .intro-year     { font-size: clamp(3.5rem, 11vh, 6rem) !important; }
+    .intro-hosts    { margin-top: .5rem !important; }
+  }
+  /* Pantallas estrechas ≤ 380 px */
+  @media (max-width: 380px) {
+    .intro-year  { font-size: clamp(3.2rem, 19vw, 5rem); }
+    .intro-title { font-size: clamp(2rem, 9vw, 3rem); }
   }
   @keyframes introFadeIn {
     to { opacity: 1; transform: translateY(0); }
@@ -192,7 +220,9 @@
   }
   @keyframes progressFill { from { width: 0; } to { width: 100%; } }
   .intro-skip {
-    position: absolute; bottom: 1.2rem; right: 1.5rem;
+    position: absolute;
+    bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
+    right: 1.5rem;
     font-size: .62rem; letter-spacing: .16em; color: rgba(255,255,255,.32);
     text-transform: uppercase; background: none; border: none;
     cursor: pointer; transition: color .2s; padding: .4rem .6rem;
@@ -216,7 +246,9 @@
 
   /* Sound toggle button */
   .intro-sound {
-    position: absolute; bottom: 1.2rem; left: 1.5rem;
+    position: absolute;
+    bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
+    left: 1.5rem;
     height: 2.4rem; padding: 0 .85rem; border-radius: 2rem;
     border: 1px solid rgba(201,168,76,.45); background: rgba(0,0,0,.55);
     display: flex; align-items: center; gap: .45rem;
@@ -252,29 +284,6 @@
     from { opacity: 0; transform: translateY(22px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  /* ── Intro responsive: pantallas cortas (landscape / iPhone pequeño) ── */
-  @media (max-height: 700px) {
-    .intro-logo-svg  { width: clamp(54px, 11vw, 78px) !important; margin-bottom: .65rem; }
-    .intro-year      { font-size: clamp(3rem, 14vw, 6rem); }
-    .intro-hosts     { margin-top: .4rem; }
-  }
-  @media (max-height: 520px) {
-    .intro-logo-svg  { display: none !important; }
-    .intro-year      { font-size: clamp(2.6rem, 13vw, 4.5rem); line-height: 1; }
-    .intro-title     { font-size: clamp(1.6rem, 7vw, 2.4rem); }
-    .intro-label     { margin-bottom: .1rem; }
-    .intro-line      { margin: .35rem auto; }
-    .intro-hosts     { font-size: .54rem; margin-top: .25rem; }
-    .intro-sub       { margin-top: .2rem; }
-    .intro-skip,
-    .intro-sound     { bottom: .4rem; }
-  }
-  /* Pantallas muy estrechas */
-  @media (max-width: 360px) {
-    .intro-year  { font-size: clamp(3rem, 20vw, 5rem); }
-    .intro-title { font-size: clamp(2.2rem, 10vw, 3rem); }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     #wc-intro { display: none !important; }
     .anim-card { opacity: 1 !important; transform: none !important; animation: none !important; }
