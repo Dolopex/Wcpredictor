@@ -604,8 +604,9 @@ def _apply_payment(payment_id):
 def referral_view(request):
     from accounts.referrals import get_referral_progress
     progress = get_referral_progress(request.user)
+    from django.urls import reverse
     referral_link = request.build_absolute_uri(
-        f"/cuentas/r/{request.user.profile.promo_code}/"
+        reverse('accounts:referral_link', kwargs={'code': request.user.profile.promo_code})
     )
     return render(request, 'tournament/referral.html', {
         **progress,
