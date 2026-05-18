@@ -1,33 +1,13 @@
-"""
-Sistema de referidos — flujo simplificado.
-
-Flujo:
-  Cuando alguien se registra con un código de invitación:
-    -> El nuevo usuario recibe 1.000 creditos de bienvenida
-    -> El referidor recibe 1.000 creditos
-
-Limites:
-  - Maximo 4 referidos recompensados por usuario
-  - No se puede usar el propio codigo
-  - Un usuario solo puede tener un referidor (OneToOne en Referral)
-"""
-
 import logging
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
-# Constantes
 MAX_REFERRALS = 4
-REWARD_EACH   = 1_000   # Ambos reciben 1.000 crd al registrarse
+REWARD_EACH   = 1000
 
 
-def process_referral_signup(new_user, promo_code: str):
-    """
-    Llamar justo despues de crear el usuario si uso un codigo.
-    Otorga 1.000 crd al nuevo usuario y 1.000 crd al referidor.
-    Retorna (ok: bool, mensaje: str).
-    """
+def process_referral_signup(new_user, promo_code):
     from .models import UserProfile, Referral
 
     code = promo_code.strip().upper()
@@ -72,13 +52,10 @@ def process_referral_signup(new_user, promo_code: str):
         'Referral: %s uso codigo de %s -> +%d crd a cada uno.',
         new_user.username, referrer.username, REWARD_EACH,
     )
-    return True, f'Codigo aplicado! +{REWARD_EACH:,} creditos de bienvenida.'
+    return True, 'Codigo aplicado! +{} creditos de bienvenida.'.format(REWARD_EACH)
 
 
 def get_referral_progress(user):
-    """
-    Devuelve un dict con el progreso del sistema de referidos para el frontend.
-    """
     from .models import Referral
 
     referrals_made = list(
