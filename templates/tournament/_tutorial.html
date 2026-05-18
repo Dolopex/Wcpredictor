@@ -5,6 +5,11 @@
    Controlado por localStorage key: copabet26_tut_v1
 ══════════════════════════════════════════════════════════════════════ #}
 <style>
+/* Overlay: cubre toda la pantalla sin dejar que nada se salga */
+#cb-tut {
+  box-sizing:border-box;
+  overflow:hidden;
+}
 #cb-tut-card {
   position:relative; width:100%; max-width:440px;
   max-height:92vh;
@@ -630,7 +635,14 @@
     try { localStorage.setItem(KEY, '1'); } catch(e) {}
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity .35s ease';
-    setTimeout(function() { overlay.style.display = 'none'; }, 360);
+    setTimeout(function() {
+      overlay.style.display = 'none';
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      if (_savedScrollY) { window.scrollTo(0, parseInt(_savedScrollY)); }
+    }, 360);
   };
 
   /* ── Touch / swipe ─────────────────────────────────────── */
@@ -658,7 +670,15 @@
   });
 
   /* ── Show tutorial ───────────────────────────────────── */
+  var _savedScrollY = 0;
   function showTutorial() {
+    // Bloquear scroll del body (iOS y Android)
+    _savedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width    = '100%';
+    document.body.style.top      = '-' + _savedScrollY + 'px';
+
     overlay.style.display = 'flex';
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity .4s ease';
