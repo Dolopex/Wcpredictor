@@ -1,5 +1,6 @@
 import logging
 from django.db import transaction
+from django.db.models import F
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +49,10 @@ def process_referral_signup(new_user, promo_code):
     with transaction.atomic():
         referral = Referral.objects.create(referrer=referrer, referred=new_user)
 
-        new_profile = UserProfile.objects.select_for_update().get(user=new_user)
-        new_profile.credits += REWARD_EACH
-        new_profile.save(update_fields=['credits'])
+        UserProfile.objects.filter(user=new_user).update(credits=F('credits') + REWARD_EACH)
         referral.referred_signup_reward_given = True
 
-        ref_profile = UserProfile.objects.select_for_update().get(user=referrer)
-        ref_profile.credits += REWARD_EACH
-        ref_profile.save(update_fields=['credits'])
+        UserProfile.objects.filter(user=referrer).update(credits=F('credits') + REWARD_EACH)
         referral.signup_reward_given = True
 
         referral.save()
