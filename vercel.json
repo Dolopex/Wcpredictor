@@ -6,7 +6,15 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
-        "includeFiles": ["staticfiles/**", "templates/**"]
+        "includeFiles": [
+          "staticfiles/**",
+          "templates/**",
+          "accounts/**",
+          "tournament/**",
+          "worldcup_predictor/**",
+          "manage.py",
+          "requirements.txt"
+        ]
       }
     }
   ],
