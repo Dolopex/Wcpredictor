@@ -106,10 +106,6 @@
             Clasificación
           </a>
           {% if user.is_authenticated %}
-          <a href="{% url 'tournament:info' %}"
-             class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
-            ¿Cómo jugar?
-          </a>
           <a href="{% url 'tournament:credits' %}"
              class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
             Créditos
@@ -138,6 +134,12 @@
               </svg>
               <span class="text-gold font-bold text-sm">{{ user.profile.credits|crd }}</span>
               <span class="text-[#8AA6C0] text-xs">crd</span>
+            </a>
+            <!-- Profile icon — mobile only -->
+            <a href="{% url 'accounts:profile' %}"
+               class="md:hidden flex items-center justify-center w-8 h-8 rounded-full border hover:border-[#C9A84C]/60 transition flex-shrink-0"
+               style="background:#172A45; border-color:#1A2E48;">
+              <span class="text-xs font-bold text-gold">{{ user.username|first|upper }}</span>
             </a>
             <!-- User menu (desktop) -->
             <a href="{% url 'accounts:profile' %}"
@@ -255,30 +257,8 @@
     </a>
     {% endif %}
 
-    {% if user.is_authenticated %}
-    <!-- Info -->
-    <a href="{% url 'tournament:info' %}"
-       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
-              {% if cur == 'info' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
-      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-      </svg>
-      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Info</span>
-    </a>
-    {% endif %}
-
     <!-- Perfil / Login -->
-    {% if user.is_authenticated %}
-    <a href="{% url 'accounts:profile' %}"
-       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
-              {% if cur == 'profile' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
-      <div class="w-5 h-5 rounded-full bg-[#172A45] border flex items-center justify-center text-[10px] font-bold
-                  {% if cur == 'profile' %}border-[#C9A84C] text-[#C9A84C]{% else %}border-[#1A2E48] text-[#8AA6C0]{% endif %}">
-        {{ user.username|first|upper }}
-      </div>
-      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Perfil</span>
-    </a>
-    {% else %}
+    {% if not user.is_authenticated %}
     <a href="{% url 'accounts:login' %}"
        class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
               {% if cur == 'login' %}text-[#C9A84C]{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
