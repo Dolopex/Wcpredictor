@@ -576,6 +576,12 @@ def _apply_payment(payment_id):
             profile.credits += purchase.credits_applied
             profile.save(update_fields=['credits'])
             logger.info("Créditos aplicados: %s → %s crd", purchase.user, purchase.credits_applied)
+            # Procesar bonos de referidos por la compra
+            try:
+                from accounts.referrals import process_referral_on_purchase
+                process_referral_on_purchase(purchase.user)
+            except Exception as exc:
+                logger.warning("Error procesando referral on purchase: %s", exc)
         elif mp_status in ('rejected', 'cancelled'):
             purchase.status = 'cancelled'
             purchase.save(update_fields=['status', 'mp_payment_id'])
@@ -592,6 +598,20 @@ def _apply_payment(payment_id):
 # ─────────────────────────────────────────────────────────────────────────────
 # Vistas de créditos
 # ─────────────────────────────────────────────────────────────────────────────
+
+@login_required
+def referral_view(request):
+    from accounts.referrals import get_referral_progress
+    progress = get_referral_progress(request.user)
+    referral_link = request.build_absolute_uri(
+        f"/cuentas/r/{request.user.profile.promo_code}/"
+    )
+    return render(request, 'tournament/referral.html', {
+        **progress,
+        'promo_code': request.user.profile.promo_code,
+        'referral_link': referral_link,
+    })
+
 
 @login_required
 def buy_credits_view(request):

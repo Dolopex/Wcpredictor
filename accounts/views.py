@@ -21,15 +21,32 @@ def register_view(request):
         messages.error(request, 'El período de inscripción ha cerrado. El Mundial ya comenzó.')
         return redirect('tournament:home')
 
+    # Pre-fill referral code from URL param (?ref=CODE) or session
+    ref_code_initial = request.GET.get('ref', '') or request.session.get('pending_ref_code', '')
+
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            # Process referral code if provided
+            raw_code = form.cleaned_data.get('referral_code', '').strip()
+            if raw_code:
+                from .referrals import process_referral_signup
+                ok, msg = process_referral_signup(user, raw_code)
+                if ok:
+                    messages.success(request, msg)
+                else:
+                    messages.warning(request, f'Código no aplicado: {msg}')
+                request.session.pop('pending_ref_code', None)
             login(request, user)
             messages.success(request, f'¡Bienvenido {user.username}! Tu cuenta fue creada.')
             return redirect('tournament:home')
     else:
-        form = RegisterForm()
+        initial = {}
+        if ref_code_initial:
+            initial['referral_code'] = ref_code_initial.upper()
+            request.session['pending_ref_code'] = ref_code_initial.upper()
+        form = RegisterForm(initial=initial)
 
     return render(request, 'accounts/register.html', {'form': form})
 
@@ -119,3 +136,14 @@ def profile_view(request):
         'knockout_points_total': knockout_points_total,
     }
     return render(request, 'accounts/profile.html', context)
+
+
+def referral_link_view(request, code):
+    """Enlace de referido: /r/<code>/ → guarda código y redirige al registro."""
+    if request.user.is_authenticated:
+        messages.info(request, 'Ya tienes una cuenta activa.')
+        return redirect('tournament:home')
+    code = code.strip().upper()
+    request.session['pending_ref_code'] = code
+    from django.urls import reverse
+    return redirect(f"{reverse('accounts:register')}?ref={code}")

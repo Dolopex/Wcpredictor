@@ -23,10 +23,17 @@ class RegisterForm(UserCreationForm):
         label='Correo electrónico',
         widget=forms.EmailInput(attrs={'placeholder': 'tu@email.com'}),
     )
+    referral_code = forms.CharField(
+        max_length=10,
+        required=False,
+        label='Código de invitación (opcional)',
+        widget=forms.TextInput(attrs={'placeholder': 'Ej: ABC1234', 'autocomplete': 'off'}),
+        help_text='Si un amigo te invitó, ingresa su código y ambos recibirán créditos.',
+    )
 
     class Meta:
         model = User
-        fields = ('full_name', 'phone_number', 'username', 'email', 'password1', 'password2')
+        fields = ('full_name', 'phone_number', 'username', 'email', 'password1', 'password2', 'referral_code')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

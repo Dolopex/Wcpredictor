@@ -13,6 +13,7 @@ urlpatterns = [
     path('clasificacion/', views.leaderboard_view, name='leaderboard'),
     path('creditos/', views.credits_view, name='credits'),
     path('creditos/comprar/', views.buy_credits_view, name='buy_credits'),
+    path('referidos/', views.referral_view, name='referral'),
     # Mercado Pago — retornos y webhook
     path('creditos/comprar/exito/', views.mp_success_view, name='mp_success'),
     path('creditos/comprar/fallido/', views.mp_failure_view, name='mp_failure'),
