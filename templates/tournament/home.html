@@ -94,8 +94,6 @@
   #wc-intro {
     position: fixed; inset: 0; z-index: 9999;
     background: #030912;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
     overflow: hidden;
     transition: opacity .75s ease, transform .75s ease;
   }
@@ -125,13 +123,19 @@
     animation: introFadeIn .9s ease .1s forwards;
   }
   /* ── Intro responsive: mobile portrait & landscape ── */
-  /* El intro-content nunca debe exceder el área visual disponible */
+  /* intro-content ocupa todo el overlay y centra sus hijos directamente */
   .intro-content {
-    position: relative; z-index: 2;
-    text-align: center; padding: 0 1.5rem;
-    width: 100%;
-    /* Deja espacio para los botones absolutos del fondo + safe area */
-    max-height: calc(100vh - 5rem - env(safe-area-inset-bottom, 0px));
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 1.5rem;
+    /* Espacio inferior para botones absolutos + safe area */
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 2;
     box-sizing: border-box;
   }
 
