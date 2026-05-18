@@ -640,7 +640,8 @@
       // Restaurar scroll del body
       document.body.style.overflow = '';
       document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.width    = '';
+      document.body.style.top      = '';
       if (_savedScrollY) { window.scrollTo(0, parseInt(_savedScrollY)); }
     }, 360);
   };

@@ -252,6 +252,29 @@
     from { opacity: 0; transform: translateY(22px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* ── Intro responsive: pantallas cortas (landscape / iPhone pequeño) ── */
+  @media (max-height: 700px) {
+    .intro-logo-svg  { width: clamp(54px, 11vw, 78px) !important; margin-bottom: .65rem; }
+    .intro-year      { font-size: clamp(3rem, 14vw, 6rem); }
+    .intro-hosts     { margin-top: .4rem; }
+  }
+  @media (max-height: 520px) {
+    .intro-logo-svg  { display: none !important; }
+    .intro-year      { font-size: clamp(2.6rem, 13vw, 4.5rem); line-height: 1; }
+    .intro-title     { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+    .intro-label     { margin-bottom: .1rem; }
+    .intro-line      { margin: .35rem auto; }
+    .intro-hosts     { font-size: .54rem; margin-top: .25rem; }
+    .intro-sub       { margin-top: .2rem; }
+    .intro-skip,
+    .intro-sound     { bottom: .4rem; }
+  }
+  /* Pantallas muy estrechas */
+  @media (max-width: 360px) {
+    .intro-year  { font-size: clamp(3rem, 20vw, 5rem); }
+    .intro-title { font-size: clamp(2.2rem, 10vw, 3rem); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     #wc-intro { display: none !important; }
     .anim-card { opacity: 1 !important; transform: none !important; animation: none !important; }
