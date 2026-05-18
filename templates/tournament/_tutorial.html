@@ -3,48 +3,87 @@
 {# ══════════════════════════════════════════════════════════════════════
    TUTORIAL DE BIENVENIDA  —  se muestra una sola vez por usuario
    Controlado por localStorage key: copabet26_tut_v1
-   6 slides con illustraciones SVG
 ══════════════════════════════════════════════════════════════════════ #}
+<style>
+#cb-tut-card {
+  position:relative; width:100%; max-width:440px;
+  max-height:92vh;
+  background:linear-gradient(160deg,#0D1F35 0%,#070F1C 100%);
+  border:1px solid rgba(201,168,76,.25); border-radius:1.5rem;
+  overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,.7);
+  display:flex; flex-direction:column;
+}
+.cb-slide {
+  padding:2.2rem 1.75rem 1.25rem;
+  text-align:center;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  max-height:calc(92vh - 110px);
+}
+.cb-tut-svg { display:block; margin:0 auto .9rem; height:auto; }
+.cb-tut-footer {
+  padding:.75rem 1.25rem .9rem;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:space-between;
+  gap:.5rem; flex-shrink:0;
+}
+/* Pantallas bajas / teléfonos pequeños */
+@media (max-height: 680px) {
+  #cb-tut-card { max-height:96vh; border-radius:1.1rem; }
+  .cb-slide { padding:1.5rem 1.25rem .9rem; max-height:calc(96vh - 100px); }
+  .cb-tut-svg { margin-bottom:.5rem !important; }
+  .cb-tut-svg-sm { width:68px !important; }
+  .cb-tut-svg-md { width:80px !important; }
+  .cb-tut-svg-lg { width:92px !important; }
+  .cb-tut-h2 { font-size:1.3rem !important; margin-bottom:.35rem !important; }
+  .cb-tut-p  { font-size:.77rem !important; margin-bottom:.55rem !important; }
+  .cb-tut-footer { padding:.55rem 1rem .7rem; }
+}
+@media (max-height: 580px) {
+  .cb-tut-svg { display:none !important; }
+  .cb-slide { padding:1.1rem 1.1rem .7rem; max-height:calc(96vh - 90px); }
+}
+/* Pantallas estrechas */
+@media (max-width: 390px) {
+  #cb-tut-card { border-radius:1rem; }
+  .cb-slide { padding:2rem 1.1rem 1rem; }
+  .cb-tut-footer { padding:.65rem .9rem .8rem; gap:.35rem; }
+}
+</style>
+
 <div id="cb-tut" role="dialog" aria-modal="true" aria-label="Tutorial de bienvenida"
      style="display:none; position:fixed; inset:0; z-index:10000;
             background:rgba(3,9,18,.88); backdrop-filter:blur(6px);
-            align-items:center; justify-content:center; padding:1rem;">
+            align-items:center; justify-content:center; padding:.75rem;">
 
   <!-- Card principal -->
-  <div id="cb-tut-card"
-       style="position:relative; width:100%; max-width:440px; max-height:92vh;
-              background:linear-gradient(160deg,#0D1F35 0%,#070F1C 100%);
-              border:1px solid rgba(201,168,76,.25); border-radius:1.5rem;
-              overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,.7);
-              display:flex; flex-direction:column;">
+  <div id="cb-tut-card">
 
     <!-- Barra de progreso superior -->
     <div style="position:absolute; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.07); z-index:2;">
       <div id="cb-tut-bar"
            style="height:100%; background:linear-gradient(90deg,#7A5E28,#C9A84C,#F0D07A);
-                  transition:width .4s ease; width:16.6%"></div>
+                  transition:width .4s ease; width:14.28%"></div>
     </div>
 
     <!-- Botón cerrar -->
     <button onclick="tutClose()" aria-label="Cerrar tutorial"
-            style="position:absolute; top:.85rem; right:.85rem; z-index:3;
-                   width:2rem; height:2rem; border-radius:50%; border:1px solid rgba(255,255,255,.15);
+            style="position:absolute; top:.75rem; right:.75rem; z-index:3;
+                   width:2.1rem; height:2.1rem; border-radius:50%; border:1px solid rgba(255,255,255,.15);
                    background:rgba(255,255,255,.07); color:rgba(255,255,255,.5);
-                   font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
-                   transition:background .2s, color .2s;"
-            onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.color='#fff'"
-            onmouseout="this.style.background='rgba(255,255,255,.07)';this.style.color='rgba(255,255,255,.5)'">
+                   font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+                   transition:background .2s, color .2s; line-height:1;">
       &times;
     </button>
 
-    <!-- Slides wrapper -->
+    <!-- Slides wrapper (touch-swipeable) -->
     <div id="cb-tut-slides" style="flex:1; overflow:hidden; position:relative; min-height:0;">
 
       <!-- ═══ SLIDE 1 — Bienvenida ═══ -->
-      <div class="cb-slide" style="padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="text-align:center;">
         <!-- SVG: trofeo -->
         <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg"
-             style="width:110px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-md" style="width:95px;" aria-hidden="true">
           <defs>
             <linearGradient id="tg1" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#F0D07A"/>
@@ -79,13 +118,13 @@
           <line x1="58" y1="90" x2="102" y2="90" stroke="rgba(201,168,76,.35)" stroke-width="1.2"/>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.35rem;">
           FIFA World Cup 2026
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.75rem; color:#fff; margin:0 0 .65rem; line-height:1.1;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.65rem; color:#fff; margin:0 0 .5rem; line-height:1.1;">
           Bienvenido a<br><span style="color:#C9A84C;">CopaBet 26</span>
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem;">
           El juego de predicciones del Mundial. Predice, compite y gana premios
           en dinero siendo el mejor pronosticador.
         </p>
@@ -100,10 +139,10 @@
       </div>
 
       <!-- ═══ SLIDE 2 — Cr&eacute;ditos ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: billetera/monedas -->
         <svg viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg"
-             style="width:120px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-lg" style="width:105px;" aria-hidden="true">
           <defs>
             <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#F0D07A"/>
@@ -133,13 +172,13 @@
           <text x="140" y="80" font-size="8" fill="#C9A84C" opacity=".4">&#10022;</text>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.35rem;">
           Paso 1
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; color:#fff; margin:0 0 .5rem;">
           Compra cr&eacute;ditos
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem .7rem;">
           Los cr&eacute;ditos son la moneda del juego. Para predecir necesitas tener
           cr&eacute;ditos en tu cuenta. Hay paquetes para cada fase del torneo.
         </p>
@@ -163,10 +202,10 @@
       </div>
 
       <!-- ═══ SLIDE 3 — Fase de Grupos ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: cuadricula de grupos -->
         <svg viewBox="0 0 160 130" xmlns="http://www.w3.org/2000/svg"
-             style="width:130px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-lg" style="width:110px;" aria-hidden="true">
           <defs>
             <linearGradient id="gg3" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stop-color="#059669"/>
@@ -215,13 +254,13 @@
           <text x="80" y="68" text-anchor="middle" font-size="8" font-weight="700" fill="#C9A84C">12 GRUPOS EN TOTAL</text>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.35rem;">
           Paso 2
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; color:#fff; margin:0 0 .5rem;">
           Predice los Grupos
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem .7rem;">
           Hay <strong style="color:#fff;">12 grupos</strong> con 4 equipos cada uno.
           Elige cu&aacute;les dos pasan de cada grupo antes de que empiece el torneo.
         </p>
@@ -236,10 +275,10 @@
       </div>
 
       <!-- ═══ SLIDE 4 — Eliminatorias ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: bracket eliminatorio -->
         <svg viewBox="0 0 180 130" xmlns="http://www.w3.org/2000/svg"
-             style="width:140px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-lg" style="width:115px;" aria-hidden="true">
           <defs>
             <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#F0D07A"/>
@@ -294,13 +333,13 @@
           <text x="157" y="85" text-anchor="middle" font-size="14">&#127942;</text>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.35rem;">
           Paso 3
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; color:#fff; margin:0 0 .5rem;">
           Predice Eliminatorias
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem .7rem;">
           Cuando empieza cada fase eliminatoria, elige qui&eacute;n gana cada partido.
           Cuanto m&aacute;s avanza el torneo, m&aacute;s valen las predicciones.
         </p>
@@ -320,10 +359,10 @@
       </div>
 
       <!-- ═══ SLIDE 5 — Ranking y Premios ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: podio -->
         <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg"
-             style="width:120px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-md" style="width:100px;" aria-hidden="true">
           <defs>
             <linearGradient id="gold5" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#F0D07A"/><stop offset="100%" stop-color="#C9A84C"/>
@@ -371,13 +410,13 @@
           <rect x="5" y="112" width="150" height="4" rx="2" fill="#1A2E48"/>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.35rem;">
           Paso 4
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; color:#fff; margin:0 0 .5rem;">
           Ranking &amp; Premios
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem .7rem;">
           Todos compiten en el mismo ranking. Acumula puntos en cada fase
           y sube posiciones. <strong style="color:#fff;">Los 3 primeros ganan premios en dinero</strong>
           al terminar la Final (19 Jul 2026).
@@ -389,10 +428,10 @@
       </div>
 
       <!-- ═══ SLIDE 6 — Referidos ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: personas conectadas -->
         <svg viewBox="0 0 160 110" xmlns="http://www.w3.org/2000/svg"
-             style="width:130px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-lg" style="width:110px;" aria-hidden="true">
           <!-- Person 1 (you) -->
           <circle cx="38" cy="35" r="16" fill="#0D1F35" stroke="#C9A84C" stroke-width="2"/>
           <text x="38" y="40" text-anchor="middle" font-size="14">&#128100;</text>
@@ -426,13 +465,13 @@
           </text>
         </svg>
 
-        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#10B981; margin-bottom:.4rem;">
+        <p style="font-size:.62rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#10B981; margin-bottom:.35rem;">
           Bonus
         </p>
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; color:#fff; margin:0 0 .5rem;">
           Invita amigos
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem .7rem;">
           Comparte tu c&oacute;digo de referido. Cuando un amigo se registre con &eacute;l,
           <strong style="color:#fff;">ambos reciben 1.000 cr&eacute;ditos gratis</strong>.
           Puedes invitar hasta 4 amigos.
@@ -448,10 +487,10 @@
       </div>
 
       <!-- ═══ SLIDE 7 — Final / CTA ═══ -->
-      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 2rem; text-align:center;">
+      <div class="cb-slide" style="display:none; text-align:center;">
         <!-- SVG: info/check final -->
         <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg"
-             style="width:115px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+             class="cb-tut-svg cb-tut-svg-md" style="width:95px;" aria-hidden="true">
           <defs>
             <linearGradient id="fg7" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#C9A84C"/>
@@ -473,10 +512,10 @@
           <text x="70" y="118" font-size="9" fill="#C9A84C" opacity=".4">&#9733;</text>
         </svg>
 
-        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.75rem; color:#fff; margin:0 0 .5rem;">
+        <h2 class="cb-tut-h2" style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .5rem;">
           &iexcl;Ya est&aacute;s listo!
         </h2>
-        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem 1.25rem;">
+        <p class="cb-tut-p" style="color:#8AA6C0; font-size:.82rem; line-height:1.5; margin:0 .1rem 1rem;">
           Compra cr&eacute;ditos, predice grupos, predice eliminatorias y escala el ranking.
           Para ver las reglas completas y todos los detalles visita:
         </p>
@@ -507,8 +546,7 @@
     </div>{# /slides wrapper #}
 
     <!-- Footer: dots + botones -->
-    <div style="padding:.9rem 1.5rem 1.1rem; border-top:1px solid rgba(255,255,255,.06);
-                display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-shrink:0;">
+    <div class="cb-tut-footer">
 
       <!-- Dots -->
       <div id="cb-tut-dots" style="display:flex; gap:.4rem; align-items:center;">
@@ -561,32 +599,32 @@
   var btnPrev = document.getElementById('cb-tut-prev');
   var btnNext = document.getElementById('cb-tut-next');
   var cur = 0;
-  var total = slides.length; // 7
+  var total = slides.length;
 
   if (!overlay || !total) return;
 
   function updateUI() {
-    slides.forEach(function(s, i) { s.style.display = i === cur ? '' : 'none'; });
+    slides.forEach(function(s, i) {
+      s.style.display = i === cur ? '' : 'none';
+      if (i === cur) { s.scrollTop = 0; } // reset scroll on slide change
+    });
     dots.forEach(function(d, i) {
       d.style.background = i === cur ? '#C9A84C' : 'rgba(255,255,255,.18)';
       d.style.transform  = i === cur ? 'scale(1.4)' : 'scale(1)';
     });
     if (bar) bar.style.width = ((cur + 1) / total * 100) + '%';
-    if (btnPrev) { btnPrev.disabled = cur === 0; btnPrev.style.opacity = cur === 0 ? '.3' : '1'; btnPrev.style.cursor = cur === 0 ? 'default' : 'pointer'; }
+    if (btnPrev) {
+      btnPrev.disabled = cur === 0;
+      btnPrev.style.opacity = cur === 0 ? '.3' : '1';
+      btnPrev.style.cursor  = cur === 0 ? 'default' : 'pointer';
+    }
     if (btnNext) {
-      if (cur === total - 1) {
-        btnNext.textContent = 'Empezar \u2192';
-      } else {
-        btnNext.innerHTML = 'Siguiente &rarr;';
-      }
+      btnNext.innerHTML = cur === total - 1 ? 'Empezar &#8594;' : 'Siguiente &#8594;';
     }
   }
 
-  window.tutGo = function(i) { cur = Math.max(0, Math.min(total-1, i)); updateUI(); };
-  window.tutNext = function() {
-    if (cur < total - 1) { cur++; updateUI(); }
-    else { tutClose(); }
-  };
+  window.tutGo   = function(i) { cur = Math.max(0, Math.min(total-1, i)); updateUI(); };
+  window.tutNext = function() { if (cur < total - 1) { cur++; updateUI(); } else { tutClose(); } };
   window.tutPrev = function() { if (cur > 0) { cur--; updateUI(); } };
   window.tutClose = function() {
     try { localStorage.setItem(KEY, '1'); } catch(e) {}
@@ -595,26 +633,45 @@
     setTimeout(function() { overlay.style.display = 'none'; }, 360);
   };
 
-  // Show after intro animation ends (or immediately if no intro)
+  /* ── Touch / swipe ─────────────────────────────────────── */
+  var touchX = null;
+  var slidesWrap = document.getElementById('cb-tut-slides');
+  if (slidesWrap) {
+    slidesWrap.addEventListener('touchstart', function(e) {
+      touchX = e.touches[0].clientX;
+    }, { passive: true });
+    slidesWrap.addEventListener('touchend', function(e) {
+      if (touchX === null) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) < 40) return;
+      if (dx < 0) { window.tutNext(); } else { window.tutPrev(); }
+    }, { passive: true });
+  }
+
+  /* ── Keyboard navigation ─────────────────────────────── */
+  document.addEventListener('keydown', function(e) {
+    if (overlay.style.display === 'none') return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') window.tutNext();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   window.tutPrev();
+    if (e.key === 'Escape') window.tutClose();
+  });
+
+  /* ── Show tutorial ───────────────────────────────────── */
   function showTutorial() {
     overlay.style.display = 'flex';
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity .4s ease';
     updateUI();
-    // tiny frame delay for display:flex to take effect
     requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        overlay.style.opacity = '1';
-      });
+      requestAnimationFrame(function() { overlay.style.opacity = '1'; });
     });
   }
 
   var introEl = document.getElementById('wc-intro');
   if (!introEl || introEl.classList.contains('intro-hidden')) {
-    // No intro or already done — show after a short delay
     setTimeout(showTutorial, 600);
   } else {
-    // Wait for intro to hide
     var obs = new MutationObserver(function() {
       if (introEl.classList.contains('intro-hidden')) {
         obs.disconnect();
