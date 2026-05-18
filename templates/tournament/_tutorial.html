@@ -1,0 +1,628 @@
+{% load tournament_extras %}
+{% if user.is_authenticated %}
+{# ══════════════════════════════════════════════════════════════════════
+   TUTORIAL DE BIENVENIDA  —  se muestra una sola vez por usuario
+   Controlado por localStorage key: copabet26_tut_v1
+   6 slides con illustraciones SVG
+══════════════════════════════════════════════════════════════════════ #}
+<div id="cb-tut" role="dialog" aria-modal="true" aria-label="Tutorial de bienvenida"
+     style="display:none; position:fixed; inset:0; z-index:10000;
+            background:rgba(3,9,18,.88); backdrop-filter:blur(6px);
+            align-items:center; justify-content:center; padding:1rem;">
+
+  <!-- Card principal -->
+  <div id="cb-tut-card"
+       style="position:relative; width:100%; max-width:440px; max-height:92vh;
+              background:linear-gradient(160deg,#0D1F35 0%,#070F1C 100%);
+              border:1px solid rgba(201,168,76,.25); border-radius:1.5rem;
+              overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,.7);
+              display:flex; flex-direction:column;">
+
+    <!-- Barra de progreso superior -->
+    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.07); z-index:2;">
+      <div id="cb-tut-bar"
+           style="height:100%; background:linear-gradient(90deg,#7A5E28,#C9A84C,#F0D07A);
+                  transition:width .4s ease; width:16.6%"></div>
+    </div>
+
+    <!-- Botón cerrar -->
+    <button onclick="tutClose()" aria-label="Cerrar tutorial"
+            style="position:absolute; top:.85rem; right:.85rem; z-index:3;
+                   width:2rem; height:2rem; border-radius:50%; border:1px solid rgba(255,255,255,.15);
+                   background:rgba(255,255,255,.07); color:rgba(255,255,255,.5);
+                   font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+                   transition:background .2s, color .2s;"
+            onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.color='#fff'"
+            onmouseout="this.style.background='rgba(255,255,255,.07)';this.style.color='rgba(255,255,255,.5)'">
+      &times;
+    </button>
+
+    <!-- Slides wrapper -->
+    <div id="cb-tut-slides" style="flex:1; overflow:hidden; position:relative; min-height:0;">
+
+      <!-- ═══ SLIDE 1 — Bienvenida ═══ -->
+      <div class="cb-slide" style="padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: trofeo -->
+        <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg"
+             style="width:110px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="tg1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F0D07A"/>
+              <stop offset="50%" stop-color="#C9A84C"/>
+              <stop offset="100%" stop-color="#8A6F28"/>
+            </linearGradient>
+            <radialGradient id="tglow1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(201,168,76,.35)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+          </defs>
+          <!-- Glow -->
+          <ellipse cx="80" cy="90" rx="60" ry="55" fill="url(#tglow1)"/>
+          <!-- Base -->
+          <rect x="42" y="158" width="76" height="10" rx="5" fill="url(#tg1)"/>
+          <rect x="54" y="147" width="52" height="14" rx="4" fill="url(#tg1)"/>
+          <!-- Stem -->
+          <rect x="70" y="122" width="20" height="28" rx="6" fill="url(#tg1)"/>
+          <!-- Cup body -->
+          <path d="M35 55 Q30 100 52 118 Q64 130 80 130 Q96 130 108 118 Q130 100 125 55 Z" fill="url(#tg1)"/>
+          <!-- Cup shine -->
+          <path d="M47 70 Q45 95 55 108" stroke="rgba(255,255,255,.3)" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <!-- Handles -->
+          <path d="M35 65 Q12 65 14 82 Q16 102 35 97" stroke="url(#tg1)" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M125 65 Q148 65 146 82 Q144 102 125 97" stroke="url(#tg1)" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <!-- Stars -->
+          <text x="70" y="45" font-size="11" fill="#F0D07A" opacity=".9" text-anchor="middle">&#9733;&#9733;&#9733;</text>
+          <!-- Ball inside cup -->
+          <circle cx="80" cy="90" r="22" fill="#0C1827" opacity=".5"/>
+          <path d="M60 88 Q70 72 80 88 Q90 104 100 88" stroke="rgba(201,168,76,.6)" stroke-width="1.5" fill="none"/>
+          <line x1="80" y1="68" x2="80" y2="112" stroke="rgba(201,168,76,.35)" stroke-width="1.2"/>
+          <line x1="58" y1="90" x2="102" y2="90" stroke="rgba(201,168,76,.35)" stroke-width="1.2"/>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+          FIFA World Cup 2026
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.75rem; color:#fff; margin:0 0 .65rem; line-height:1.1;">
+          Bienvenido a<br><span style="color:#C9A84C;">CopaBet 26</span>
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem;">
+          El juego de predicciones del Mundial. Predice, compite y gana premios
+          en dinero siendo el mejor pronosticador.
+        </p>
+        <div style="display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; margin-top:1rem;">
+          <span style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.2); color:#C9A84C;
+                       border-radius:2rem; padding:.2rem .75rem; font-size:.68rem; font-weight:700;">48 equipos</span>
+          <span style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.2); color:#C9A84C;
+                       border-radius:2rem; padding:.2rem .75rem; font-size:.68rem; font-weight:700;">12 grupos</span>
+          <span style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.2); color:#C9A84C;
+                       border-radius:2rem; padding:.2rem .75rem; font-size:.68rem; font-weight:700;">6 fases</span>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 2 — Cr&eacute;ditos ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: billetera/monedas -->
+        <svg viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg"
+             style="width:120px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F0D07A"/>
+              <stop offset="100%" stop-color="#8A6F28"/>
+            </linearGradient>
+          </defs>
+          <!-- Wallet body -->
+          <rect x="20" y="45" width="110" height="72" rx="10" fill="#112035" stroke="rgba(201,168,76,.3)" stroke-width="1.5"/>
+          <!-- Wallet flap -->
+          <rect x="20" y="45" width="110" height="22" rx="10" fill="#0D1A2E" stroke="rgba(201,168,76,.2)" stroke-width="1"/>
+          <!-- Coin slot -->
+          <rect x="100" y="80" width="38" height="28" rx="8" fill="#0A1525" stroke="rgba(201,168,76,.4)" stroke-width="1.5"/>
+          <circle cx="119" cy="94" r="9" fill="none" stroke="#C9A84C" stroke-width="2"/>
+          <text x="119" y="98" text-anchor="middle" font-size="8" font-weight="900" fill="#C9A84C">$</text>
+          <!-- Big coin -->
+          <circle cx="68" cy="90" r="26" fill="url(#cg2)"/>
+          <circle cx="68" cy="90" r="20" fill="#7A5E28" opacity=".4"/>
+          <text x="68" y="96" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="18" font-weight="900" fill="#fff">CRD</text>
+          <!-- Small coins stacked -->
+          <ellipse cx="68" cy="68" rx="26" ry="5" fill="#8A6F28"/>
+          <ellipse cx="68" cy="64" rx="26" ry="5" fill="#C9A84C"/>
+          <ellipse cx="68" cy="60" rx="26" ry="5" fill="#F0D07A"/>
+          <!-- Sparkles -->
+          <text x="120" y="55" font-size="12" fill="#C9A84C" opacity=".7">&#10022;</text>
+          <text x="28" y="40" font-size="9" fill="#C9A84C" opacity=".5">&#10022;</text>
+          <text x="140" y="80" font-size="8" fill="#C9A84C" opacity=".4">&#10022;</text>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+          Paso 1
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+          Compra cr&eacute;ditos
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+          Los cr&eacute;ditos son la moneda del juego. Para predecir necesitas tener
+          cr&eacute;ditos en tu cuenta. Hay paquetes para cada fase del torneo.
+        </p>
+        <!-- Price list -->
+        <div style="background:#0A1525; border:1px solid #1A2E48; border-radius:.75rem; overflow:hidden; text-align:left;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.55rem .9rem;
+                      border-bottom:1px solid #1A2E48;">
+            <span style="color:#6A8AA6; font-size:.72rem;">Fase de Grupos</span>
+            <span style="color:#fff; font-weight:700; font-size:.78rem;">1.000 crd</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.55rem .9rem;
+                      border-bottom:1px solid #1A2E48;">
+            <span style="color:#6A8AA6; font-size:.72rem;">Eliminatorias (por partido)</span>
+            <span style="color:#fff; font-weight:700; font-size:.78rem;">500&ndash;2.000 crd</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.55rem .9rem;">
+            <span style="color:#6A8AA6; font-size:.72rem;">Torneo completo</span>
+            <span style="color:#C9A84C; font-weight:700; font-size:.78rem;">Paquete especial</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 3 — Fase de Grupos ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: cuadricula de grupos -->
+        <svg viewBox="0 0 160 130" xmlns="http://www.w3.org/2000/svg"
+             style="width:130px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="gg3" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#059669"/>
+              <stop offset="100%" stop-color="#10B981"/>
+            </linearGradient>
+          </defs>
+          <!-- 4 group cards in 2x2 -->
+          <!-- Card A -->
+          <rect x="8" y="8" width="66" height="52" rx="7" fill="#0D1F35" stroke="rgba(201,168,76,.35)" stroke-width="1.2"/>
+          <text x="41" y="24" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="11" font-weight="900" fill="#C9A84C">GRUPO A</text>
+          <rect x="16" y="30" width="20" height="9" rx="2" fill="#1A3A6E" opacity=".7"/>
+          <rect x="16" y="42" width="22" height="9" rx="2" fill="#006B3E" opacity=".7"/>
+          <rect x="16" y="30" width="20" height="9" rx="2" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <text x="40" y="37" font-size="7" fill="#8AA6C0">&#127482;&#127480;</text>
+          <text x="40" y="49" font-size="7" fill="#8AA6C0">&#127474;&#127485;</text>
+          <!-- Check badge on A -->
+          <circle cx="62" cy="20" r="7" fill="rgba(16,185,129,.15)" stroke="rgba(16,185,129,.5)" stroke-width="1.2"/>
+          <path d="M57.5 20 l3 3 l6-6" stroke="#10B981" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Card B -->
+          <rect x="86" y="8" width="66" height="52" rx="7" fill="#0D1F35" stroke="#1A2E48" stroke-width="1.2"/>
+          <text x="119" y="24" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="11" font-weight="900" fill="#6A8AA6">GRUPO B</text>
+          <rect x="94" y="30" width="20" height="9" rx="2" fill="#003DA5" opacity=".6"/>
+          <rect x="94" y="42" width="22" height="9" rx="2" fill="#C8102E" opacity=".6"/>
+          <text x="118" y="37" font-size="7" fill="#6A8AA6">&#9733;</text>
+          <text x="118" y="49" font-size="7" fill="#6A8AA6">&#9733;</text>
+
+          <!-- Card C -->
+          <rect x="8" y="70" width="66" height="52" rx="7" fill="#0D1F35" stroke="#1A2E48" stroke-width="1.2"/>
+          <text x="41" y="86" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="11" font-weight="900" fill="#6A8AA6">GRUPO C</text>
+          <rect x="16" y="92" width="20" height="9" rx="2" fill="#009b3a" opacity=".6"/>
+          <rect x="16" y="104" width="22" height="9" rx="2" fill="#002395" opacity=".6"/>
+
+          <!-- Card D with arrow pointing to it -->
+          <rect x="86" y="70" width="66" height="52" rx="7" fill="#0D1F35" stroke="#1A2E48" stroke-width="1.2"/>
+          <text x="119" y="86" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="11" font-weight="900" fill="#6A8AA6">GRUPO D</text>
+          <rect x="94" y="92" width="20" height="9" rx="2" fill="#da291c" opacity=".6"/>
+          <rect x="94" y="104" width="22" height="9" rx="2" fill="#00843D" opacity=".6"/>
+
+          <!-- Label "12 grupos" -->
+          <rect x="42" y="58" width="76" height="14" rx="6" fill="rgba(201,168,76,.12)" stroke="rgba(201,168,76,.2)" stroke-width="1"/>
+          <text x="80" y="68" text-anchor="middle" font-size="8" font-weight="700" fill="#C9A84C">12 GRUPOS EN TOTAL</text>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+          Paso 2
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+          Predice los Grupos
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+          Hay <strong style="color:#fff;">12 grupos</strong> con 4 equipos cada uno.
+          Elige cu&aacute;les dos pasan de cada grupo antes de que empiece el torneo.
+        </p>
+        <div style="background:#0A1525; border:1px solid rgba(16,185,129,.2); border-radius:.75rem; padding:.65rem .9rem;
+                    display:flex; align-items:center; gap:.7rem; text-align:left;">
+          <span style="font-size:1.3rem; flex-shrink:0;">&#10024;</span>
+          <span style="color:#8AA6C0; font-size:.75rem; line-height:1.5;">
+            Los equipos con <strong style="color:#fff;">ranking FIFA m&aacute;s bajo</strong> (sorpresas)
+            te dan m&aacute;s puntos si aciertas.
+          </span>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 4 — Eliminatorias ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: bracket eliminatorio -->
+        <svg viewBox="0 0 180 130" xmlns="http://www.w3.org/2000/svg"
+             style="width:140px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F0D07A"/>
+              <stop offset="100%" stop-color="#C9A84C"/>
+            </linearGradient>
+          </defs>
+          <!-- R16 (left column) -->
+          <!-- Match boxes -->
+          <rect x="5" y="10" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <rect x="5" y="28" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <rect x="5" y="50" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <rect x="5" y="68" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <rect x="5" y="90" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <rect x="5" y="108" width="45" height="14" rx="3" fill="#0D1F35" stroke="#1A3E58" stroke-width="1"/>
+          <!-- mini flags inside -->
+          <rect x="9" y="14" width="14" height="6" rx="1" fill="#1A3A6E" opacity=".8"/>
+          <rect x="9" y="32" width="14" height="6" rx="1" fill="#006B3E" opacity=".8"/>
+          <rect x="9" y="54" width="14" height="6" rx="1" fill="#da291c" opacity=".8"/>
+          <rect x="9" y="72" width="14" height="6" rx="1" fill="#002395" opacity=".8"/>
+          <rect x="9" y="94" width="14" height="6" rx="1" fill="#C8102E" opacity=".8"/>
+          <rect x="9" y="112" width="14" height="6" rx="1" fill="#009b3a" opacity=".8"/>
+          <!-- team names placeholder -->
+          <rect x="26" y="14" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <rect x="26" y="32" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <rect x="26" y="54" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <rect x="26" y="72" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <rect x="26" y="94" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <rect x="26" y="112" width="20" height="4" rx="1" fill="#1A3E58"/>
+          <!-- Connector lines -->
+          <path d="M50 17 L62 17 L62 35 L74 35" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+          <path d="M50 35 L62 35" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+          <path d="M50 57 L62 57 L62 75 L74 75" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+          <path d="M50 75 L62 75" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+          <path d="M50 97 L62 97 L62 115 L74 115" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+          <path d="M50 115 L62 115" stroke="#1A3E58" stroke-width="1.2" fill="none"/>
+
+          <!-- QF (middle) -->
+          <rect x="74" y="28" width="40" height="14" rx="3" fill="#0D1F35" stroke="rgba(201,168,76,.3)" stroke-width="1.2"/>
+          <rect x="74" y="68" width="40" height="14" rx="3" fill="#0D1F35" stroke="rgba(201,168,76,.3)" stroke-width="1.2"/>
+          <rect x="74" y="108" width="40" height="14" rx="3" fill="#0D1F35" stroke="rgba(201,168,76,.3)" stroke-width="1.2"/>
+          <rect x="78" y="32" width="14" height="6" rx="1" fill="#1A3A6E" opacity=".9"/>
+          <rect x="78" y="72" width="14" height="6" rx="1" fill="#da291c" opacity=".9"/>
+          <rect x="78" y="112" width="14" height="6" rx="1" fill="#006B3E" opacity=".9"/>
+          <!-- QF connectors -->
+          <path d="M114 35 L126 35 L126 75 L138 75" stroke="rgba(201,168,76,.4)" stroke-width="1.2" fill="none"/>
+          <path d="M114 75 L126 75" stroke="rgba(201,168,76,.4)" stroke-width="1.2" fill="none"/>
+
+          <!-- SF/Final (right) -->
+          <rect x="138" y="55" width="38" height="40" rx="5" fill="#0D1F35" stroke="#C9A84C" stroke-width="1.5"/>
+          <text x="157" y="73" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="9" font-weight="900" fill="#C9A84C">FINAL</text>
+          <text x="157" y="85" text-anchor="middle" font-size="14">&#127942;</text>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+          Paso 3
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+          Predice Eliminatorias
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+          Cuando empieza cada fase eliminatoria, elige qui&eacute;n gana cada partido.
+          Cuanto m&aacute;s avanza el torneo, m&aacute;s valen las predicciones.
+        </p>
+        <!-- Rounds cost table -->
+        <div style="background:#0A1525; border:1px solid #1A2E48; border-radius:.75rem; overflow:hidden; text-align:left; font-size:.72rem;">
+          <div style="display:grid; grid-template-columns:1fr auto; gap:.5rem; padding:.45rem .8rem; border-bottom:1px solid #1A2E48;">
+            <span style="color:#6A8AA6;">Dieciseisavos (R32)</span><span style="color:#fff; font-weight:700;">500 crd</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:.5rem; padding:.45rem .8rem; border-bottom:1px solid #1A2E48;">
+            <span style="color:#6A8AA6;">Octavos &amp; Cuartos</span><span style="color:#fff; font-weight:700;">1.000 crd</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:.5rem; padding:.45rem .8rem;">
+            <span style="color:#6A8AA6;">Semis &amp; Final</span>
+            <span style="color:#F0D07A; font-weight:700;">2.000 crd</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 5 — Ranking y Premios ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: podio -->
+        <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg"
+             style="width:120px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="gold5" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F0D07A"/><stop offset="100%" stop-color="#C9A84C"/>
+            </linearGradient>
+            <linearGradient id="silv5" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E0E8F0"/><stop offset="100%" stop-color="#9BA8B5"/>
+            </linearGradient>
+            <linearGradient id="bron5" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D4956A"/><stop offset="100%" stop-color="#8B6A3E"/>
+            </linearGradient>
+          </defs>
+          <!-- Stars background -->
+          <text x="20" y="20" font-size="8" fill="#C9A84C" opacity=".3">&#9733;</text>
+          <text x="135" y="30" font-size="6" fill="#C9A84C" opacity=".25">&#9733;</text>
+          <text x="12" y="90" font-size="5" fill="#C9A84C" opacity=".2">&#9733;</text>
+
+          <!-- 2nd place -->
+          <rect x="12" y="62" width="40" height="50" rx="5" fill="url(#silv5)" opacity=".85"/>
+          <text x="32" y="95" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="22" font-weight="900" fill="rgba(255,255,255,.4)">2</text>
+          <!-- 2nd person -->
+          <circle cx="32" cy="50" r="10" fill="#9BA8B5"/>
+          <text x="32" y="54" text-anchor="middle" font-size="10" fill="#fff">&#128100;</text>
+
+          <!-- 1st place -->
+          <rect x="60" y="42" width="40" height="70" rx="5" fill="url(#gold5)"/>
+          <text x="80" y="90" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="28" font-weight="900" fill="rgba(255,255,255,.4)">1</text>
+          <!-- Crown + person -->
+          <text x="80" y="28" text-anchor="middle" font-size="13">&#128081;</text>
+          <circle cx="80" cy="36" r="10" fill="#C9A84C" stroke="#F0D07A" stroke-width="1.5"/>
+          <text x="80" y="40" text-anchor="middle" font-size="10" fill="#fff">&#128100;</text>
+          <!-- Trophy on top -->
+          <text x="80" y="14" text-anchor="middle" font-size="10">&#127942;</text>
+
+          <!-- 3rd place -->
+          <rect x="108" y="75" width="40" height="37" rx="5" fill="url(#bron5)" opacity=".85"/>
+          <text x="128" y="103" text-anchor="middle" font-family="'Barlow Condensed',sans-serif"
+                font-size="18" font-weight="900" fill="rgba(255,255,255,.35)">3</text>
+          <!-- 3rd person -->
+          <circle cx="128" cy="62" r="10" fill="#8B6A3E"/>
+          <text x="128" y="66" text-anchor="middle" font-size="10" fill="#fff">&#128100;</text>
+
+          <!-- Base line -->
+          <rect x="5" y="112" width="150" height="4" rx="2" fill="#1A2E48"/>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#C9A84C; margin-bottom:.4rem;">
+          Paso 4
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+          Ranking &amp; Premios
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+          Todos compiten en el mismo ranking. Acumula puntos en cada fase
+          y sube posiciones. <strong style="color:#fff;">Los 3 primeros ganan premios en dinero</strong>
+          al terminar la Final (19 Jul 2026).
+        </p>
+        <div style="background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.2); border-radius:.75rem;
+                    padding:.65rem .9rem; font-size:.75rem; color:#C9A84C; font-weight:700;">
+          &#128293; Bonus Underdog: si predices que gana el equipo con peor ranking, recibes puntos extra.
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 6 — Referidos ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 1.5rem; text-align:center;">
+        <!-- SVG: personas conectadas -->
+        <svg viewBox="0 0 160 110" xmlns="http://www.w3.org/2000/svg"
+             style="width:130px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <!-- Person 1 (you) -->
+          <circle cx="38" cy="35" r="16" fill="#0D1F35" stroke="#C9A84C" stroke-width="2"/>
+          <text x="38" y="40" text-anchor="middle" font-size="14">&#128100;</text>
+          <rect x="18" y="58" width="40" height="30" rx="8" fill="#0D1F35" stroke="#C9A84C" stroke-width="1.5"/>
+          <text x="38" y="70" text-anchor="middle" font-size="7" font-weight="700" fill="#C9A84C">T&Uacute;</text>
+          <!-- coin reward -->
+          <rect x="20" y="74" width="36" height="10" rx="4" fill="rgba(201,168,76,.15)"/>
+          <text x="38" y="82" text-anchor="middle" font-size="7" fill="#C9A84C" font-weight="700">+1.000 crd</text>
+
+          <!-- Arrow right -->
+          <path d="M60 55 L100 55" stroke="#10B981" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arr)"/>
+          <defs>
+            <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="#10B981"/>
+            </marker>
+          </defs>
+          <text x="80" y="50" text-anchor="middle" font-size="7" fill="#10B981">c&oacute;digo</text>
+
+          <!-- Person 2 (friend) -->
+          <circle cx="122" cy="35" r="16" fill="#0D1F35" stroke="#10B981" stroke-width="2"/>
+          <text x="122" y="40" text-anchor="middle" font-size="14">&#128101;</text>
+          <rect x="102" y="58" width="40" height="30" rx="8" fill="#0D1F35" stroke="#10B981" stroke-width="1.5"/>
+          <text x="122" y="70" text-anchor="middle" font-size="7" font-weight="700" fill="#10B981">AMIGO</text>
+          <rect x="104" y="74" width="36" height="10" rx="4" fill="rgba(16,185,129,.12)"/>
+          <text x="122" y="82" text-anchor="middle" font-size="7" fill="#10B981" font-weight="700">+1.000 crd</text>
+
+          <!-- Both get label -->
+          <rect x="30" y="96" width="100" height="12" rx="5" fill="rgba(201,168,76,.08)" stroke="rgba(201,168,76,.2)" stroke-width="1"/>
+          <text x="80" y="105" text-anchor="middle" font-size="7.5" fill="#C9A84C" font-weight="700">
+            &#127873; Los dos reciben 1.000 cr&eacute;ditos
+          </text>
+        </svg>
+
+        <p style="font-size:.65rem; font-weight:700; letter-spacing:.4em; text-transform:uppercase; color:#10B981; margin-bottom:.4rem;">
+          Bonus
+        </p>
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; color:#fff; margin:0 0 .65rem;">
+          Invita amigos
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem .9rem;">
+          Comparte tu c&oacute;digo de referido. Cuando un amigo se registre con &eacute;l,
+          <strong style="color:#fff;">ambos reciben 1.000 cr&eacute;ditos gratis</strong>.
+          Puedes invitar hasta 4 amigos.
+        </p>
+        <a href="{% url 'tournament:referral' %}" onclick="tutClose()"
+           style="display:inline-block; background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.35);
+                  color:#10B981; border-radius:.65rem; padding:.45rem 1.1rem;
+                  font-size:.78rem; font-weight:700; text-decoration:none; transition:background .2s;"
+           onmouseover="this.style.background='rgba(16,185,129,.2)'"
+           onmouseout="this.style.background='rgba(16,185,129,.1)'">
+          Ver mi c&oacute;digo de referido &rarr;
+        </a>
+      </div>
+
+      <!-- ═══ SLIDE 7 — Final / CTA ═══ -->
+      <div class="cb-slide" style="display:none; padding:2.5rem 1.75rem 2rem; text-align:center;">
+        <!-- SVG: info/check final -->
+        <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg"
+             style="width:115px; height:auto; margin:0 auto 1.25rem; display:block;" aria-hidden="true">
+          <defs>
+            <linearGradient id="fg7" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#C9A84C"/>
+              <stop offset="100%" stop-color="#F0D07A"/>
+            </linearGradient>
+          </defs>
+          <!-- Big circle check -->
+          <circle cx="80" cy="60" r="48" fill="rgba(201,168,76,.06)" stroke="rgba(201,168,76,.2)" stroke-width="1.5"/>
+          <circle cx="80" cy="60" r="36" fill="rgba(201,168,76,.09)" stroke="rgba(201,168,76,.3)" stroke-width="1.5"/>
+          <!-- Checkmark -->
+          <circle cx="80" cy="60" r="24" fill="url(#fg7)"/>
+          <path d="M67 60 l9 9 l17-17" stroke="#fff" stroke-width="3.5" fill="none"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Orbiting stars -->
+          <text x="32" y="25" font-size="11" fill="#C9A84C" opacity=".6">&#9733;</text>
+          <text x="122" y="22" font-size="9" fill="#C9A84C" opacity=".5">&#9733;</text>
+          <text x="18" y="75" font-size="8" fill="#C9A84C" opacity=".4">&#9733;</text>
+          <text x="135" y="88" font-size="10" fill="#C9A84C" opacity=".5">&#9733;</text>
+          <text x="70" y="118" font-size="9" fill="#C9A84C" opacity=".4">&#9733;</text>
+        </svg>
+
+        <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.75rem; color:#fff; margin:0 0 .5rem;">
+          &iexcl;Ya est&aacute;s listo!
+        </h2>
+        <p style="color:#8AA6C0; font-size:.82rem; line-height:1.55; margin:0 .25rem 1.25rem;">
+          Compra cr&eacute;ditos, predice grupos, predice eliminatorias y escala el ranking.
+          Para ver las reglas completas y todos los detalles visita:
+        </p>
+        <a href="{% url 'tournament:info' %}" onclick="tutClose()"
+           style="display:flex; align-items:center; justify-content:center; gap:.5rem;
+                  background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.08));
+                  border:1px solid rgba(201,168,76,.4); color:#C9A84C; border-radius:.85rem;
+                  padding:.7rem 1.2rem; font-family:'Barlow Condensed',sans-serif;
+                  font-weight:700; font-size:.95rem; letter-spacing:.06em; text-decoration:none;
+                  transition:background .2s; margin-bottom:.75rem;"
+           onmouseover="this.style.background='linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.15))'"
+           onmouseout="this.style.background='linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.08))'">
+          <svg style="width:1.1rem;height:1.1rem;" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          &iquest;C&oacute;mo jugar?
+        </a>
+        <button onclick="tutClose()"
+                style="width:100%; padding:.6rem; border-radius:.75rem;
+                       background:rgba(255,255,255,.05); border:1px solid #1A2E48;
+                       color:#6A8AA6; font-size:.78rem; cursor:pointer; transition:background .2s, color .2s;"
+                onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#fff'"
+                onmouseout="this.style.background='rgba(255,255,255,.05)';this.style.color='#6A8AA6'">
+          Empezar a jugar
+        </button>
+      </div>
+
+    </div>{# /slides wrapper #}
+
+    <!-- Footer: dots + botones -->
+    <div style="padding:.9rem 1.5rem 1.1rem; border-top:1px solid rgba(255,255,255,.06);
+                display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-shrink:0;">
+
+      <!-- Dots -->
+      <div id="cb-tut-dots" style="display:flex; gap:.4rem; align-items:center;">
+        {% for i in "1234567" %}
+        <button onclick="tutGo({{ forloop.counter0 }})" aria-label="Ir al paso {{ forloop.counter }}"
+                class="cb-dot"
+                style="width:.45rem; height:.45rem; border-radius:50%; border:none;
+                       cursor:pointer; transition:all .25s; padding:0;
+                       background:{% if forloop.first %}#C9A84C{% else %}rgba(255,255,255,.18){% endif %};
+                       transform:{% if forloop.first %}scale(1.4){% else %}scale(1){% endif %};"></button>
+        {% endfor %}
+      </div>
+
+      <!-- Prev / Next -->
+      <div style="display:flex; gap:.5rem;">
+        <button id="cb-tut-prev" onclick="tutPrev()"
+                style="padding:.45rem .9rem; border-radius:.6rem; border:1px solid #1A2E48;
+                       background:transparent; color:#6A8AA6; font-size:.75rem; cursor:pointer;
+                       transition:color .2s, border-color .2s;"
+                onmouseover="this.style.color='#fff';this.style.borderColor='#4A6278'"
+                onmouseout="this.style.color='#6A8AA6';this.style.borderColor='#1A2E48'"
+                disabled style="opacity:.3; cursor:default;">
+          &larr; Ant.
+        </button>
+        <button id="cb-tut-next" onclick="tutNext()"
+                style="padding:.45rem 1.1rem; border-radius:.6rem; border:none;
+                       background:#C9A84C; color:#070F1C; font-size:.78rem;
+                       font-weight:700; cursor:pointer; font-family:'Barlow Condensed',sans-serif;
+                       letter-spacing:.05em; transition:opacity .2s;">
+          Siguiente &rarr;
+        </button>
+      </div>
+
+    </div>
+
+  </div>{# /card #}
+</div>{# /overlay #}
+
+<script>
+(function(){
+  var KEY = 'copabet26_tut_v1';
+  var seen = false;
+  try { seen = !!localStorage.getItem(KEY); } catch(e) {}
+  if (seen) return;
+
+  var overlay = document.getElementById('cb-tut');
+  var slides  = overlay ? overlay.querySelectorAll('.cb-slide') : [];
+  var dots    = overlay ? overlay.querySelectorAll('.cb-dot')   : [];
+  var bar     = document.getElementById('cb-tut-bar');
+  var btnPrev = document.getElementById('cb-tut-prev');
+  var btnNext = document.getElementById('cb-tut-next');
+  var cur = 0;
+  var total = slides.length; // 7
+
+  if (!overlay || !total) return;
+
+  function updateUI() {
+    slides.forEach(function(s, i) { s.style.display = i === cur ? '' : 'none'; });
+    dots.forEach(function(d, i) {
+      d.style.background = i === cur ? '#C9A84C' : 'rgba(255,255,255,.18)';
+      d.style.transform  = i === cur ? 'scale(1.4)' : 'scale(1)';
+    });
+    if (bar) bar.style.width = ((cur + 1) / total * 100) + '%';
+    if (btnPrev) { btnPrev.disabled = cur === 0; btnPrev.style.opacity = cur === 0 ? '.3' : '1'; btnPrev.style.cursor = cur === 0 ? 'default' : 'pointer'; }
+    if (btnNext) {
+      if (cur === total - 1) {
+        btnNext.textContent = 'Empezar \u2192';
+      } else {
+        btnNext.innerHTML = 'Siguiente &rarr;';
+      }
+    }
+  }
+
+  window.tutGo = function(i) { cur = Math.max(0, Math.min(total-1, i)); updateUI(); };
+  window.tutNext = function() {
+    if (cur < total - 1) { cur++; updateUI(); }
+    else { tutClose(); }
+  };
+  window.tutPrev = function() { if (cur > 0) { cur--; updateUI(); } };
+  window.tutClose = function() {
+    try { localStorage.setItem(KEY, '1'); } catch(e) {}
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .35s ease';
+    setTimeout(function() { overlay.style.display = 'none'; }, 360);
+  };
+
+  // Show after intro animation ends (or immediately if no intro)
+  function showTutorial() {
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .4s ease';
+    updateUI();
+    // tiny frame delay for display:flex to take effect
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        overlay.style.opacity = '1';
+      });
+    });
+  }
+
+  var introEl = document.getElementById('wc-intro');
+  if (!introEl || introEl.classList.contains('intro-hidden')) {
+    // No intro or already done — show after a short delay
+    setTimeout(showTutorial, 600);
+  } else {
+    // Wait for intro to hide
+    var obs = new MutationObserver(function() {
+      if (introEl.classList.contains('intro-hidden')) {
+        obs.disconnect();
+        setTimeout(showTutorial, 500);
+      }
+    });
+    obs.observe(introEl, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
+</script>
+{% endif %}
