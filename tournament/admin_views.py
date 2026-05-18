@@ -17,7 +17,7 @@ from .models import (
 )
 from .sandbox import generate_test_data, reset_test_data, sandbox_stats
 from .signals import score_group_predictions, score_knockout_predictions
-from accounts.models import UserProfile
+from accounts.models import UserProfile, CreditTransaction
 from accounts.referrals import MAX_REFERRALS_BASE, MAX_REFERRALS_REFERRED, REWARD_EACH
 
 
@@ -87,6 +87,7 @@ def panel_user_detail(request, user_id):
     knockout_preds = KnockoutPrediction.objects.filter(user=user).select_related(
         'match__round', 'predicted_winner', 'match__team1', 'match__team2')
     purchases = CreditPurchase.objects.filter(user=user).select_related('package').order_by('-created_at')[:10]
+    credit_transactions = CreditTransaction.objects.filter(user=user).order_by('-created_at')[:50]
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -100,8 +101,14 @@ def panel_user_detail(request, user_id):
                     except (ValueError, TypeError):
                         messages.error(request, 'Valor de créditos inválido.')
                         return redirect('tournament:panel_user_detail', user_id=user_id)
+                    old_val = prof.credits
                     prof.credits = max(0, new_val)
                     prof.save(update_fields=['credits'])
+                    diff = prof.credits - old_val
+                    CreditTransaction.objects.create(
+                        user=user, amount=diff, reason='admin',
+                        description=f'Ajuste manual por admin: {old_val:,} → {prof.credits:,}',
+                    )
                     messages.success(request, f'Créditos de {user.username} ajustados a {prof.credits:,}.')
                 elif action == 'add_credits':
                     try:
@@ -111,6 +118,10 @@ def panel_user_detail(request, user_id):
                         return redirect('tournament:panel_user_detail', user_id=user_id)
                     prof.credits += amount
                     prof.save(update_fields=['credits'])
+                    CreditTransaction.objects.create(
+                        user=user, amount=amount, reason='admin',
+                        description=f'Adición manual por admin: +{amount:,}',
+                    )
                     messages.success(request, f'+{amount:,} créditos agregados a {user.username}.')
                 elif action == 'set_staff':
                     user.is_staff = request.POST.get('is_staff') == '1'
@@ -197,6 +208,7 @@ def panel_user_detail(request, user_id):
         'target_user': user, 'profile': profile,
         'group_preds': group_preds, 'knockout_preds': knockout_preds,
         'purchases': purchases,
+        'credit_transactions': credit_transactions,
     })
 
 

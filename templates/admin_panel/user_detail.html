@@ -149,6 +149,32 @@
       </table>
     </div>
 
+    <!-- Historial de créditos -->
+    {% if credit_transactions %}
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#1A2E48]">
+        <h2 class="font-bold text-white text-sm uppercase tracking-wide">Historial de Créditos (últimas 50)</h2>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>Motivo</th><th>Descripción</th><th class="text-right">Monto</th></tr>
+        </thead>
+        <tbody>
+          {% for t in credit_transactions %}
+          <tr>
+            <td class="text-[#6A8AA6] text-xs whitespace-nowrap">{{ t.created_at|date:"d/m/y H:i" }}</td>
+            <td class="text-[#8AA6C0] text-xs">{{ t.get_reason_display }}</td>
+            <td class="text-[#C8D8E8] text-xs">{{ t.description|default:"—" }}</td>
+            <td class="text-right font-bold text-sm {% if t.amount >= 0 %}text-emerald-400{% else %}text-red-400{% endif %}">
+              {% if t.amount >= 0 %}+{% endif %}{{ t.amount|crd }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
     {% if purchases %}
     <div class="card rounded-xl overflow-hidden">
       <div class="px-4 py-3 border-b border-[#1A2E48]">
