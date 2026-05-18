@@ -86,6 +86,32 @@ class Referral(models.Model):
         return f'{self.referrer.username} → {self.referred.username}'
 
 
+class CreditTransaction(models.Model):
+    REASON_CHOICES = [
+        ('referral_signup_referrer', 'Referido se registró (tú invitaste)'),
+        ('referral_signup_referred', 'Te registraste con código de referido'),
+        ('referral_friend',          'Tu referido invitó a alguien'),
+        ('purchase',                 'Compra de créditos'),
+        ('prediction_win',           'Predicción acertada'),
+        ('admin',                    'Ajuste administrativo'),
+        ('other',                    'Otro'),
+    ]
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_transactions')
+    amount      = models.IntegerField(help_text='Positivo = ingreso, negativo = egreso')
+    reason      = models.CharField(max_length=50, choices=REASON_CHOICES)
+    description = models.CharField(max_length=255, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Transacción de créditos'
+        verbose_name_plural = 'Transacciones de créditos'
+
+    def __str__(self):
+        sign = '+' if self.amount >= 0 else ''
+        return f'{self.user.username}: {sign}{self.amount} ({self.get_reason_display()})'
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

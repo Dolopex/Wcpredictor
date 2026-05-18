@@ -20,7 +20,7 @@ def _max_referrals_for(user):
 
 
 def process_referral_signup(new_user, promo_code):
-    from .models import UserProfile, Referral
+    from .models import UserProfile, Referral, CreditTransaction
 
     code = promo_code.strip().upper()
     if not code:
@@ -51,9 +51,21 @@ def process_referral_signup(new_user, promo_code):
 
         UserProfile.objects.filter(user=new_user).update(credits=F('credits') + REWARD_EACH)
         referral.referred_signup_reward_given = True
+        CreditTransaction.objects.create(
+            user=new_user,
+            amount=REWARD_EACH,
+            reason='referral_signup_referred',
+            description=f'Código de {referrer.username} aplicado al registrarse',
+        )
 
         UserProfile.objects.filter(user=referrer).update(credits=F('credits') + REWARD_EACH)
         referral.signup_reward_given = True
+        CreditTransaction.objects.create(
+            user=referrer,
+            amount=REWARD_EACH,
+            reason='referral_signup_referrer',
+            description=f'{new_user.username} se registró con tu código',
+        )
 
         referral.save()
 

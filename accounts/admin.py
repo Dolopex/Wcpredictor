@@ -1,7 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import UserProfile, Referral
+from .models import UserProfile, Referral, CreditTransaction
+
+
+class CreditTransactionInline(admin.TabularInline):
+    model = CreditTransaction
+    extra = 0
+    readonly_fields = ('created_at', 'reason', 'amount', 'description')
+    fields = ('created_at', 'amount', 'reason', 'description')
+    ordering = ('-created_at',)
+    can_delete = False
+    verbose_name_plural = 'Historial de créditos'
+    show_change_link = False
 
 
 class UserProfileInline(admin.StackedInline):
@@ -13,7 +24,7 @@ class UserProfileInline(admin.StackedInline):
 
 
 class UserAdmin(BaseUserAdmin):
-    inlines = (UserProfileInline,)
+    inlines = (UserProfileInline, CreditTransactionInline)
     list_display = ('username', 'email', 'get_credits', 'get_promo_code', 'is_staff', 'date_joined')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
 
@@ -23,7 +34,6 @@ class UserAdmin(BaseUserAdmin):
         except UserProfile.DoesNotExist:
             return 0
     get_credits.short_description = 'Créditos'
-    get_credits.admin_order_field = 'profile__credits'
 
     def get_promo_code(self, obj):
         try:
@@ -48,6 +58,15 @@ class ReferralAdmin(admin.ModelAdmin):
         except Exception:
             return 0
     get_referred_credits.short_description = 'Créditos del referido'
+
+
+@admin.register(CreditTransaction)
+class CreditTransactionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'amount', 'reason', 'description', 'created_at')
+    list_filter = ('reason', 'created_at')
+    search_fields = ('user__username', 'description')
+    readonly_fields = ('user', 'amount', 'reason', 'description', 'created_at')
+    ordering = ('-created_at',)
 
 
 admin.site.unregister(User)
