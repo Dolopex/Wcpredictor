@@ -511,71 +511,8 @@
   {% endif %}
 </section>
 
-{# ── BANNER REFERIDOS — Deshabilitado #}
-{# Comentado: referral_progress ya no se pasa en context #}
-{% with rp=referral_progress %}
-<section class="mb-6 anim-card" style="animation-delay:40ms">
-  <a href="{% url 'tournament:referral' %}" class="block group">
-    <div class="relative rounded-2xl overflow-hidden border border-emerald-800/40 hover:border-emerald-500/60 transition-all duration-300"
-         style="background:linear-gradient(135deg,rgba(5,28,20,0.95) 0%,rgba(7,15,28,0.98) 100%);">
-
-      <!-- Glow de fondo -->
-      <div class="absolute inset-0 opacity-30 pointer-events-none"
-           style="background:radial-gradient(ellipse 80% 60% at 10% 50%, rgba(16,185,129,0.25) 0%, transparent 70%)"></div>
-
-      <div class="relative px-5 py-4 flex items-center gap-4">
-
-        <!-- Ícono / círculos de progreso -->
-        <div class="relative flex-shrink-0 w-14 h-14">
-          <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-            <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(16,185,129,0.15)" stroke-width="4"/>
-          {% with offset=rp.slots_remaining|multiply_by:144|divide_by:rp.max_referrals %}
-            <circle cx="28" cy="28" r="23" fill="none" stroke="#10B981" stroke-width="4"
-                    stroke-dasharray="144" stroke-dashoffset="{{ offset }}"
-                    stroke-linecap="round"/>
-            {% endwith %}
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="font-display font-black text-base text-emerald-400 leading-none">{{ rp.referrals_count }}/{{ rp.max_referrals }}</span>
-          </div>
-        </div>
-
-        <!-- Texto -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-0.5">
-            <span class="text-emerald-400 text-xs font-bold uppercase tracking-widest">🎁 Invita y gana</span>
-          </div>
-          <p class="text-white font-bold text-sm leading-snug">
-            {% if rp.referrals_count == 0 %}
-              Comparte tu código y gana <span class="text-emerald-400">+1.000 crd</span> por cada amigo
-            {% elif rp.slots_remaining > 0 %}
-              {{ rp.referrals_count }} amigo{{ rp.referrals_count|pluralize }} invitado{{ rp.referrals_count|pluralize }} · aún te quedan <span class="text-emerald-400">{{ rp.slots_remaining }} cupo{{ rp.slots_remaining|pluralize }}</span>
-            {% else %}
-              ¡Completaste tus 4 referidos! 🎉 <span class="text-emerald-400">+{{ rp.total_earned_as_referrer|crd }} crd</span> ganados
-            {% endif %}
-          </p>
-          <p class="text-[10px] text-[#4A6278] mt-0.5">Tú y tu amigo reciben 1.000 crd cada uno</p>
-        </div>
-
-        <!-- Arrow -->
-        <svg class="w-5 h-5 text-emerald-600 group-hover:text-emerald-400 transition flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-        </svg>
-
-      </div>
-
-      <!-- Barra de progreso inferior -->
-      <div class="h-0.5" style="background:rgba(16,185,129,0.08)">
-        {% with pct=rp.referrals_count|multiply_by:100|divide_by:rp.max_referrals %}
-        <div class="h-0.5 transition-all duration-700" style="background:linear-gradient(90deg,#059669,#10B981); width:{{ pct }}%"></div>
-        {% endwith %}
-      </div>
-
-    </div>
-  </a>
-</section>
-{% endif %}
-{# Fin de referrals deshabilitados #}
+{# ── BANNER REFERIDOS — Deshabilitado completamente #}
+{# Todo comentado, no se renderiza nada #}
 
 {# LANDING PAGE — solo para usuarios NO autenticados #}
 {% if not user.is_authenticated %}
