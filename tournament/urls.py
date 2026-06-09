@@ -13,7 +13,7 @@ urlpatterns = [
     path('clasificacion/', views.leaderboard_view, name='leaderboard'),
     path('creditos/', views.credits_view, name='credits'),
     path('creditos/comprar/', views.buy_credits_view, name='buy_credits'),
-    path('referidos/', views.referral_view, name='referral'),
+    # path('referidos/', views.referral_view, name='referral'),  # Referidos deshabilitados
     # Mercado Pago — retornos y webhook
     path('creditos/comprar/exito/', views.mp_success_view, name='mp_success'),
     path('creditos/comprar/fallido/', views.mp_failure_view, name='mp_failure'),
@@ -30,5 +30,5 @@ urlpatterns = [
     path('panel/partidos/', admin_views.panel_matches, name='panel_matches'),
     path('panel/grupos/', admin_views.panel_groups, name='panel_groups'),
     path('panel/simulador/', admin_views.panel_simulate, name='panel_simulate'),
-    path('panel/referidos/', admin_views.panel_referrals, name='panel_referrals'),
+    # path('panel/referidos/', admin_views.panel_referrals, name='panel_referrals'),  # Referidos deshabilitados
 ]

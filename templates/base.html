@@ -110,10 +110,6 @@
              class="px-3 py-2 rounded-lg text-sm font-medium text-[#8AA6C0] hover:text-white hover:bg-[#112035] transition">
             Créditos
           </a>
-          <a href="{% url 'tournament:referral' %}"
-             class="px-3 py-2 rounded-lg text-sm font-medium text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-900/20 transition">
-            🎁 Referidos
-          </a>
           <a href="{% url 'tournament:buy_credits' %}"
              class="px-3 py-2 rounded-lg text-sm font-semibold transition"
              style="background: rgba(201,168,76,0.15); color:#C9A84C; border:1px solid rgba(201,168,76,0.3);">
@@ -245,17 +241,7 @@
       <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Ranking</span>
     </a>
 
-    {% if user.is_authenticated %}
-    <!-- Referidos -->
-    <a href="{% url 'tournament:referral' %}"
-       class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition
-              {% if cur == 'referral' %}text-emerald-400{% else %}text-[#6A8AA6] hover:text-white{% endif %}">
-      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-      </svg>
-      <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Referidos</span>
-    </a>
-    {% endif %}
+    <!-- Referidos — Deshabilitado -->
 
     <!-- Perfil / Login -->
     {% if not user.is_authenticated %}

@@ -511,8 +511,8 @@
   {% endif %}
 </section>
 
-{# ── BANNER REFERIDOS — solo para usuarios autenticados ──────────────────── #}
-{% if user.is_authenticated and referral_progress %}
+{# ── BANNER REFERIDOS — Deshabilitado #}
+{# Comentado: referral_progress ya no se pasa en context #}
 {% with rp=referral_progress %}
 <section class="mb-6 anim-card" style="animation-delay:40ms">
   <a href="{% url 'tournament:referral' %}" class="block group">
@@ -574,8 +574,8 @@
     </div>
   </a>
 </section>
-{% endwith %}
 {% endif %}
+{# Fin de referrals deshabilitados #}
 
 {# LANDING PAGE — solo para usuarios NO autenticados #}
 {% if not user.is_authenticated %}
