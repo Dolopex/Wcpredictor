@@ -62,10 +62,40 @@ def score_knockout_predictions(match):
 def disburse_credits_on_purchase_completion(sender, instance, created, **kwargs):
     """
     Cuando una compra de créditos se marca como 'completed', automáticamente
-    desembolsa los créditos al usuario.
-    Idempotente: solo desembolsa si credits_disbursed=False o no existe.
+    desembolsa los créditos al usuario sin necesidad de verificación manual.
     
-    TEMPORALMENTE DESACTIVADO: esperando a que migración se ejecute en Vercel
+    Idempotente: solo desembolsa si credits_disbursed no está marcado.
+    Defensivo: funciona aunque el campo credits_disbursed no exista en la BD aún.
     """
-    pass
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if instance.status != 'completed':
+        return
+    
+    # Verificar si ya fue desembolsado (si el campo existe)
+    try:
+        if hasattr(instance, 'credits_disbursed') and instance.credits_disbursed:
+            return  # Ya desembolsado
+    except Exception:
+        pass  # Continuar si hay error al acceder al campo
+    
+    try:
+        with transaction.atomic():
+            # Sumar créditos al profile del usuario
+            profile = instance.user.profile
+            profile.credits += instance.credits_applied
+            profile.save(update_fields=['credits'])
+            
+            # Marcar como desembolsado (si el campo existe)
+            try:
+                if hasattr(instance, 'credits_disbursed'):
+                    instance.credits_disbursed = True
+                    instance.save(update_fields=['credits_disbursed'])
+            except Exception as e:
+                logger.debug(f"No se pudo marcar credits_disbursed en compra {instance.id}: {e}")
+            
+            logger.info(f"Créditos desembolsados automáticamente: {instance.user.username} ← +{instance.credits_applied} crd")
+    except Exception as e:
+        logger.exception(f"Error desembolsando créditos para compra {instance.id}: {e}")
 

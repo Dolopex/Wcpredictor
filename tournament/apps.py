@@ -6,6 +6,4 @@ class TournamentConfig(AppConfig):
     name = 'tournament'
 
     def ready(self):
-        # Temporalmente desactivado mientras la migración se ejecuta en Vercel
-        # import tournament.signals  # noqa: F401
-        pass
+        import tournament.signals  # noqa: F401
