@@ -65,35 +65,7 @@ def disburse_credits_on_purchase_completion(sender, instance, created, **kwargs)
     desembolsa los créditos al usuario.
     Idempotente: solo desembolsa si credits_disbursed=False o no existe.
     
-    Defensivo: funciona aunque el campo no exista (pre-migración).
+    TEMPORALMENTE DESACTIVADO: esperando a que migración se ejecute en Vercel
     """
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    if instance.status != 'completed':
-        return
-    
-    # Chequear si el campo existe en la tabla
-    try:
-        credits_disbursed = getattr(instance, 'credits_disbursed', False)
-    except AttributeError:
-        credits_disbursed = False
-    
-    if credits_disbursed:
-        return  # Ya fue desembolsado
-    
-    try:
-        with transaction.atomic():
-            profile = instance.user.profile
-            profile.credits += instance.credits_applied
-            profile.save(update_fields=['credits'])
-            
-            # Intentar marcar como desembolsado, pero no fallar si el campo no existe
-            try:
-                instance.credits_disbursed = True
-                instance.save(update_fields=['credits_disbursed'])
-            except (AttributeError, Exception) as e:
-                logger.debug(f"No se pudo marcar credits_disbursed (probablemente migración pendiente): {e}")
-    except Exception as e:
-        logger.exception(f"Error desembolsando créditos para compra {instance.id}: {e}")
+    pass
 
