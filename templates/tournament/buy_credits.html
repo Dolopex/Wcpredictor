@@ -147,9 +147,15 @@
             <span class="text-[#8AA6C0]">Semis + Final (3×$2.000)</span>
             <span class="text-orange-300 font-bold">6.000 crd</span>
           </div>
+          {% if pkg.bonus_credits %}
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-emerald-400 font-semibold">🎁 Bonus Mejores Terceros</span>
+            <span class="text-emerald-400 font-bold">{{ pkg.bonus_credits|crd }} crd</span>
+          </div>
+          {% endif %}
           <div class="flex items-center justify-between border-t border-gold/30 pt-2">
             <span class="text-gold font-bold text-sm">Total créditos</span>
-            <span class="font-display font-black text-gold text-xl">{{ pkg.credits_amount|crd }}</span>
+            <span class="font-display font-black text-gold text-xl">{{ pkg.total_credits|crd }}</span>
           </div>
         </div>
 
@@ -192,9 +198,15 @@
             <span class="text-[#8AA6C0]">24 apuestas × $500</span>
             <span class="text-[#C8D8E8] font-bold">{{ pkg.credits_amount|crd }} crd</span>
           </div>
+          {% if pkg.bonus_credits %}
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-emerald-400 font-semibold">🎁 Bonus Mejores Terceros</span>
+            <span class="text-emerald-400 font-bold">{{ pkg.bonus_credits|crd }} crd</span>
+          </div>
+          {% endif %}
           <div class="flex items-center justify-between border-t border-[#1A2E48] pt-2">
             <span class="text-[#8AA6C0] font-bold text-sm">Total créditos</span>
-            <span class="font-display font-black text-white text-xl">{{ pkg.credits_amount|crd }}</span>
+            <span class="font-display font-black text-white text-xl">{{ pkg.total_credits|crd }}</span>
           </div>
         </div>
 
