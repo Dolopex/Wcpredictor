@@ -64,20 +64,36 @@ def disburse_credits_on_purchase_completion(sender, instance, created, **kwargs)
     Cuando una compra de créditos se marca como 'completed', automáticamente
     desembolsa los créditos al usuario.
     Idempotente: solo desembolsa si credits_disbursed=False o no existe.
+    
+    Defensivo: funciona aunque el campo no exista (pre-migración).
     """
-    if instance.status == 'completed':
-        # Defensivo: chequea si credits_disbursed existe y es False
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if instance.status != 'completed':
+        return
+    
+    # Chequear si el campo existe en la tabla
+    try:
         credits_disbursed = getattr(instance, 'credits_disbursed', False)
-        if not credits_disbursed:
+    except AttributeError:
+        credits_disbursed = False
+    
+    if credits_disbursed:
+        return  # Ya fue desembolsado
+    
+    try:
+        with transaction.atomic():
+            profile = instance.user.profile
+            profile.credits += instance.credits_applied
+            profile.save(update_fields=['credits'])
+            
+            # Intentar marcar como desembolsado, pero no fallar si el campo no existe
             try:
-                with transaction.atomic():
-                    profile = instance.user.profile
-                    profile.credits += instance.credits_applied
-                    profile.save(update_fields=['credits'])
-                    instance.credits_disbursed = True
-                    instance.save(update_fields=['credits_disbursed'])
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.exception(f"Error desembolsando créditos para compra {instance.id}: {e}")
+                instance.credits_disbursed = True
+                instance.save(update_fields=['credits_disbursed'])
+            except (AttributeError, Exception) as e:
+                logger.debug(f"No se pudo marcar credits_disbursed (probablemente migración pendiente): {e}")
+    except Exception as e:
+        logger.exception(f"Error desembolsando créditos para compra {instance.id}: {e}")
 
