@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='creditpurchase',
             name='credits_disbursed',
-            field=models.BooleanField(default=False, verbose_name='Créditos desembolsados'),
+            field=models.BooleanField(default=False, null=True, 
+                                      verbose_name='Créditos desembolsados'),
         ),
     ]
+

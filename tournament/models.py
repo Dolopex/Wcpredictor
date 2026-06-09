@@ -220,7 +220,8 @@ class CreditPurchase(models.Model):
     cop_paid = models.PositiveIntegerField(verbose_name='Valor pagado en COP')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending',
                                verbose_name='Estado')
-    credits_disbursed = models.BooleanField(default=False, verbose_name='Créditos desembolsados')
+    credits_disbursed = models.BooleanField(default=False, null=True, 
+                                            verbose_name='Créditos desembolsados')
     mp_preference_id = models.CharField(max_length=120, blank=True, verbose_name='Preferencia MP')
     mp_payment_id = models.CharField(max_length=60, blank=True, verbose_name='ID Pago MP')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de compra')
