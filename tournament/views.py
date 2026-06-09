@@ -472,9 +472,7 @@ def leaderboard_view(request):
 
     prize_pool = int(total_net * (1 - PLATFORM_CUT))   # 65 % del neto
     prizes = {
-        1: int(prize_pool * 0.50),
-        2: int(prize_pool * 0.30),
-        3: int(prize_pool * 0.20),
+        1: prize_pool,  # 100% al ganador
     }
 
     top3 = list(users[:3])
