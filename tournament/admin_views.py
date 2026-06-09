@@ -186,6 +186,7 @@ def panel_user_detail(request, user_id):
 
         elif action == 'force_complete':
             # Forzar completado sin consultar MP (para pagos confirmados manualmente)
+            # El signal desembolsará los créditos automáticamente
             purchase_id = request.POST.get('purchase_id')
             try:
                 with transaction.atomic():
@@ -195,10 +196,7 @@ def panel_user_detail(request, user_id):
                     else:
                         purchase.status = 'completed'
                         purchase.save(update_fields=['status'])
-                        profile = purchase.user.profile
-                        profile.credits += purchase.credits_applied
-                        profile.save(update_fields=['credits'])
-                        messages.success(request, f'Compra #{purchase_id} completada manualmente: +{purchase.credits_applied:,} crd a {user.username}.')
+                        messages.success(request, f'Compra #{purchase_id} completada: desembolsando +{purchase.credits_applied:,} crd a {user.username}.')
             except (CreditPurchase.DoesNotExist, ValueError):
                 messages.error(request, 'Compra no encontrada.')
 

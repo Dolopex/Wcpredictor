@@ -1,9 +1,13 @@
 """
 Señales del torneo: cuando se ingresan resultados reales en el admin,
 se dispara automáticamente el cálculo de puntos y créditos.
+También automáticamente desembolsa créditos cuando una compra es completada.
 """
 
-from .models import GroupPrediction, KnockoutPrediction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import transaction
+from .models import GroupPrediction, KnockoutPrediction, CreditPurchase
 from .utils import (
     calculate_group_prediction_points,
     calculate_group_bet_credits,
@@ -48,4 +52,29 @@ def score_knockout_predictions(match):
         update_user_credits(user)
 
     assign_underdog_multipliers()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Signal: Desembolso automático de créditos cuando se completa una compra
+# ─────────────────────────────────────────────────────────────────────────────
+
+@receiver(post_save, sender=CreditPurchase)
+def disburse_credits_on_purchase_completion(sender, instance, created, **kwargs):
+    """
+    Cuando una compra de créditos se marca como 'completed', automáticamente
+    desembolsa los créditos al usuario.
+    Idempotente: solo desembolsa si credits_disbursed=False.
+    """
+    if instance.status == 'completed' and not instance.credits_disbursed:
+        try:
+            with transaction.atomic():
+                profile = instance.user.profile
+                profile.credits += instance.credits_applied
+                profile.save(update_fields=['credits'])
+                instance.credits_disbursed = True
+                instance.save(update_fields=['credits_disbursed'])
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error desembolsando créditos para compra {instance.id}: {e}")
 

@@ -550,7 +550,8 @@ def _mp_sdk():
 
 def _apply_payment(payment_id):
     """
-    Consulta el pago en la API de MP y, si está aprobado, acredita los créditos.
+    Consulta el pago en la API de MP y, si está aprobado, marca como completado.
+    El signal desembolsará los créditos automáticamente.
     Idempotente: no hace nada si el purchase ya fue procesado.
     """
     try:
@@ -577,10 +578,8 @@ def _apply_payment(payment_id):
         if mp_status == 'approved':
             purchase.status = 'completed'
             purchase.save(update_fields=['status', 'mp_payment_id'])
-            profile = purchase.user.profile
-            profile.credits += purchase.credits_applied
-            profile.save(update_fields=['credits'])
-            logger.info("Créditos aplicados: %s → %s crd", purchase.user, purchase.credits_applied)
+            # El signal desembolsará los créditos automáticamente
+            logger.info("Pago completado: %s → esperando desembolso automático", purchase.user)
         elif mp_status in ('rejected', 'cancelled'):
             purchase.status = 'cancelled'
             purchase.save(update_fields=['status', 'mp_payment_id'])
